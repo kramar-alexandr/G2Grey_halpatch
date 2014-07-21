@@ -1,0 +1,1288 @@
+external procedure GetBaseCurncy(Integer,var string);
+external updating procedure MakeProjectInvoice2(record RcVc,record PRVc,record IVVc,record XSVc,Boolean,
+                              Boolean,Boolean,Boolean,Boolean,
+                              var val,var val,var val,var val,var val,
+                              var Boolean,var record TBBUVc,var record TBBUVc,
+                              var vector val,var Array string,var Array string,var Integer,
+                              var Array record TBIVVc,var Integer);
+external procedure FindBudgetRow(string,string,string,Integer,var Date,var Integer);
+external function Boolean BuildBudget(string,record TBBUVc,Array Integer,var Integer);
+external procedure ProjectHeader(record RcVc,record PRVc,Integer);
+external procedure GetPRItemName(string,string,var string);
+external procedure GetProjectStats(string,Boolean,Boolean,var val,var val,var val);
+external procedure PRSumDownPay(record PRVc,var val,var val,Date,var string,var Boolean);
+external procedure FindBudgetSum(string,string,string,Array Integer,Integer,var val);
+
+
+function Boolean IsAsBudgeted(record TBBUVc TBBUr)
+BEGIN
+  Boolean res;
+  row TBBUVc TBBUrw;
+  Integer i,rwcnt;
+  
+  if ((TBBUr.BudTime==1) or (TBBUr.BudOther==1) or (TBBUr.BudMaterial==1) or (TBBUr.BudStocked==1)) then begin
+    res = true;
+    goto LIsAsBudgeted;
+  end;
+  rwcnt = MatRowCnt(TBBUr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(TBBUr,i,TBBUrw);
+    if (TBBUrw.BudType==2) then begin
+      res = true;
+      goto LIsAsBudgeted;
+    end;
+  end;
+LIsAsBudgeted:;  
+  IsAsBudgeted = res;
+  RETURN;
+END;
+
+procedure GetPRItemName2(string code,var string name)
+begin
+  record INVc INr;
+  
+  name="";
+  INr.Code = code;
+  if (ReadFirstMain(INr,1,true)) then begin
+    name = INr.Name;
+  end;
+  return;
+end;
+
+
+procedure GetPRItemName3(record TBIVVc TBIVp,var string name)
+begin
+
+  name = "";
+  switch (TBIVp.oVc) begin
+    case 1: 
+      name  = USetStr(1432);
+    case 2: 
+      name = USetStr(1152); 
+    case 3: 
+      name = USetStr(1170); 
+    case 4: 
+      name = USetStr(1158); 
+    case 5: 
+      name = USetStr(1845); 
+  end;
+  if (nonblank(name)) then begin
+    name = name & " ";
+    name = name  & TBIVp.SerNr;    
+  end;
+  return;
+end;
+
+procedure ProjectInvSugg4_TBIVVc(record RcVc RepSpec,record PRVc PRp,Integer ItemMode,Integer ItemType,Boolean detailf,Array Integer uarr,Integer uarrcnt,
+                                 var Boolean headerf,var val prsum,var val tsumbud)
+BEGIN
+  record TBIVVc TBIVr;
+  Boolean found,testf;
+  Date dt;
+  val t,sum;
+  string 255 tstr,lastcomment;
+  string 20 lastitem,lastempl;
+  val lastprice,rowqty,bsum,thisprice;
+  val sumbud,tsum;
+  string 20 dblstr;
+  Integer budtype;
+
+  TBIVr.PRCode = PRp.Code;
+  TBIVr.Invoice = -1;
+  TBIVr.oVc = 1;
+  found = true;
+  while (LoopKey("InvKey",TBIVr,3,found)) begin
+    testf = true;
+    if (TBIVr.PRCode!=PRp.Code) then begin found = false; end;
+    if (TBIVr.Invoice!=-1) then begin found = false; end;
+    if (nonblankdate(RepSpec.d1)) then begin
+      if (TBIVr.TransDate>RepSpec.d1) then begin
+        testf = false;
+      end;;
+      if (testf) then begin
+        if (nonblankdate(TBIVr.InvAfter)) then begin
+          if (RepSpec.d1<TBIVr.InvAfter) then begin testf = false; end;
+        end;
+      end;
+    end;
+    if (testf) then begin
+    switch (ItemMode) begin
+      case 0:
+        if ((TBIVr.oVc<2) or (TBIVr.oVc>3)) then begin testf = false; end;
+        if (TBIVr.ItemType!=0) then begin testf = false; end;
+      case 1:
+        testf = false;
+        if (((TBIVr.oVc==1) or (TBIVr.oVc==2) or (TBIVr.oVc==4) or (TBIVr.oVc==6)) and (TBIVr.ItemType==1)) then begin testf = true; end;
+      case 3:
+        if (TBIVr.ItemType!=3) then begin testf = false; end;
+      case 5:
+        testf = false;
+        if ((((TBIVr.oVc==1) or (TBIVr.oVc==4)) and (TBIVr.ItemType==0)) or (TBIVr.ItemType==5)) then begin testf = true; end;
+    end;
+    end;
+    
+    if (SetInSet(RepSpec.ObjStr,TBIVr.Objects)==false) then begin testf = false; end;
+    FindBudgetRow(TBIVr.PRCode,TBIVr.ArtCode,TBIVr.EMCode,ItemType,dt,budtype);
+    if (nonblankdate(dt)) then begin
+      if (nonblankdate(RepSpec.d1)) then begin
+        if (dt>RepSpec.d1) then begin testf = false; end;
+      end else begin
+        if (dt>CurrentDate) then begin testf = false; end;
+      end;
+    end;
+    if (!found) then begin testf = false; end;
+    if (testf) then begin
+      if (headerf==false) then begin
+        StartFormat(15);
+        if (detailf) then begin
+          OutString(0,0,USetStr(4842),false);
+        end else begin
+          OutString(0,0,USetStr(4843),false);
+        end;
+        EndFormat;
+        Gray_Divider(0,1);
+        ProjectHeader(RepSpec,PRp,3);
+        headerf = true;
+      end;
+      if (blank(PRp.CurncyCode)) then begin        
+        thisprice = TBIVr.Price;
+      end else begin
+        thisprice = TBIVr.PriceInCur;
+      end;
+      if (blank(lastitem)) then begin
+        lastitem = TBIVr.ArtCode;
+        lastempl = TBIVr.EMCode;
+        lastprice = thisprice;
+        lastcomment = TBIVr.Comment;
+        dblstr = TBIVr.SerNr;
+        dblstr = dblstr & ",";
+        dblstr = dblstr & TBIVr.Row;
+        dblstr = dblstr & ",";
+        dblstr = dblstr & TBIVr.PRCode;
+        dblstr = dblstr & ",";
+        dblstr = dblstr & TBIVr.oVc;
+      end;
+      testf = false;
+      switch (ItemMode) begin
+        case 0:
+          if ((TBIVr.ArtCode!=lastitem) or
+              (TBIVr.EMCode!=lastempl) or
+              (thisprice!=lastprice) or
+              (TBIVr.Comment!=lastcomment)) then begin
+            testf = true;
+          end;
+        case 1:
+          if ((TBIVr.ArtCode!=lastitem) or
+              (TBIVr.EMCode!=lastempl) or
+              (thisprice!=lastprice) or
+              (TBIVr.Comment!=lastcomment)) then begin
+            testf = true;
+          end;
+        case 3:
+          if ((TBIVr.ArtCode!=lastitem) or
+              (TBIVr.EMCode!=lastempl) or
+              (thisprice!=lastprice)) then begin
+            testf = true;
+          end;
+          lastcomment = "";
+        case 0:
+          if ((TBIVr.ArtCode!=lastitem) or
+              (TBIVr.EMCode!=lastempl) or
+              (thisprice!=lastprice) or
+              (TBIVr.Comment!=lastcomment)) then begin
+            testf = true;
+          end;
+      end;
+      
+      if (testf) then begin
+        StartFormat(15);
+        OutStringID(20,"DblPRSpec",lastitem,false,dblstr);
+        OutStringID(80,"DblPR",lastempl,false,dblstr);
+        OutVal(120,0,rowqty,M4UVal,true);
+        if (RepSpec.flags[12]!=0) then begin
+          GetPRItemName(lastitem,lastcomment,tstr);
+          OutStringID(125,"DblPR",tstr,false,dblstr);
+        end;
+        if (RepSpec.flags[11]!=0) then begin
+          OutVal(290,0,lastprice,M423Val,true);
+        end;
+        OutVal(370,0,tsum,M4Val,true);
+        OutValID(450,"DblTSBud",bsum,M4Val,true,TBIVr.PRCode);
+        EndFormat;
+        sumbud = sumbud + bsum;
+        rowqty = blankval;
+        tsum = blankval;
+        bsum = blankval;
+        if (blank(lastitem)) or (lastempl!=TBIVr.EMCode) or (lastitem!=TBIVr.ArtCode) then begin
+          dblstr = TBIVr.SerNr;
+          dblstr = dblstr & ",";
+          dblstr = dblstr & TBIVr.Row;
+          dblstr = dblstr & ",";
+          dblstr = dblstr & TBIVr.PRCode;
+          dblstr = dblstr & ",";
+          dblstr = dblstr & TBIVr.oVc;
+        end;
+        lastitem = TBIVr.ArtCode;
+        lastempl = TBIVr.EMCode;
+        if (blank(PRp.CurncyCode)) then begin        
+          lastprice = TBIVr.Price;
+        end else begin
+          lastprice = TBIVr.PriceInCur;
+        end;
+      end;
+      FindBudgetSum(TBIVr.PRCode,TBIVr.ArtCode,TBIVr.EMCode,uarr,uarrcnt,t);
+      rowqty = rowqty + TBIVr.Qty;
+      if (blank(PRp.CurncyCode)) then begin        
+        sum = sum + TBIVr.Sum;
+        tsum = tsum + TBIVr.Sum;
+        prsum = prsum + TBIVr.Sum;
+      end else begin
+        if (nonblank(TBIVr.SumInCur)) then begin
+          sum = sum + TBIVr.SumInCur;
+          tsum = tsum + TBIVr.SumInCur;
+          prsum = prsum + TBIVr.SumInCur;
+        end else begin
+          sum = sum + TBIVr.Sum;
+          tsum = tsum + TBIVr.Sum;
+          prsum = prsum + TBIVr.Sum;
+        end;
+      end;
+      bsum = bsum + t;
+    end;
+  end;
+  if ((tsum!=0) or (bsum!=0)) then begin
+    if (headerf==false) then begin
+      StartFormat(15);
+      if (detailf) then begin
+        OutString(0,0,USetStr(4842),false);
+      end else begin
+        OutString(0,0,USetStr(4843),false);
+      end;      
+      EndFormat;
+      Gray_Divider(0,1);
+      ProjectHeader(RepSpec,PRp,3);
+      headerf = true;
+    end;
+    StartFormat(15);
+    OutStringID(20,"DblPRSpec",lastitem,false,dblstr);
+    OutStringID(80,"DblPR",lastempl,false,dblstr);
+    OutVal(120,0,rowqty,M4UVal,true);
+    if (RepSpec.flags[12]!=0) then begin
+      GetPRItemName(lastitem,"",tstr);
+      OutStringID(125,"DblPR",tstr,false,dblstr);
+    end;
+    if (RepSpec.flags[11]!=0) then begin
+      OutVal(290,0,lastprice,M423Val,true);
+    end;
+    OutVal(370,0,tsum,M4Val,true);
+    if (bsum!=0) then begin
+      OutValID(450,"DblTSBud",bsum,M4Val,true,PRp.Code);
+    end;
+    EndFormat;
+    sumbud = sumbud + bsum;
+    rowqty = blankval;
+    tsum = blankval;
+    bsum = blankval;
+  end;
+  if ((sum!=0) or (bsum!=0)) then begin
+    Black_Divider(240,455);
+    StartFormat(15);
+    switch (ItemMode) begin
+      case 0:
+        OutString(280,0,USetStr(6794),true);
+      case 1:
+        OutString(280,0,USetStr(6795),true);
+      case 3:
+        OutString(280,0,USetStr(6793),true);
+      case 5:
+        OutString(280,0,USetStr(6799),true);
+    end;    
+    OutVal(370,0,sum,M4Val,true);
+    OutVal(450,0,sumbud,M4Val,true);
+    EndFormat;
+    tsumbud = tsumbud + sumbud;
+    StartFormat(10);
+    EndFormat;
+    sum = blankval;
+    sumbud = blankval;
+//    headerf = false;
+  end;
+  RETURN;
+END; 
+
+Function Boolean TestForBudget(record RcVc RepSpec,record TBBUVc TBBUp,Integer rowno)
+begin
+  Boolean testf;
+  row TBBUVc TBBUrw;
+  
+  testf = true;
+  MatRowGet(TBBUp,rowno,TBBUrw);
+  if (TBBUrw.BudType==3) then begin testf = false; end;
+  if (TBBUrw.Invoiced!=-1) then begin testf = false;  end;
+  if ((RepSpec.flags[1]!=0)) then begin
+    switch (TBBUrw.ItemType) begin
+      case 0:
+        if (TBBUp.BudOther==0) then begin
+          if (TBBUrw.BudType!=2) then begin testf = false; end;
+        end else begin
+          if (TBBUrw.BudType==1) then begin testf = false; end;
+        end;
+      case 1:
+        if (TBBUp.BudStocked==0) then begin
+          if (TBBUrw.BudType!=2) then begin testf = false; end;
+        end else begin
+          if (TBBUrw.BudType==1) then begin testf = false; end;
+        end;
+      case 3:
+        if (TBBUp.BudTime==0) then begin
+          if (TBBUrw.BudType!=2) then begin testf = false; end;
+        end else begin
+          if (TBBUrw.BudType==1) then begin testf = false; end;
+        end;
+      case 5:
+        if (TBBUp.BudMaterial==0) then begin
+          if (TBBUrw.BudType!=2) then begin testf = false; end;
+        end else begin
+          if (TBBUrw.BudType==1) then begin testf = false; end;
+        end;
+    end;
+  end;  
+  if (nonblankdate(TBBUrw.InvAfter)) then begin
+    if (nonblankdate(RepSpec.d1)) then begin
+      if (TBBUrw.InvAfter>RepSpec.d1) then begin testf = false; end;	
+    end else begin
+      if (TBBUrw.InvAfter>CurrentDate) then begin testf = false; end; 	 
+    end;
+  end;
+  if (SetInSet(RepSpec.ObjStr,TBBUrw.Objects)==false) then begin testf = false; end;	
+  TestForBudget = testf;
+end;
+
+global
+function Boolean ProjectInvSugg4(record RcVc RepSpec,record PRVc PRp,Boolean detailf,var val totsum,var val totbudg)
+BEGIN
+  Boolean headerf;
+  Boolean testf;
+  val t;
+  record INVc INr;
+  record TBBUVc TBBUr;
+  row TBBUVc TBBUrw;
+  Array Integer uarr;
+  Integer uarracnt;
+  Boolean notallshipped;
+  val prsum;
+  string 255 tstr;
+  Boolean budfound,dummyf;
+  val sumbud,tsumbud;
+  val bud,invd,slask;  
+  Integer i,rwcnt;
+  
+  budfound = BuildBudget(PRp.Code,TBBUr,uarr,uarracnt);
+
+  ProjectInvSugg4_TBIVVc(RepSpec,PRp,3,3,detailf,uarr,uarracnt,headerf,prsum,tsumbud);  
+  ProjectInvSugg4_TBIVVc(RepSpec,PRp,0,0,detailf,uarr,uarracnt,headerf,prsum,tsumbud);
+  ProjectInvSugg4_TBIVVc(RepSpec,PRp,5,0,detailf,uarr,uarracnt,headerf,prsum,tsumbud);  
+  ProjectInvSugg4_TBIVVc(RepSpec,PRp,1,0,detailf,uarr,uarracnt,headerf,prsum,tsumbud);
+    
+  if (headerf or (RepSpec.flags[1]==0) or (IsAsBudgeted(TBBUr))) then begin
+    rwcnt = MatRowCnt(TBBUr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      if (uarr[i]==0) then begin
+        MatRowGet(TBBUr,i,TBBUrw);
+        testf = TestForBudget(RepSpec,TBBUr,i);
+        if (testf) then begin
+          if (headerf==false) then begin
+            StartFormat(15);
+            if (detailf) then begin
+              OutString(0,0,USetStr(4842),false);
+            end else begin
+              OutString(0,0,USetStr(4843),false);
+            end;
+            EndFormat;
+            Gray_Divider(0,1);
+            ProjectHeader(RepSpec,PRp,3);
+            headerf = true;
+          end;
+          StartFormat(15);
+          if (nonblank(TBBUrw.ArtCode)) then begin
+            INr.Code = TBBUrw.ArtCode;
+            if (ReadFirstMain(INr,1,true)) then begin
+              tstr = INr.Name;
+              if (nonblank(TBBUrw.EMCode)) then begin
+                tstr = tstr & ", ";
+                tstr = tstr & TBBUrw.EMCode;
+              end;
+              OutStringID(100,"DblTSBud",tstr,false,PRp.Code);
+            end else begin
+              OutStringID(100,"DblTSBud",TBBUrw.EMCode,false,PRp.Code);
+            end;
+            OutValID(450,"DblTSBud",TBBUrw.Sum,M4Val,true,PRp.Code);
+          end else begin
+            tstr = TBBUrw.Comment;
+            if (nonblank(TBBUrw.EMCode)) then begin
+              tstr = tstr & ", ";
+              tstr = tstr & TBBUrw.EMCode;
+            end;
+            OutStringID(100,"DblTSBud",tstr,false,PRp.Code);
+            tstr = "(";
+            tstr = tstr & TBBUrw.Sum;
+            tstr = tstr & ")";
+            OutStringID(450,"DblTSBud",tstr,true,PRp.Code);
+          end;
+          EndFormat;
+          sumbud = sumbud + TBBUrw.Sum;
+        end;
+      end;
+    end;
+    if (sumbud!=0) then begin
+      Black_Divider(240,455);
+      StartFormat(15);
+      OutVal(450,0,sumbud,M4Val,true);
+      EndFormat;
+      tsumbud = tsumbud + sumbud;
+      StartFormat(10);
+      EndFormat;
+    end;
+    StartFormat(15);
+    EndFormat;
+  end;
+  if (prsum!=0 or (tsumbud!=0)) then begin
+    Black_Divider(240,455);
+    StartFormat(15);
+    OutString(280,0,USetStr(6796),true);
+    OutVal(370,0,prsum,M4Val,true);
+    OutVal(450,0,tsumbud,M4Val,true);
+    EndFormat;
+    StartFormat(10);
+    EndFormat;
+    bud = blankval;
+    invd = blankval;
+    slask = blankval;
+    GetProjectStats(PRp.Code,true,false,bud,invd,slask);
+    StartFormat(15);
+    OutString(250,0,USetStr(4827),false);
+    OutVal(450,0,invd,M4Val,true);
+    EndFormat;
+    PRSumDownPay(PRp,invd,slask,CurrentDate,tstr,dummyf);
+    StartFormat(15);
+    OutString(250,0,USetStr(4848),false);
+    OutVal(450,0,invd-PRp.DownPaySent,M4Val,true);
+    EndFormat;
+    invd = PRp.DownPaySent + PRp.DownPayRedcd;
+    StartFormat(15);
+    OutString(250,0,USetStr(4847),false);
+    OutVal(450,0,invd,M4Val,true);
+    EndFormat;
+    Gray_Divider(0,1);
+  end;
+  totsum = totsum + prsum;
+  totbudg = totbudg + tsumbud;
+  ProjectInvSugg4 = headerf;
+  RETURN;
+END;
+
+
+procedure ProjectInvSugg2_TBIVVc(record RcVc RepSpec,record PRVc PRp,Boolean detailf,Integer ItemMode,Integer ItemType,var Boolean headerf,var Array Integer uarr,Integer uarrcnt,var val prsum,var val tsumbud)
+begin
+  record TBIVVc TBIVp;
+  Boolean found;
+  val sum,tsum;
+  Boolean testf;
+  val t;
+  integer rownr;
+  date dt;
+  string 255 lastitem;
+  val bsum;
+  LongInt prrecid;
+  string 255 tstr;
+  val sumbud;
+  val bud,invd,slask;
+  string 20 dblstr;
+  Integer budtype;
+
+  TBIVp.PRCode = PRp.Code;
+  TBIVp.Invoice = -1;
+  TBIVp.oVc = 1;
+  found = true;
+  while (LoopKey("InvKey",TBIVp,3,found)) begin
+    testf = true;
+ 	if (TBIVp.PRCode<>PRp.Code) then begin found = false; end;
+    if (TBIVp.Invoice!=-1) then begin found = false; end;
+    if (nonblankdate(RepSpec.d1)) then begin
+      if (TBIVp.TransDate>RepSpec.d1) then begin 
+        testf = false;
+      end;  
+      if (testf) then begin
+        if (nonblankdate(TBIVp.InvAfter)) then begin
+          if (TBIVp.InvAfter>RepSpec.d1) then begin 
+          	testf = false; 
+          end;
+        end;
+      end;
+    end;
+    if (testf) then begin
+    switch (ItemMode) begin
+      case 0:
+        testf = false;
+        if ((TBIVp.oVc==2) or (TBIVp.oVc==3) or (TBIVp.oVc==5)) and (TBIVp.ItemType==0) then begin testf = true; end;	
+      case 1:
+        testf = false;      
+        if (((TBIVp.oVc==1) or (TBIVp.oVc==2) or (TBIVp.oVc==4) or (TBIVp.oVc==6) or (TBIVp.oVc==7)) and (TBIVp.ItemType==1)) then begin testf = true; end;	
+      case 3:
+        if (TBIVp.ItemType!=3) then begin testf = false; end;
+      case 5:
+        testf = false;
+        if ((((TBIVp.oVc==1) or (TBIVp.oVc==4)) and (TBIVp.ItemType==0)) or (TBIVp.ItemType==5)) then begin testf = true; end;	
+    end;
+    end;
+    if (SetInSet(RepSpec.ObjStr,TBIVp.Objects)==false) then begin testf = false; end;
+    FindBudgetRow(TBIVp.PRCode,TBIVp.ArtCode,TBIVp.EMCode,ItemType,dt,budtype);
+    if (nonblankdate(dt)) then begin
+      if (nonblankdate(RepSpec.d1)) then begin
+        if (dt>RepSpec.d1) then begin 
+          testf = false;
+        end;	
+      end else begin
+        if (dt>CurrentDate) then begin
+       	 testf = false;
+        end;	 
+      end;
+    end;
+    if (found == false) then begin 
+      testf = false; 
+    end;
+    if (testf) then begin
+      if (headerf==false) then begin
+        StartFormat(15);
+        if (detailf) then begin
+          OutString(0,0,USetStr(4842),false);
+        end else begin
+          OutString(0,0,USetStr(4843),false);
+        end;  
+        EndFormat;
+        Gray_Divider(0,1);
+        ProjectHeader(RepSpec,PRp,2);
+        headerf = true;
+      end;
+      if (blank(lastitem)) then begin
+        lastitem = TBIVp.ArtCode;
+        dblstr = TBIVp.SerNr;
+        dblstr = dblstr & ";";
+        dblstr = dblstr & TBIVp.Row;    
+        dblstr = dblstr & ";";
+        dblstr = dblstr & TBIVp.PRCode;    
+        dblstr = dblstr & ";";
+        dblstr = dblstr & TBIVp.oVc;    
+      end;
+      if (TBIVp.ArtCode<>lastitem) then begin
+        StartFormat(15);
+        OutStringID(20,"DblPRSpec",lastitem,false,dblstr);
+        GetPRItemName(lastitem,"",tstr);
+        OutStringID(100,0,tstr,false,dblstr);
+        OutVal(350,0,tsum,M4Val,true);
+        if (bsum!=0) then begin
+          OutValID(450,"DblTSBud",bsum,M4Val,true,PRp.Code);
+        end;        
+        OutString(1,0,PRp.CurncyCode,true);
+        EndFormat;
+        sumbud = sumbud + bsum;
+        tsum = blankval;
+        bsum = blankval;
+        lastitem = TBIVp.ArtCode;
+        dblstr = TBIVp.SerNr;
+        dblstr = dblstr & ";";
+        dblstr = dblstr & TBIVp.Row;    
+        dblstr = dblstr & ";";
+        dblstr = dblstr & TBIVp.PRCode;    
+        dblstr = dblstr & ";";
+        dblstr = dblstr & TBIVp.oVc;    
+      end;
+//      if (budtype==0) then begin // No. I don't agree :)
+        FindBudgetSum(TBIVp.PRCode,TBIVp.ArtCode,TBIVp.EMCode,uarr,uarrcnt,t);
+        if (blank(PRp.CurncyCode)) then begin        
+          sum = sum + TBIVp.Sum;
+          tsum = tsum + TBIVp.Sum;
+          prsum = prsum + TBIVp.Sum;
+        end else begin
+          if (nonblank(TBIVp.SumInCur)) then begin
+            sum = sum + TBIVp.SumInCur;
+            tsum = tsum + TBIVp.SumInCur;
+            prsum = prsum + TBIVp.SumInCur;
+          end else begin
+            sum = sum + TBIVp.Sum;
+            tsum = tsum + TBIVp.Sum;
+            prsum = prsum + TBIVp.Sum;
+          end;
+        end;
+        bsum = bsum + t;
+//      end;
+    end;
+  end;
+  if ((tsum!=0) or (bsum!=0)) then begin
+    if (headerf==false) then begin
+      StartFormat(15);
+      if (detailf) then begin
+        OutString(0,0,USetStr(4842),false);
+      end else begin
+        OutString(0,0,USetStr(4843),false);
+      end;  
+      EndFormat;
+      Gray_Divider(0,1);
+      ProjectHeader(RepSpec,PRp,2);
+      headerf = true;
+    end;
+    StartFormat(15);
+    OutStringID(20,"DblPRSpec",lastitem,false,dblstr);
+    GetPRItemName(lastitem,"",tstr);
+    OutStringID(100,0,tstr,false,dblstr);
+    OutVal(350,0,tsum,M4Val,true);
+    if (bsum!=0) then begin
+      OutValID(450,"DblTSBud",bsum,M4Val,true,PRp.Code);
+    end;
+    OutString(1,0,PRp.CurncyCode,true);
+    EndFormat;
+    sumbud = sumbud + bsum;
+    tsum = blankval;
+    bsum = blankval;
+  end;
+  if ((sum!=0) or (sumbud!=0)) then begin
+    Black_Divider(240,455);
+    StartFormat(15);    
+    switch (ItemMode) begin
+      case 0:
+        OutString(280,0,USetStr(6794),true);
+      case 1:
+        OutString(280,0,USetStr(6795),true);
+      case 3:
+        OutString(280,0,USetStr(6793),true);
+      case 5:
+        OutString(280,0,USetStr(6799),true);
+    end;    
+    OutVal(350,0,sum,M4Val,true);
+    OutVal(450,0,sumbud,M4Val,true);
+    EndFormat;
+    tsumbud = tsumbud + sumbud;
+    StartFormat(10);
+    EndFormat;
+    sum = blankval;
+    sumbud = blankval;
+  end;
+Ljjdebug:;  
+  return;
+end;
+
+global 
+function Boolean ProjectInvSugg2(record RcVc RepSpec,record PRVc PRp,Boolean detailf,var val totsum,var val totbudg)
+begin
+  Boolean found;
+  Boolean head;
+  Integer curvc;
+  Boolean testf; 
+  record TBBUVc TBBUp;
+  Array integer uarr; 
+  Boolean notallshipped;
+  val bsum;
+  LongInt prrecid;
+  val prsum,tsumbud,sumbud;
+  string 255 tstr;
+  Boolean budfound;
+  Boolean dummyf; 
+  row TBBUVc TBBUrw;
+  Integer i,rwcnt;
+  record INVc INr;
+  string 255 tmp;
+  val bud,invd,slask;
+  Integer uarracnt;
+
+  head = false;
+  notallshipped = false;
+  curvc = 0;
+  budfound = BuildBudget(PRp.Code,TBBUp,uarr,uarracnt);
+
+  //Service
+  ProjectInvSugg2_TBIVVc(RepSpec,PRp,detailf,3,3,head,uarr,uarracnt,prsum,tsumbud);  
+  //Purchases 
+  ProjectInvSugg2_TBIVVc(RepSpec,PRp,detailf,0,0,head,uarr,uarracnt,prsum,tsumbud);
+  //Material 
+  ProjectInvSugg2_TBIVVc(RepSpec,PRp,detailf,5,0,head,uarr,uarracnt,prsum,tsumbud);  
+  //Stocked items 
+  ProjectInvSugg2_TBIVVc(RepSpec,PRp,detailf,1,0,head,uarr,uarracnt,prsum,tsumbud);
+  if ((head or (RepSpec.flags[1]==0)) or (IsAsBudgeted(TBBUp))) then begin
+    rwcnt = MatRowCnt(TBBUp);   
+    for (i=0;i<rwcnt;i=i+1) begin
+      if (uarr[i]==0) then begin
+        MatRowGet(TBBUp,i,TBBUrw);
+        testf = TestForBudget(RepSpec,TBBUp,i);
+        if (testf) then begin
+          if (head==false) then begin
+            StartFormat(15);
+            if (detailf) then begin
+              OutString(0,0,USetStr(4842),false);
+            end else begin
+              OutString(0,0,USetStr(4843),false);
+            end;  
+            EndFormat;
+            Gray_Divider(0,1);
+            ProjectHeader(RepSpec,PRp,2);
+            head = true;
+          end;
+          INr.Code = TBBUrw.ArtCode;
+          if (ReadFirstMain(INr,1,true)) then begin end;
+          StartFormat(15);
+          if (INr.ItemType==3) or (INr.ItemType==0) then begin
+            OutStringID(20,"DblPRSpec",TBBUrw.ArtCode,false,PRp.Code & ":" & i);
+          end else begin
+            OutString(20,0,TBBUrw.ArtCode,false);
+          end;
+          if (nonblank(TBBUrw.ArtCode)) then begin
+            if (RepSpec.flags[13]==0) then begin
+              if (true) then begin
+                tstr = INr.Name;
+                if (nonblank(TBBUrw.EMCode)) then begin
+                  tstr = tstr & ", ";
+                end;
+                tstr = tstr & TBBUrw.EMCode;
+                OutStringID(100,0,tstr,false,PRp.Code);
+              end else begin
+                OutStringID(100,0,TBBUrw.EMCode,false,PRp.Code);
+              end;
+            end else begin
+              OutString(100,0,TBBUrw.Comment,false); 
+            end;
+            OutValID(450,"DblTSBud",TBBUrw.Sum,M4Val,true,PRp.Code);
+          end else begin
+            tstr = TBBUrw.Comment;
+            OutStringID(100,"DblTSBud",tstr,false,PRp.Code);
+            tmp = ValToString(TBBUrw.Sum,M4Val,"","",2);
+            tstr = "(";
+            tstr = tstr & tmp;
+            tstr = tstr & ")";
+            OutStringID(450,"DblTSBud",tstr,true,PRp.Code);
+          end;
+          EndFormat;
+          sumbud = sumbud + TBBUrw.Sum;
+        end;
+      end;
+    end;
+    
+    if (sumbud<>0) then begin
+      Black_Divider(240,455);
+      StartFormat(15);
+      OutVal(450,0,sumbud,M4Val,true);
+      EndFormat;
+      tsumbud = tsumbud + sumbud;
+      StartFormat(10);
+      EndFormat;
+    end;
+  
+      if (prsum<>0) then begin     
+        if (head==false) then begin
+          StartFormat(15);
+          if (detailf) then begin
+            OutString(0,0,USetStr(4842),false);
+          end else begin
+            OutString(0,0,USetStr(4843),false);
+          end;  
+          EndFormat;
+          Gray_Divider(0,1);
+          ProjectHeader(RepSpec,PRp,2);
+          head = true;
+        end;
+        Black_Divider(240,455);
+        StartFormat(15);
+        OutString(280,0,USetStr(6796),true);
+        OutVal(350,0,prsum,M4Val,true);
+        OutVal(450,0,tsumbud,M4Val,true);
+        EndFormat;
+        StartFormat(10);
+        EndFormat;
+      end;
+      bud = blankval;
+      invd = 0;
+      slask = blankval;
+      GetProjectStats(PRp.Code,true,false,bud,invd,slask);
+      if (nonblank(invd)) then begin
+        if (head==false) then begin
+          StartFormat(15);
+          if (detailf) then begin
+            OutString(0,0,USetStr(4842),false);
+          end else begin
+            OutString(0,0,USetStr(4843),false);
+          end;  
+          EndFormat;
+          Gray_Divider(0,1);
+          ProjectHeader(RepSpec,PRp,2);
+          head = true;
+        end;
+        StartFormat(15);
+        OutString(250,0,USetStr(4827),false);
+        OutVal(450,0,invd,M4Val,true);
+        EndFormat;
+      end;
+      tstr = "";
+      PRSumDownPay(PRp,invd,slask,CurrentDate,tstr,dummyf);
+      if (invd<>0) then begin
+        if (head==false) then begin
+          StartFormat(15);
+          if (detailf) then begin
+            OutString(0,0,USetStr(4842),false);
+          end else begin
+            OutString(0,0,USetStr(4843),false);
+          end;  
+          EndFormat;
+          Gray_Divider(0,1);
+          ProjectHeader(RepSpec,PRp,2);
+          head = true;
+        end;
+        StartFormat(15);
+        OutString(250,0,USetStr(4848),false);
+        OutVal(450,0,invd-PRp.DownPaySent,M4Val,true);
+        EndFormat;
+        invd = PRp.DownPaySent + PRp.DownPayRedcd;
+        StartFormat(15);
+        OutString(250,0,USetStr(4847),false);
+        OutVal(450,0,invd,M4Val,true);
+        EndFormat;
+        Gray_Divider(0,1);
+        prsum = prsum - invd;
+      end;  
+  end;
+  totsum  = totsum + prsum;
+  totbudg = totbudg + tsumbud; 
+  return;
+end;
+
+function String 255 PrintCurOrOther(string curncy,string other)
+begin
+  string 255 res;
+  string 10 basecur1;
+  
+  GetBaseCurncy(1,basecur1);
+  if ((blank(curncy)) or (curncy==basecur1)) then begin
+    res = other;
+  end else begin
+    res = curncy;
+  end;
+  PrintCurOrOther = res;
+  return;
+end;
+                      
+global 
+updating function Boolean ProjectInvSugg(record RcVc RepSpec,record PRVc PRp,Boolean detailf,var val tottb,var val totbudg2,var val totpb,var val totinvd,var val dpinvbl,var val dpinvd,var val totact)
+begin
+  record IVVc IVp;
+  Integer rwcnt,i;
+  row IVVc IVrw;
+  val xval,totval;
+  val suminvd,sumbud,sumact;
+  Boolean res;
+  val sumtb,sumpb;
+  record XSVc XSr;
+  val t;
+  record PRVc PR2p;  
+  string 1 blankstring;
+  boolean noflag;
+  boolean invoiced,invable;
+  Boolean budfound;
+  record TBBUVc oldTBBUr,TBBUr;
+  vector val vwipcost;
+  Array string 10 awipacc;
+  Array string 10 awipbalacc;
+  Integer awipacccnt;
+  Array record TBIVVc aupdTBIVr;
+  Integer aupdacnt;
+
+  res = false;  
+  MakeProjectInvoice2(RepSpec,PRp,IVp,XSr,false,detailf,false,false,true,suminvd,sumbud,sumtb,sumpb,sumact,budfound,oldTBBUr,TBBUr,vwipcost,awipacc,awipbalacc,awipacccnt,aupdTBIVr,aupdacnt);
+  if (RepSpec.flags[1]==1) then begin
+    if (blank(IVp.Sum4)) then begin 
+    	goto LProjectInvSugg; 
+    end;
+  end;  
+  rwcnt = MatRowCnt(IVp);
+  if (rwcnt>0) then begin
+    StartFormat(15);
+    if (detailf) then begin
+      OutString(0,0,USetStr(4842),false);
+    end else begin
+      OutString(0,0,USetStr(4843),false);
+    end;  
+    EndFormat;
+    Gray_Divider(0,1);
+    ProjectHeader(RepSpec,PRp,0);
+    res = true;
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(IVp,i,IVrw);
+      switch (IVrw.stp) begin
+        case 5:
+          StartFormat(15);
+          if (blank(IVrw.Spec)) then begin
+            OutString(130,0,USetStr(4869),false);
+          end else begin
+            OutString(130,0,IVrw.Spec,false);
+          end;  
+          OutVal(450,0,IVrw.Sum,M4Val,true);
+          OutString(460,0,PrintCurOrOther(IVp.CurncyCode,IVrw.VATCode),false);
+          EndFormat;
+        case kInvoiceRowTypeRetention:
+          StartFormat(15);
+          OutString(20,0,IVrw.ArtCode,false);
+          OutVal(124,0,IVrw.Quant,M4UVal,true);
+          OutString(130,0,IVrw.Spec,false);
+          OutVal(340,0,IVrw.Price,M423Val,true);
+          OutVal(370,0,IVrw.vRebate,M41Val,true);
+          OutVal(450,0,IVrw.Sum,M4Val,true);
+          OutString(460,0,PrintCurOrOther(IVp.CurncyCode,IVrw.VATCode),false);
+          EndFormat;
+        otherwise
+          StartFormat(15);
+          OutString(20,0,IVrw.ArtCode,false);
+          OutVal(124,0,IVrw.Quant,M4UVal,true);
+          OutString(130,0,IVrw.Spec,false);
+          OutVal(340,0,IVrw.Price,M423Val,true);
+          OutVal(370,0,IVrw.vRebate,M41Val,true);
+          OutVal(450,0,IVrw.Sum,M4Val,true);
+          OutString(460,0,PrintCurOrOther(IVp.CurncyCode,IVrw.VATCode),false);
+          EndFormat;
+      end;
+    end;
+    Gray_Divider(300,480);
+    StartFormat(15);
+    OutString(250,0,USetStr(4835),false);
+    OutVal(450,0,IVp.Sum1,M4Val,true);
+    OutString(460,0,PrintCurOrOther(IVp.CurncyCode,IVrw.VATCode),false);
+    EndFormat;
+    StartFormat(15);
+    OutString(250,0,USetStr(4836),false);
+    OutVal(450,0,IVp.Sum3,M4Val,true);
+    OutString(460,0,PrintCurOrOther(IVp.CurncyCode,IVrw.VATCode),false);
+    EndFormat;
+    StartFormat(15);
+    OutString(250,0,USetStr(4837),false);
+    OutVal(450,0,IVp.Sum4,M4Val,true);
+    OutString(460,0,PrintCurOrOther(IVp.CurncyCode,IVrw.VATCode),false);
+    EndFormat;
+  end;
+  if (rwcnt==0) then begin
+    if (RepSpec.flags[1]==1) then begin goto LProjectInvSugg; end;
+  end;  
+  if (res==false) then begin 
+    Gray_Divider(0,1);
+    ProjectHeader(RepSpec,PRp,0);
+  end;
+  StartFormat(10);
+  EndFormat;
+  GetProjectStats(PRp.Code,true,false,sumbud,suminvd,t);
+  StartFormat(15);
+  OutString(20,0,USetStr(5520),false);
+  OutVal(200,0,sumtb,M4Val,true);
+  OutString(250,0,USetStr(4825),false);
+  OutVal(450,0,sumbud,M4Val,true);
+  EndFormat;  
+  StartFormat(15);
+  OutString(20,0,USetStr(5521),false);
+  OutVal(200,0,sumpb,M4Val,true);
+  OutString(250,0,USetStr(4827),false);
+  OutVal(450,0,suminvd,M4Val,true);
+  EndFormat;
+  StartFormat(15);
+/*activities == time  
+  OutString(20,0,USetStr(5524),false);
+  OutVal(200,0,sumact,M4Val,true);  
+*/  
+  blankstring = "";
+  noflag = false;
+  PRSumDownPay(PRp,xval,totval,CurrentDate,blankstring,noflag);
+  
+  xval = xval - PRp.DownPaySent;
+  OutString(250,0,USetStr(4848),false);
+  OutVal(450,0,xval,M4Val,true);
+  EndFormat;
+  totact = totact + sumact;
+  tottb = tottb + sumtb;
+  totbudg2 = totbudg2 + sumbud;
+  totpb = totpb + sumpb;
+  totinvd = totinvd + suminvd;
+  dpinvbl = dpinvbl + xval;
+  StartFormat(15);
+  PR2p.Code = PRp.Code;
+  if ReadFirstMain(PR2p,1,true) then begin
+  	xval  = PR2p.DownPaySent + PR2p.DownPayRedcd;
+  	OutString(250,0,USetStr(4847),false);
+  	OutVal(450,0,xval,M4Val,true);
+    dpinvd = dpinvd + xval; 
+  end;  
+  EndFormat;  
+  Gray_Divider(0,1); 
+
+LProjectInvSugg:; 
+  ProjectInvSugg = res;
+  return;
+end;
+
+procedure ProjectInvSugg3_TBIVVc(record RcVc RepSpec,record PRVc PRp,Integer ItemMode,Integer ItemType,Boolean detailf,Array Integer uarr,Integer uarrcnt,
+                                 var Boolean headerf,var val tsum,var val tsumbud)
+BEGIN
+  record TBIVVc TBIVr;
+  Boolean found,testf;
+  Date dt;
+  val t,sum;
+  string 255 tstr;
+  string 20 dblstr;
+  val sumbud,tbivsum;
+  Integer budtype;
+  
+  TBIVr.PRCode = PRp.Code;
+  TBIVr.Invoice = -1;
+  TBIVr.oVc = 1;
+  found = true;
+  while (LoopKey("InvKey",TBIVr,3,found)) begin
+    testf = true;
+    if (TBIVr.PRCode!=PRp.Code) then begin found = false; end;
+    if (TBIVr.Invoice!=-1) then begin found = false; end;
+    if (nonblankdate(RepSpec.d1)) then begin
+      if (TBIVr.TransDate>RepSpec.d1) then begin
+        testf = false;
+      end;;
+      if (testf) then begin
+        if (nonblankdate(TBIVr.InvAfter)) then begin
+          if (RepSpec.d1<TBIVr.InvAfter) then begin testf = false; end;
+        end;
+      end;
+    end;
+    if (testf) then begin
+    switch (ItemMode) begin
+      case 0:
+        if ((TBIVr.oVc<2) or (TBIVr.oVc>3)) then begin testf = false; end;
+        if (TBIVr.ItemType!=0) then begin testf = false; end;
+      case 1:
+        testf = false;
+        if (((TBIVr.oVc==1) or (TBIVr.oVc==2) or (TBIVr.oVc==4) or (TBIVr.oVc==6)) and (TBIVr.ItemType==1)) then begin testf = true; end;
+      case 3:
+        if (TBIVr.ItemType!=3) then begin testf = false; end;
+      case 5:
+        testf = false;
+        if ((((TBIVr.oVc==1) or (TBIVr.oVc==4)) and (TBIVr.ItemType==0)) or (TBIVr.ItemType==5)) then begin testf = true; end;
+    end;
+    end;
+    if (SetInSet(RepSpec.ObjStr,TBIVr.Objects)==false) then begin testf = false; end;
+    FindBudgetRow(TBIVr.PRCode,TBIVr.ArtCode,TBIVr.EMCode,ItemType,dt,budtype);
+    if (nonblankdate(dt)) then begin
+      if (nonblankdate(RepSpec.d1)) then begin
+        if (dt>RepSpec.d1) then begin testf = false; end;
+      end else begin
+        if (dt>CurrentDate) then begin testf = false; end;
+      end;
+    end;
+    if (!found) then begin testf = false; end;
+    if (testf) then begin
+      if (headerf==false) then begin
+        StartFormat(15);
+        if (detailf) then begin
+          OutString(0,0,USetStr(4842),false);
+        end else begin
+          OutString(0,0,USetStr(4843),false);
+        end;
+        EndFormat;
+        Gray_Divider(0,1);
+        ProjectHeader(RepSpec,PRp,1);
+        headerf = true;
+      end;
+      dblstr = TBIVr.SerNr;
+      dblstr = dblstr & ",";
+      dblstr = dblstr & TBIVr.Row;
+      dblstr = dblstr & ",";
+      dblstr = dblstr & TBIVr.PRCode;
+      dblstr = dblstr & ",";
+      dblstr = dblstr & TBIVr.oVc;      
+      StartFormat(15);
+      OutStringID(20,"DblPR",TBIVr.ArtCode,false,dblstr);
+      OutStringID(80,"DblPR",TBIVr.EMCode,false,dblstr);
+      OutVal(135,0,TBIVr.InvQty,M4UVal,true);
+      switch (RepSpec.flags[12]) begin
+        case 0: ;
+        case 1:
+          GetPRItemName(TBIVr.ArtCode,TBIVr.Comment,tstr);
+          OutStringID(145,"DblPR",tstr,false,dblstr);
+        case 2:
+          GetPRItemName2(TBIVr.ArtCode,tstr);
+          OutStringID(145,"DblPR",tstr,false,dblstr);
+        case 3:
+          GetPRItemName3(TBIVr,tstr);
+          OutStringID(145,"DblPR",tstr,false,dblstr);
+      end;
+      if (RepSpec.flags[11]!=0) then begin
+        if (blank(PRp.CurncyCode)) then begin
+          OutVal(300,0,TBIVr.Price,M423Val,true);
+        end else begin
+          OutVal(300,0,TBIVr.PriceInCur,M423Val,true);
+        end;
+      end;
+      OutVal(330,0,TBIVr.Discount,M41Val,true);
+      if (blank(PRp.CurncyCode)) then begin
+        tbivsum = TBIVr.Sum;
+      end else begin
+        tbivsum = TBIVr.SumInCur;
+      end;
+      OutVal(385,0,tbivsum,M4Val,true);
+      FindBudgetSum(TBIVr.PRCode,TBIVr.ArtCode,TBIVr.EMCode,uarr,uarrcnt,t);
+      OutValID(455,"DblTSBud",t,M4Val,true,PRp.Code);
+      OutString(1,0,PRp.CurncyCode,true);
+      EndFormat;
+      if (RepSpec.flags[12]==2) then begin
+        StartFormat(15);
+        OutStringID(40,"DblPR",TBIVr.TransDate,false,dblstr);
+        OutStringID(125,"DblPR",TBIVr.Comment,false,dblstr);
+        EndFormat;
+      end;
+      sumbud = sumbud + t;
+      sum = sum + tbivsum;
+      tsum = tsum + tbivsum;
+    end;
+  end;
+  if ((sum!=0) or (sumbud!=0)) then begin
+    Black_Divider(240,455);
+    StartFormat(15);
+    switch (ItemMode) begin
+      case 0:
+        OutString(280,0,USetStr(6794),true);
+      case 1:
+        OutString(280,0,USetStr(6795),true);
+      case 3:
+        OutString(280,0,USetStr(6793),true);
+      case 5:
+        OutString(280,0,USetStr(6799),true);
+    end;    
+    OutVal(385,0,sum,M4Val,true);
+    OutValID(455,"DblTSBud",sumbud,M4Val,true,PRp.Code);
+    EndFormat;
+    tsumbud = tsumbud + sumbud;
+    sumbud = blankval;
+    StartFormat(10);
+    EndFormat;
+    sum = blankval;
+  end;
+  RETURN;
+END;
+
+global
+function Boolean ProjectInvSugg3(record RcVc RepSpec,record PRVc PRp,Boolean detailf,var val totsum,var val totbudg)
+BEGIN
+  Boolean found;
+  Boolean headerf;
+  val sum,tsum;
+  Boolean testf;
+  Boolean notallshipped;
+  val sumbud,tsumbud;
+  Boolean budfound;
+  string 255 tstr;
+  val bud,invd,slask;
+  Array Integer uarr;
+  Integer uarrcnt;
+  record TBBUVc TBBUr;
+  row TBBUVc TBBUrw;
+  Integer i,rwcnt;
+  Boolean dummyf;
+  
+  budfound = BuildBudget(PRp.Code,TBBUr,uarr,uarrcnt);  
+  ProjectInvSugg3_TBIVVc(RepSpec,PRp,3,3,detailf,uarr,uarrcnt,headerf,tsum,tsumbud);//time
+  ProjectInvSugg3_TBIVVc(RepSpec,PRp,0,0,detailf,uarr,uarrcnt,headerf,tsum,tsumbud);//purchases
+  ProjectInvSugg3_TBIVVc(RepSpec,PRp,5,0,detailf,uarr,uarrcnt,headerf,tsum,tsumbud);//material
+  ProjectInvSugg3_TBIVVc(RepSpec,PRp,1,0,detailf,uarr,uarrcnt,headerf,tsum,tsumbud);//stocked    
+
+  if ((headerf or (RepSpec.flags[1]==0)) or (IsAsBudgeted(TBBUr))) then begin
+    if (headerf==false) then begin
+      StartFormat(15);
+      if (detailf) then begin
+        OutString(0,0,USetStr(4842),false);
+      end else begin
+        OutString(0,0,USetStr(4843),false);
+      end;
+      EndFormat;
+      Gray_Divider(0,1);
+      ProjectHeader(RepSpec,PRp,1);
+      headerf = true;
+    end;
+    rwcnt = MatRowCnt(TBBUr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      if (uarr[i]==0) then begin
+        MatRowGet(TBBUr,i,TBBUrw);
+        testf = TestForBudget(RepSpec,TBBUr,i);
+        if (testf) then begin
+          StartFormat(15);
+          OutStringID(20,"DblTSBud",TBBUrw.ArtCode,false,PRp.Code);
+          OutStringID(80,"DblTSBud",TBBUrw.EMCode,false,PRp.Code);
+          OutVal(135,0,TBBUrw.Qty,M4Val,true);
+          switch (RepSpec.flags[12]) begin
+            case 0: ;
+            case 1:
+//              GetPRItemName(TBBUrw.ArtCode,TBBUrw.Comment,tstr);
+              OutStringID(145,"DblTSBud",TBBUrw.Comment,false,PRp.Code);
+            case 2:
+              GetPRItemName2(TBBUrw.ArtCode,tstr);
+              OutStringID(125,"DblTSBud",tstr,false,PRp.Code);
+            case 3:
+//              GetPRItemName3(TBIVp,tstr);??
+              OutStringID(125,"DblTSBud",tstr,false,PRp.Code);
+          end;
+          OutVal(300,0,TBBUrw.Price,M4Val,true);
+          OutVal(330,0,TBBUrw.Discount,M4Val,true);
+          OutValID(470,"DblTSBud",TBBUrw.Sum,M4Val,true,PRp.Code);
+          EndFormat;
+          if (RepSpec.flags[12]==2) then begin
+            StartFormat(15);
+            OutStringID(125,"DblTSBud",TBBUrw.Comment,false,PRp.Code);
+            EndFormat;
+          end;
+          if (nonblank(TBBUrw.ArtCode)) then begin
+            sumbud = sumbud + TBBUrw.Sum;
+          end;
+        end;
+      end;
+    end;
+  end;
+  if (sumbud!=0) then begin
+    Black_Divider(240,455);
+    StartFormat(15);
+    OutString(280,0,USetStr(4825),true);
+    OutVal(450,0,sumbud,M4Val,true);
+    EndFormat;
+    tsumbud = tsumbud + sumbud;
+    StartFormat(10);
+    EndFormat;
+  end;
+  if (tsum!=0 or tsumbud!=0) then begin    
+    Black_Divider(240,455);
+    StartFormat(15);
+    OutString(280,0,USetStr(6796),true);
+    OutVal(385,0,tsum,M4Val,true);
+    OutVal(455,0,tsumbud,M4Val,true);
+    EndFormat;
+    StartFormat(15);
+    EndFormat;
+    bud = blankval;
+    invd = blankval;
+    slask = blankval;
+    GetProjectStats(PRp.Code,true,false,bud,invd,slask);
+    StartFormat(15);
+    OutString(250,0,USetStr(4827),false);
+    OutVal(455,0,invd,M4Val,true);
+    OutString(1,0,PRp.CurncyCode,true);
+    EndFormat;
+    PRSumDownPay(PRp,invd,slask,CurrentDate,tstr,dummyf);
+    StartFormat(15);
+    OutString(250,0,USetStr(4848),false);
+    OutVal(455,0,invd-PRp.DownPaySent,M4Val,true);
+    EndFormat;
+    invd = PRp.DownPaySent + PRp.DownPayRedcd;
+    StartFormat(15);
+    OutString(250,0,USetStr(4847),false);
+    OutVal(455,0,invd,M4Val,true);
+    EndFormat;
+    Gray_Divider(0,1);
+  end;
+  totsum = totsum + tsum;
+  totbudg = totbudg + tsumbud;
+  ProjectInvSugg3 = headerf;
+  RETURN;
+END;

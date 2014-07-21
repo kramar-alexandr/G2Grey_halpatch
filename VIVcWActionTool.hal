@@ -1,0 +1,459 @@
+external procedure RowCalculateTaxMatrix_VIVc(var record VIVc,Integer,row VIVc,Integer);
+external function val CalculateTotalVATFromTaxMatrix(record TaxMatrixVc,Integer);
+external function Boolean UseTaxTemplatesforTaxCalc();
+external procedure FillupTaxMatrix(string,string,string,string,var record TaxMatrixVc);
+external function Boolean GetOPPrepaymentRate(string,LongInt,var val,var val,var val,var val,var val);
+external procedure VATVISumup(var record VATVIVc);
+external function roundmode SetRoundModeD(Integer);
+external function roundmode DefaultRoundMode();
+external function Integer VATType(string);
+external procedure VIVc_PastePayVal(var record VIVc);
+external function Boolean IsDigit(string);
+external function Boolean IsCapitalLetter(string);
+external procedure VIOpenPrepExists(string);
+external function Boolean VIWarnOldRecords(Date,LongInt);
+external function Boolean DateWarned(Date,string);
+external procedure SetSalesMan(var string,string);
+external function Boolean GetPM(string,var string,var string);
+external function Boolean CLOutforVIExists(LongInt,string,var LongInt);
+external procedure MulVATIV(string,val,var val,var val,Integer,Integer);
+external updating procedure VIVcRecordDuplicateDo(var record VIVc);
+external procedure VIVc_PastePayDeal(var record VIVc);
+external procedure VATVICalcVals(var record VATVIVc);
+external procedure PasteAccObj(string,var string);
+external procedure GetACShortAccount(string,var string,var string);
+external procedure MulM4ProcVal(val,val,var val);
+external function Boolean PastePayRecVI(record VIVc,string);
+external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
+external procedure GetAccountDescription2(string,string,var string);
+external function Integer GetVATLaw();
+external procedure VICalcEReb(record VIVc);
+external procedure GetVATCodeAccounts(string,var string,var string,var string,var string);
+external function Boolean GetAccName(string,var string,Integer);
+external procedure RoundRowSum(string,string,string,var val);
+external procedure VISumup(record VIVc,var val);
+external procedure VICalcVals(var record VIVc);
+external function Integer CLOutVc_PasteTransNr(var record CLOutVc,Integer);
+
+
+
+function
+Integer CorrectTRVAT(var record TRVc TRr,Integer trcnt,Array string pvataccs,Array string corpvataccs,Integer vatcnt,Integer mode)
+BEGIN
+  row TRVc TRrw;
+  row TRVc newTRrw;
+  Integer i,vati,rcnt;
+  Integer res;
+  string 255 tstr;
+  Boolean addupdmarkrowf;
+  
+  for (vati=0;vati<vatcnt;vati=vati+1) begin
+    if (blank(corpvataccs[vati])) then begin
+      res = 1922;
+      goto LCorrectTRVAT;
+      if (GetAccName(corpvataccs[vati],tstr,60)==false) then begin
+        res = 1007;
+        goto LCorrectTRVAT;
+      end;
+    end;
+    if (mode==1) then begin//raction
+      for (i=0;i<trcnt;i=i+1) begin
+        MatRowGet(TRr,i,TRrw);      
+        if (TRrw.ovst==0) then begin
+        if (TRrw.AccNumber==pvataccs[vati]) then begin
+          TRrw.ovst = 1;
+          MatRowPut(TRr,i,TRrw);
+          ClearRow(TRr,newTRrw,1);
+          CopyRow(TRr,TRrw,newTRrw);
+          newTRrw.ovst = 0;
+          newTRrw.AccNumber = corpvataccs[vati];
+          if (GetAccName(newTRrw.AccNumber,tstr,60)==false) then begin
+            res = 1007;
+            goto LCorrectTRVAT;
+          end;
+          newTRrw.Comment = tstr;
+          MatRowPut(TRr,trcnt+rcnt,newTRrw);
+          rcnt = rcnt + 1;
+          addupdmarkrowf = true;
+        end;
+        end;
+      end;
+    end;
+  end;
+  if (res==0) then begin
+    if (addupdmarkrowf) then begin
+      ClearRow(TRr,newTRrw,2);
+      TRr.RegDate = CurrentDate;
+      newTRrw.UpdDate = CurrentDate;
+      newTRrw.Sign = CurrentUser;
+      newTRrw.OldTransDate = TRr.TransDate;
+      MatRowInsert(TRr,trcnt,newTRrw);
+    end;
+  end; 
+LCorrectTRVAT:;   
+  CorrectTRVAT = res;
+  RETURN;
+END;
+
+procedure AddToCorVAT(string VATCode,Array string avatcodes,Array string pvataccs,Array string corpvataccs,var Integer vatcnt)
+BEGIN
+  Integer i;
+  string 10 svatacc,pvatacc,corsvatacc,corpvatacc;
+  
+  GetVATCodeAccounts(VATCode,svatacc,pvatacc,corsvatacc,corpvatacc);
+  for (i=0;i<=vatcnt;i=i+1) begin
+//    if (pvataccs[i]==pvatacc) then begin//Vat code can have same account
+    if (avatcodes[i]==VATCode) then begin
+      goto LAddToCorVAT;
+    end;
+  end;
+  pvataccs[vatcnt] = pvatacc;
+  corpvataccs[vatcnt] = corpvatacc;
+  avatcodes[vatcnt] = VATCode;
+  vatcnt = vatcnt + 1;
+LAddToCorVAT:;  
+  RETURN;
+END;
+
+function
+val GetVATVISum(LongInt VInr,LongInt vatVInr,Integer rownr)
+BEGIN
+  val res;
+  record VATVIVc VATVIr;
+  row VATVIVc VATVIrw;
+  Integer i,rwcnt;
+  Boolean TrHs,testf;
+  
+  TrHs = true;
+  VATVIr.VINr = VInr;
+  while (LoopKey("VINr",VATVIr,1,TrHs)) begin
+    if (VATVIr.VINr!=VInr) then begin
+      TrHs = false;
+    end;
+    if (TrHs) then begin
+      testf = true;
+      if (VATVIr.SerNr==vatVInr) then begin
+        testf = false;
+      end;
+      if (VATVIr.Invalid!=0) then begin
+        testf = false;
+      end;
+      if (testf) then begin
+        rwcnt = MatRowCnt(VATVIr);
+        for (i=0;i<rwcnt;i=i+1) begin
+          MatRowGet(VATVIr,i,VATVIrw);
+          if (VATVIrw.VIRow==rownr) then begin
+            res = res + VATVIrw.Sum;
+          end;
+        end;
+      end;
+    end;
+  end;  
+LGetVATVISum:;  
+  GetVATVISum = res;
+  RETURN;
+END;
+
+function val GetVATVISum_PrepayNr_PONr(LongInt PONr,LongInt OrdRow,LongInt PrepayNr)
+begin
+  val res;
+  Boolean TrHs,testf;
+  record VATVIVc VATVIr;
+  row VATVIVc VATVIrw;
+  Integer i,rwcnt;
+
+  if (PrepayNr>0) then begin
+    TrHs = true;
+    VATVIr.PrepayNr = PrepayNr;
+    while (LoopKey("PrepayNr",VATVIr,1,TrHs)) begin
+      if (VATVIr.PrepayNr!=PrepayNr) then begin
+        TrHs = false;
+      end;
+      if (TrHs) then begin
+        testf = true;
+        if (VATVIr.Invalid!=0) then begin
+          testf = false;
+        end;
+        if (testf) then begin
+          rwcnt = MatRowCnt(VATVIr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(VATVIr,i,VATVIrw);
+            if (VATVIrw.OrdRow==OrdRow) then begin
+              res = res + VATVIrw.Sum;
+            end;
+          end;
+        end;
+      end;
+    end; 
+  end; 
+  GetVATVISum_PrepayNr_PONr = res;
+  return;
+end;
+
+function val GetVATVISum_PrepayNr(string artcode,LongInt PrepayNr)
+begin
+  val res;
+  Boolean TrHs,testf;
+  record VATVIVc VATVIr;
+  row VATVIVc VATVIrw;
+  Integer i,rwcnt;
+
+  if (PrepayNr>0) then begin
+    TrHs = true;
+    VATVIr.PrepayNr = PrepayNr;
+    while (LoopKey("PrepayNr",VATVIr,1,TrHs)) begin
+      if (VATVIr.PrepayNr!=PrepayNr) then begin
+        TrHs = false;
+      end;
+      if (TrHs) then begin
+        testf = true;
+        if (VATVIr.Invalid!=0) then begin
+          testf = false;
+        end;
+        if (testf) then begin
+          rwcnt = MatRowCnt(VATVIr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(VATVIr,i,VATVIrw);
+            if (VATVIrw.Item==artcode) then begin
+              res = res + VATVIrw.Sum;
+            end;
+          end;
+        end;
+      end;
+    end; 
+  end; 
+  GetVATVISum_PrepayNr = res;
+  return;
+end;
+
+function val GetVATVISum_OP(record VIVc VIr,row VIVc curVIrw)
+begin
+  val res;
+  Integer i,rwcnt;
+  row VIVc VIrw;
+  
+  if (VIr.POSerNr>0) then begin
+    rwcnt = MatRowCnt(VIr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(VIr,i,VIrw);
+      switch (VIrw.stp) begin
+        case kInvoiceRowTypePrepayment:
+          res = res + GetVATVISum_PrepayNr_PONr(VIr.POSerNr,curVIrw.OrdRow,VIrw.PrepayNr);
+      end;
+    end;
+  end else begin
+    rwcnt = MatRowCnt(VIr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(VIr,i,VIrw);
+      switch (VIrw.stp) begin
+        case kInvoiceRowTypePrepayment:
+          res = res + GetVATVISum_PrepayNr(curVIrw.Item,VIrw.PrepayNr);
+      end;
+    end;
+  end;
+  GetVATVISum_OP = res;
+  return;
+end;
+
+global
+procedure PasteVIRowToVATVI(record VIVc VIr,var record VATVIVc VATVIr,Integer rownr,var Integer vati)
+BEGIN
+  row VIVc VIrw;
+  row VATVIVc VATVIrw;
+  Integer i,rwcnt;
+  val sum,t,prepayv;
+  record APAccBlock APAccb;
+  
+  BlockLoad(APAccb);  
+  rwcnt = MatRowCnt(VIr);
+  if (rownr<rwcnt) then begin
+    MatRowGet(VIr,rownr,VIrw);
+    switch (VIrw.stp) begin
+      case 1:
+        sum = GetVATVISum(VIr.SerNr,VATVIr.SerNr,rownr);
+        if (APAccb.PreOPBookVAT!=0) then begin
+          sum = sum + GetVATVISum_OP(VIr,VIrw);
+        end;
+        sum = VIrw.Sum - sum;
+        if (sum!=0) and (VIrw.Sum!=0) then begin
+          ClearRow(VATVIr,VATVIrw,VIrw.stp);
+          VATVIrw.stp = VIrw.stp;
+          VATVIrw.ovst = VIrw.ovst;
+          VATVIrw.AccNumber = VIrw.AccNumber;
+          VATVIrw.Objects = VIrw.Objects;
+          VATVIrw.Comment = VIrw.Comment;
+          VATVIrw.Sum = sum;
+          VATVIrw.vRebate = 100;// Edit ************************** Tuesday, 24 September 2013 14:12:59
+					VATVIrw.Price = sum;// Edit ************************** Tuesday, 24 September 2013 14:09:09
+          VATVIrw.PrepayAmount = VIrw.PrepayAmount;
+          VATVIrw.VATVal = VIrw.VATVal;
+          VATVIrw.qty = VIrw.qty;
+          VATVIrw.Item = VIrw.Item;
+          VATVIrw.VATCode = VIrw.VATCode;
+          VATVIrw.VEPNr = VIrw.VEPNr;
+          VATVIrw.PrepayNr = VIrw.PrepayNr;
+          VATVIrw.PeriodCode = VIrw.PeriodCode;
+          VATVIrw.ACShort = VIrw.ACShort;
+          VATVIrw.OrdRow = VIrw.OrdRow;
+          VATVIrw.VIRow = rownr;
+          MatRowPut(VATVIr,vati,VATVIrw);
+          vati = vati + 1;
+        end;
+    end;
+  end else begin
+    ClearRow(VATVIr,VATVIrw,1);
+    MatRowPut(VATVIr,vati,VATVIrw);
+  end;
+  if (APAccb.PostVIVATonVATCorr!=0) then begin
+    rwcnt = MatRowCnt(VIr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(VIr,i,VIrw);
+      switch (VIrw.stp) begin
+        case kInvoiceRowTypePrepayment:
+          prepayv = prepayv + (VIrw.Sum - VIrw.VATVal);
+      end;
+    end;
+    if (blank(VIr.VATVal)) then begin
+      sum = VIr.PayVal - VIr.CalcVATVal;
+    end else begin
+      sum = VIr.PayVal - VIr.VATVal;
+    end;
+    sum = sum - prepayv;
+    if (sum>0) and (prepayv>0) then begin
+      rwcnt = MatRowCnt(VATVIr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(VATVIr,i,VATVIrw);
+        VATVIrw.Sum = sum/rwcnt;
+        if (VATVIrw.Sum<=0) then begin
+          MatRowDelete(VATVIr,i);
+          rwcnt = MatRowCnt(VATVIr);
+        end else begin
+          MatRowPut(VATVIr,i,VATVIrw);
+        end;
+      end;
+    end;
+  end;
+  VATVICalcVals(VATVIr);
+  VATVISumup(VATVIr);
+  RETURN;
+END;
+
+procedure CopyHeaderVIToVATVI(record VIVc VIr,var record VATVIVc VATVIr)
+BEGIN
+  Date blankd;
+  
+  VATVIr.TransDate = CurrentDate;// blankd;
+  VATVIr.VINr = VIr.SerNr;
+  VATVIr.VIInvDate = VIr.InvDate;
+  VATVIr.VIRegDate = VIr.RegDate;
+  VATVIr.VIDueDate = VIr.DueDate;
+  VATVIr.VIRebDate = VIr.RebDate;
+  VATVIr.VIRebDate2 = VIr.RebDate2;
+  VATVIr.VITransDate = VIr.TransDate;
+  VATVIr.InvoiceNr = VIr.InvoiceNr;
+  VATVIr.RefStr = VIr.RefStr;
+  VATVIr.VECode = VIr.VECode;
+  VATVIr.VEName = VIr.VEName;
+  VATVIr.Sign = VIr.Sign;
+  VATVIr.OKPersons = VIr.OKPersons;
+  VATVIr.PayVal = VIr.PayVal;
+  VATVIr.RebVal = VIr.RebVal;
+  VATVIr.RebVal2 = VIr.RebVal2;
+  VATVIr.VATVal = VIr.VATVal;
+  VATVIr.CalcVATVal = VIr.CalcVATVal;
+  VATVIr.HoldSum = VIr.HoldSum;
+  VATVIr.CurncyCode = VIr.CurncyCode;
+  VATVIr.FrRate = VIr.FrRate;
+  VATVIr.ToRateB1 = VIr.ToRateB1;
+  VATVIr.ToRateB2 = VIr.ToRateB2;
+  VATVIr.BaseRate1 = VIr.BaseRate1;
+  VATVIr.BaseRate2 = VIr.BaseRate2;
+  VATVIr.InvType = VIr.InvType;
+  VATVIr.ExportFlag = VIr.ExportFlag;
+  VATVIr.VEVatCode = VIr.VEVatCode;
+  VATVIr.Comment = VIr.Comment;
+  VATVIr.Objects = VIr.Objects;
+  VATVIr.PrelBook = VIr.PrelBook;
+  VATVIr.CredInv = VIr.CredInv;
+  VATVIr.CredMark = VIr.CredMark;
+  VATVIr.VATNr = VIr.VATNr;
+  VATVIr.LangCode = VIr.LangCode;
+  VATVIr.SortCode = VIr.SortCode;
+  VATVIr.SalesGroup = VIr.SalesGroup;
+  VATVIr.SalesMan = VIr.SalesMan;
+  VATVIr.InvType = VIr.InvType;
+  VATVIr.NoTAXonVAT =  VIr.NoTAXonVAT;
+  RETURN;
+END;
+
+global
+procedure PasteVIToVATVI(record VIVc VIr,var record VATVIVc VATVIr)
+BEGIN  
+  Integer i,rwcnt;
+  Integer vati;
+  
+  CopyHeaderVIToVATVI(VIr,VATVIr);
+  rwcnt = MatRowCnt(VIr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    PasteVIRowToVATVI(VIr,VATVIr,i,vati);
+  end;
+  RETURN;
+END;
+
+procedure CreateVATVI(record VIVc VIr,record VATVIVc VATVIr)
+BEGIN
+  RecordNew(VATVIr);
+  PasteVIToVATVI(VIr,VATVIr);
+  RETURN;
+END;
+
+global
+updating function Integer UpdateTRVATVI(record VIVc VIr,var record VATVIVc VATVIr,Integer mode)
+BEGIN
+  record TRVc oldTRr;
+  record TRVc TRr;
+  row TRVc TRrw;
+  Integer res;
+  Integer i,rwcnt;
+  Array string 10 corpvataccs;
+  Array string 10 pvataccs;
+  Array string 2 avatcodes;
+  Integer vatcnt,err;
+  
+  TRr.Number = VIr.SerNr;
+  TRr.IntYc = VIYc;
+  if (ReadFirstMain(TRr,2,true)) then begin
+    RecordCopy(oldTRr,TRr);
+    rwcnt = MatRowCnt(TRr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(TRr,i,TRrw);
+      if ((nonblank(TRrw.VATCode)) and (TRrw.ovst==0)) then begin
+        AddToCorVAT(TRrw.VATCode,avatcodes,pvataccs,corpvataccs,vatcnt);        
+      end;
+    end;
+    err = CorrectTRVAT(TRr,rwcnt,pvataccs,corpvataccs,vatcnt,mode);
+    if (err==0) then begin
+      switch (mode) begin
+        case 0://specmenu
+          CreateVATVI(VIr,VATVIr);
+          if (MatRowCnt(VATVIr)>0) then begin
+            res = 0;
+          end else begin
+            res = 22091;
+          end;
+        case 1://raction
+          if (RecordUpdate(oldTRr,TRr,true)==0) then begin
+            res = 0;
+          end;  
+        case 2://recordcheck
+          res = 0;
+      end;
+      
+    end else begin
+//      MessageBox(0,USetStr(err));
+      res = err;
+    end;
+  end;
+  UpdateTRVATVI = res;
+  RETURN;
+END;

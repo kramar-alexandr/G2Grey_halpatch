@@ -1,0 +1,199 @@
+external function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);
+external function Boolean  AllowCurChange(string,Boolean);
+
+function Boolean QTAcceptanceStarted(record QTVc QTr)
+begin
+  Boolean res;
+
+  res = false;
+  if (QTr.AcceptanceStatus>=kAcceptanceStatePending) then begin
+    res = true;
+  end;
+  QTAcceptanceStarted = res;
+  return;
+end;
+
+global
+function Boolean QTDClassActiveEditField(Integer wn,string fieldname,Integer fn,Integer wnst,Integer rownr,Integer changed)
+BEGIN
+  Boolean res;
+  record QTVc QTr;
+  row QTVc QTrw;
+  record INVc INr;
+  
+  res = true;
+  switch (wnst) begin
+    case 1:
+      GetWindowRecord(wn,QTr);
+      if (QTr.Closed!=0) then begin
+        res = false;
+        goto LQTDClassActiveEditField;
+      end;
+      if (QTr.Rejected!=0) then begin
+        res = false;
+        goto LQTDClassActiveEditField;
+      end;
+    case 2:
+      GetPrevWindowRecord(wn,QTr);
+      if (QTr.Closed!=0) then begin
+        res = false;
+      end;
+      if (QTr.Rejected!=0) then begin
+        res = false;
+        goto LQTDClassActiveEditField;
+      end;
+  end;
+
+  GetWindowRecord(wn,QTr);
+  if (QTAcceptanceStarted(QTr)) then begin
+  		
+  		res = false;
+  		switch (fieldname) begin
+			case "Comment": res = true;// Edit ************************** Tuesday, 15 January 2013 16:20:31
+			case "Authority": res = UserCanAction("ChangeStatusQT",true);// Edit ************************** Monday, 25 February 2013 15:09:49
+  		end;
+    
+    goto LQTDClassActiveEditField;
+  end;
+    
+  switch (fieldname) begin
+    case "rowGP": res = false;
+    case "Invoiced": res = false;
+    case "InvDate": res = false;
+    case "SerNr": 
+      if (wnst!=1) then begin//insertmode
+        res = false;
+      end;
+      if (UserCanAction("AllowQTSerNrChange",true)==false) then begin res = false; end;
+    case "FrRate": 
+      res = AllowCurChange(QTr.CurncyCode,false);
+    case "ToRateB1": 
+      res = AllowCurChange(QTr.CurncyCode,false);
+    case "ToRateB2": 
+      res = AllowCurChange(QTr.CurncyCode,false);
+    case "BaseRate1": 
+      res = AllowCurChange(QTr.CurncyCode,true);
+    case "BaseRate2": 
+      res = AllowCurChange(QTr.CurncyCode,true);
+    case "PriceList": 
+      res = UserCanAction("ChangePrices",true);
+    case "Price": 
+      res = UserCanAction("ChangeUnitPrices",true);
+    case "vRebate": 
+      res = UserCanAction("ChangeUnitPrices",true);
+    case "Sum": 
+      res = UserCanAction("ChangeUnitPrices",true);      
+    case "Quant": 
+      MatRowGet(QTr,rownr,QTrw);
+      if (QTrw.Quant!=0) then begin
+        if (ReadFirstItem(QTrw.ArtCode,INr,false,false)) then begin
+          if (INr.ItemType==2) then begin
+            if (INr.ExplodeRec!=0) then begin
+              res = false;
+              MessageBox(20770,"");
+            end;
+          end;
+        end;
+      end;
+
+  end;
+  
+LQTDClassActiveEditField:;  
+  QTDClassActiveEditField = res;
+  RETURN;
+END;
+
+global 
+function Boolean QTDClassDeleteRowTest(Integer wn,Integer rownr)
+begin
+  record QTVc QTr;
+  row QTVc QTrw;
+  Boolean res;
+
+  res = true;
+  if (rownr>-1) then begin
+    GetWindowRecord(wn,QTr);
+    MatRowGet(QTr,rownr,QTrw);
+    if (QTrw.Invoiced>0) then begin
+      res = false;
+      MessageBox(1092,"");
+      goto LQTDClassDeleteRowTest;
+    end;
+  end;
+  switch (WindowState(wn)) begin
+    case Rs_update:
+      GetPrevWindowRecord(wn,QTr);    
+    case Rs_insert:
+      GetWindowRecord(wn,QTr);    
+    case Rs_normal:
+      GetWindowRecord(wn,QTr);    
+  end;
+  if (QTr.Rejected==1) then begin
+    res = false;
+  end;
+  if (QTAcceptanceStarted(QTr)) then begin
+    res = false;
+  end;
+LQTDClassDeleteRowTest:;  
+  QTDClassDeleteRowTest = res;
+  return;
+end;
+
+/*
+global 
+function Boolean QTDClassInsertRowTest(Integer wn,Integer rownr)
+begin
+  Boolean res;
+  record QTVc QTr;
+  
+  res = true;
+  switch (WindowState(wn)) begin
+    case Rs_update:
+      GetPrevWindowRecord(wn,QTr);    
+    case Rs_insert:
+      GetWindowRecord(wn,QTr);    
+    case Rs_normal:
+      GetWindowRecord(wn,QTr);    
+  end;
+  if (QTr.Rejected==1) then begin
+    res = false;
+  end;
+  QTDClassInsertRowTest = res;
+  return;
+end;
+*/
+global 
+function Boolean QTDClassInsertRowTest(Integer wn,Integer rownr)
+begin
+  Boolean res;
+  record QTVc QTr;
+  
+  res = true;
+  switch (WindowState(wn)) begin
+    case Rs_update:
+      GetPrevWindowRecord(wn,QTr);    
+    case Rs_insert:
+      GetWindowRecord(wn,QTr);    
+    case Rs_normal:
+      GetWindowRecord(wn,QTr);    
+  end;
+  if (QTr.Rejected==1) then begin
+    res = false;
+  end;
+  if (QTAcceptanceStarted(QTr)) then begin
+    res = false;
+  end;
+  QTDClassInsertRowTest = res;
+  return;
+end;
+
+global
+function Boolean QTDClassExportFlagButtonAction(Integer wn,Integer value)
+BEGIN
+  Boolean res;
+//vat zone should be as it is on customer card
+//otherwise u can paste customer  , filled all, change vat zone and get crap
+  res = false;
+  QTDClassExportFlagButtonAction = res;
+  RETURN;
+END;

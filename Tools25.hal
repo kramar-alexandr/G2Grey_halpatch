@@ -1,0 +1,428 @@
+external function Boolean IsSessionOpen(string,string,Date,Time);
+external procedure SetActTypeValues(record ActVc);
+external procedure ActVcRecordDefServer(var record ActVc);
+external procedure Base1ToOther(var string,val,val,val,val,val,val,var val,roundmode);
+external procedure TBBUVc_PasteCurncyCode(var record TBBUVc,string,Boolean);
+external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
+external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
+external function Integer TypeOfCurncy(var string,var Integer);
+external function Integer GetIntYc(Date);
+external function val MulWithRateToBase1(var string,Date,val,roundmode);
+external function string 255 GetNextValue(var string);
+
+global
+function val FindPaidInPeriod_IVVc(record IVVc orgIVp,Boolean curncyf,Date StartDate,Date EndDate)
+BEGIN
+  val res;
+  record IPrsVc IPrsr;
+  record IVVc IVr;
+  row IVVc IVrw;
+  record IPVc IPr;
+  row IPVc IPrw;
+  record TRVc TRr;
+  row TRVc TRrw;
+  record CLInVc CLInr;
+  row CLInVc CLInrw;
+  record CLOutVc CLOutr;
+  row CLOutVc CLOutrw;
+  Integer i,rwcnt;
+  Boolean found;
+  val t,t2;
+  Integer oldstyle;  
+  record BaseCurBlock bcur;
+
+  BlockLoad(bcur);
+  found = true;
+  if (orgIVp.InvType==3) then begin
+    if (orgIVp.CredInv>0) then begin
+      IVr.SerNr = orgIVp.CredInv;
+      if (ReadFirstMain(IVr,1,true)) then begin
+        if (curncyf) then begin
+          res = res + IVr.Sum4;
+        end else begin
+          res = res + IVr.BaseSum4;
+        end;
+      end;
+      found = false;
+    end;
+  end;
+  if (found) then begin    
+    found = true;
+    IPrsr.IVNr = orgIVp.SerNr;
+    IPrsr.TransDate = StartDate;
+    while (LoopKey("IVKeyTransDate",IPrsr,1,found)) begin
+      if (IPrsr.IVNr!=orgIVp.SerNr) then begin found = false; end;
+      if (IPrsr.TransDate>EndDate) then begin found = false; end;
+      if (found) then begin
+        switch (IPrsr.TransType) begin
+          case 0:
+            if (IPrsr.TransNr!=orgIVp.SerNr) then begin
+              IVr.SerNr = IPrsr.TransNr;
+              if (ReadFirstMain(IVr,1,true)) then begin
+                if (IVr.Invalid==0) then begin
+                  if (IVr.InvType==3) then begin
+                    if (curncyf) then begin
+                      res = res + IVr.Sum4;
+                    end else begin
+                      res = res + IVr.BaseSum4;
+                    end;
+                  end;
+                end;
+              end;
+            end;
+          case 1:
+            IPr.SerNr = IPrsr.TransNr;
+            if (ReadFirstMain(IPr,1,true)) then begin
+              if (IPr.RejectedFlag==0) then begin
+                rwcnt = MatRowCnt(IPr);
+                for (i=0;i<rwcnt;i=i+1) begin
+                  MatRowGet(IPr,i,IPrw);
+                  if ((IPrw.ovst==0)) then begin
+                    if (IPrw.InvoiceNr==IPrsr.IVNr) then begin
+                      if (IPrw.stp==1) or (IPrw.stp==5) or (IPrw.stp==6) then begin
+                        if (IPrw.PayDate==IPrsr.CustDate) then begin
+                          if (curncyf) then begin
+                            res = res + IPrw.InvVal;
+                          end else begin
+                            if (IPrw.BankCurncy==bcur.BaseCur1) then begin   
+                              res = res + IPrw.BankVal;
+                            end else begin
+                              res = res + MulWithRateToBase1(IPrw.RecCurncy,IPr.TransDate,IPrw.RecVal,DefaultCurRoundOff);
+                            end;
+                          end;
+                        end;    
+                      end;
+                    end;
+                  end;
+                end;
+              end;
+            end;    
+          case 2:
+            TRr.Number = IPrsr.TransNr;
+            TRr.IntYc = GetIntYc(IPrsr.TransDate);
+            if (ReadFirstMain(TRr,2,true)) then begin
+              rwcnt = MatRowCnt(TRr);
+              for (i=0;i<rwcnt;i=i+1) begin
+                MatRowGet(TRr,i,TRrw);
+                if ((TRrw.Typ==1) and (TRrw.SerNr==IPrsr.IVNr)) then begin
+                  if (TRrw.CompCode==IPrsr.CustCode) then begin
+                    t = TRrw.CurCredVal - TRrw.CurDebVal;
+                    t2 = TRrw.CredVal - TRrw.DebVal;
+                    if ((TRrw.CurDebVal==0) and (TRrw.CurCredVal==0)) then begin
+                      t = t2;
+                    end;                        
+                    if (TypeOfCurncy(TRrw.Curncy,oldstyle)==2) then begin
+                      t = TRrw.CredVal2 - TRrw.DebVal2;
+                    end;
+                    if (curncyf) then begin
+                      res = res + t;
+                    end else begin
+                      res = res + t2;
+                    end;
+                  end;  
+                end;
+              end;
+            end;                      
+          case 3:            
+            CLInr.SerNr = IPrsr.TransNr;
+            if (ReadFirstMain(CLInr,1,true)) then begin
+              if (CLInr.Invalid==0) then begin
+                rwcnt = MatRowCnt(CLInr);
+                for (i=0;i<rwcnt;i=i+1) begin
+                  MatRowGet(CLInr,i,CLInrw);
+                  if ((CLInrw.Type==1) and (CLInrw.TransNr==IPrsr.IVNr)) then begin
+                    if (CLInr.CUCode==IPrsr.CustCode) then begin
+                      if (curncyf) then begin
+                        res = res + CLInrw.Sum;
+                      end else begin
+                        res = res + MulRateToBase1(CLInr.CurncyCode,CLInrw.Sum,CLInr.FrRate,CLInr.ToRateB1,CLInr.ToRateB2,CLInr.BaseRate1,CLInr.BaseRate2,DefaultCurRoundOff);;
+                      end;
+                    end;
+                  end;
+                end;
+              end;
+            end;                      
+          case 4:            
+            CLOutr.SerNr = IPrsr.TransNr;
+            if (ReadFirstMain(CLOutr,1,true)) then begin
+              if (CLOutr.Invalid==0) then begin
+                rwcnt = MatRowCnt(CLOutr);
+                for (i=0;i<rwcnt;i=i+1) begin
+                  MatRowGet(CLOutr,i,CLOutrw);
+                  if ((CLOutrw.Type==1) and (CLOutrw.TransNr==IPrsr.IVNr)) then begin
+                    if (CLOutr.CUCode==IPrsr.CustCode) then begin
+                      if (curncyf) then begin
+                        res = res - CLOutrw.Sum;
+                      end else begin
+                        res = res - MulRateToBase1(CLOutr.CurncyCode,CLOutrw.Sum,CLOutr.FrRate,CLOutr.ToRateB1,CLOutr.ToRateB2,CLOutr.BaseRate1,CLOutr.BaseRate2,DefaultCurRoundOff);;
+                      end;
+                    end;
+                  end;
+                end;
+              end;
+            end;
+        end;
+      end;
+    end;
+  end;
+  FindPaidInPeriod_IVVc = res;
+  RETURN;
+END;
+
+global
+function string 255 CurDrawerCode(string MachineName)
+begin
+  string 255 drawer;
+  record POSEventVc POSEventr;
+  record CashierDefBlock Cashierb;
+  Boolean found;
+  Date td;
+  Time tt;
+
+  BlockLoad(Cashierb);
+  if (Cashierb.MultipleSessionsPerLocalMachine==0) then begin
+    POSEventr.MachineName = MachineName;
+    POSEventr.TransDate = CurrentDate;
+    POSEventr.TransTime = CurrentTime;
+    if (ReadLastKey("MachineDate",POSEventr,3,false)) then begin    
+    end;
+    drawer = POSEventr.Drawer;
+  end else begin
+    td = CurrentDate;
+    tt = CurrentTime;
+    found = true;
+    POSEventr.MachineName = MachineName;
+    POSEventr.Event = 1;
+    POSEventr.TransDate = td;
+    POSEventr.TransTime = tt;
+    while (LoopBackKey("MachineNameMembersEvent:" & CurrentUser,POSEventr,3,found)) begin
+      if (POSEventr.MachineName!=MachineName) then begin found = false; end;
+      if (POSEventr.Event!=1) then begin found = false; end;
+      if (POSEventr.TransDate>td) then begin found = false; end;
+      if (found) then begin
+        if (IsSessionOpen(POSEventr.MachineName,POSEventr.Drawer,td,tt)) then begin
+          drawer = POSEventr.Drawer;
+          goto LCurDrawerCode;
+        end;
+      end;
+    end;
+LCurDrawerCode:;  
+  end;
+  CurDrawerCode = drawer;  
+  return;
+end;
+
+global
+procedure TBIVGetRate(var record TBIVVc TBIVp)
+begin
+  val from,to1,to2,base1,base2;
+  string 5 crncy;
+ 
+  crncy = TBIVp.CurncyCode;
+  GetFullCurncyRate(crncy,TBIVp.TransDate,from,to1,to2,base1,base2);
+  TBIVp.CurncyCode = crncy;
+  TBIVp.FrRate = from;
+  TBIVp.ToRateB1 = to1;
+  TBIVp.ToRateB2 = to2;
+  TBIVp.BaseRate1 = base1;
+  TBIVp.BaseRate2 = base2;  
+  return;
+end;
+
+global
+procedure TBIVCalcInCurValues(var record TBIVVc TBIVr)
+begin
+  val t;
+
+  Base1ToOther(TBIVr.CurncyCode,TBIVr.Price,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,TBIVr.PriceInCur,DefaultCurRoundOff);
+  Base1ToOther(TBIVr.CurncyCode,TBIVr.Sum,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,TBIVr.SumInCur,DefaultCurRoundOff);
+  if (Mid(TBIVr.Markup,len(TBIVr.Markup)-1,1)!="%") then begin    
+    t = StringToVal(TBIVr.Markup,M45Val);
+    Base1ToOther(TBIVr.CurncyCode,t,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,t,DefaultCurRoundOff);
+    TBIVr.MarkupInCur = t;
+  end;
+
+  Base1ToOther(TBIVr.CurncyCode,TBIVr.CostPrice,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,TBIVr.CostPriceInCur,DefaultCurRoundOff);
+  Base1ToOther(TBIVr.CurncyCode,TBIVr.GP,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,TBIVr.GPInCur,DefaultCurRoundOff);
+  return;
+end;
+
+global
+procedure CalcInCurtoTBIV(var record TBIVVc TBIVr)
+begin
+  record PRVc PRr;
+  record BaseCurBlock BCb;
+  PRr.Code = TBIVr.PRCode;
+  ReadFirstMain(PRr,1,true);
+  if (nonblank(PRr.CurncyCode)) then begin
+    BlockLoad(BCb);
+    TBIVr.CurncyCode = PRr.CurncyCode;
+    TBIVGetRate(TBIVr);    
+    if (TBIVr.CurncyCode!=BCb.BaseCur1) then begin
+      TBIVCalcInCurValues(TBIVr);
+    end;
+  end;
+  return;
+end;
+
+global
+procedure TBIVCalcInCur_SalesPrice(var record TBIVVc TBIVr)
+begin
+  record PRVc PRr;
+  val t;
+
+  PRr.Code = TBIVr.PRCode;
+  ReadFirstMain(PRr,1,true);
+  if (nonblank(PRr.CurncyCode)) then begin
+    TBIVr.CurncyCode = PRr.CurncyCode;
+    TBIVGetRate(TBIVr);    
+    Base1ToOther(TBIVr.CurncyCode,TBIVr.Price,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,TBIVr.PriceInCur,DefaultCurRoundOff);
+    Base1ToOther(TBIVr.CurncyCode,TBIVr.Sum,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,TBIVr.SumInCur,DefaultCurRoundOff);
+    if (Mid(TBIVr.Markup,len(TBIVr.Markup)-1,1)!="%") then begin    
+      t = StringToVal(TBIVr.Markup,M45Val);
+      Base1ToOther(TBIVr.CurncyCode,t,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,t,DefaultCurRoundOff);
+      TBIVr.MarkupInCur = t;
+    end;
+  end;
+  return;
+end;
+
+global
+procedure TBIVCalcInCur_CostPrice(var record TBIVVc TBIVr)
+begin
+  record PRVc PRr;
+
+  PRr.Code = TBIVr.PRCode;
+  ReadFirstMain(PRr,1,true);
+  if (nonblank(PRr.CurncyCode)) then begin
+    TBIVr.CurncyCode = PRr.CurncyCode;
+    TBIVGetRate(TBIVr);    
+    Base1ToOther(TBIVr.CurncyCode,TBIVr.CostPrice,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,TBIVr.CostPriceInCur,DefaultCurRoundOff);
+  end;
+  return;
+end;
+
+global
+procedure TBIVCalcInBaseCurValues(var record TBIVVc TBIVr)
+begin
+  val t;
+
+  TBIVr.Price = MulRateToBase1(TBIVr.CurncyCode,TBIVr.PriceInCur,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,DefaultCurRoundOff);
+  TBIVr.CostPrice = MulRateToBase1(TBIVr.CurncyCode,TBIVr.CostPriceInCur,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,DefaultCurRoundOff);
+  TBIVr.Sum = MulRateToBase1(TBIVr.CurncyCode,TBIVr.SumInCur,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,DefaultCurRoundOff);
+  TBIVr.GP = MulRateToBase1(TBIVr.CurncyCode,TBIVr.GPInCur,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,DefaultCurRoundOff);
+  if (Mid(TBIVr.Markup,len(TBIVr.Markup)-1,1)!="%") then begin    
+    t = StringToVal(TBIVr.MarkupInCur,M45Val);
+    t = MulRateToBase1(TBIVr.CurncyCode,TBIVr.GPInCur,TBIVr.FrRate,TBIVr.ToRateB1,TBIVr.ToRateB2,TBIVr.BaseRate1,TBIVr.BaseRate2,DefaultCurRoundOff);
+    TBIVr.Markup = t;
+  end;
+  return;
+end;
+
+global
+procedure AddInBaseCurtoTBIV(var record TBIVVc TBIVr)
+begin
+  if (nonblank(TBIVr.CurncyCode)) then begin
+    TBIVGetRate(TBIVr);    
+    TBIVCalcInBaseCurValues(TBIVr);
+  end;
+  return;
+end;
+
+global
+procedure AddInCurtoTBIVwithRate(var record TBIVVc TBIVr,string crncy,val fr,val to1,val to2,val br1,val br2)
+begin
+  val t;
+
+  if (nonblank(TBIVr.CurncyCode)) then begin
+  end else begin
+    CalcInCurtoTBIV(TBIVr);
+  end;
+  return;
+end;
+
+global
+updating procedure ServerMakeActOutgoingPhoneCall(string cucode,string person,string callerid,string user)
+BEGIN
+  record CUVc CUr;
+  Boolean res;
+  Integer oldcomp;
+  record GlobalCRMBlock GCRMb;
+  record ActVc Actr;
+  
+  BlockLoad(GCRMb);
+
+  oldcomp = CurrentCompany; 
+  if (nonblank(GCRMb.MainCRMCompany)) then begin
+    if (SetCompanyCode(GCRMb.MainCRMCompany,false)) then begin
+    end;
+  end;
+  RecordNew(Actr);
+  ActVcRecordDefServer(Actr);
+  Actr.SerNr = -1;
+  Actr.Invalid = 0;
+  Actr.TodoFlag = 1;
+  Actr.SymbNr = 1;
+  Actr.CUCode = cucode;
+  Actr.Comment = "";
+  CUr.Code = cucode;
+  if (ReadFirstMain(CUr,1,true)) then begin
+    Actr.CUName = CUr.Name;
+    Actr.Contact = CUr.Person;
+    Actr.Phone = CUr.Phone;
+  end;
+  if (person!="") then begin
+    Actr.Contact = person;
+  end;
+  if (callerid!="") then begin
+    Actr.Phone = callerid;
+  end;
+  SetActTypeValues(Actr);
+  Actr.MainPersons = user;
+  Actr.CCPersons = "";
+  Actr.SerNr = NextSerNr("ActVc",Actr.TransDate,-1,false,"");  
+  Actr.AutoGenCallFlag = 1;
+  if (RecordStore(Actr,false)) then begin 
+  end; 
+  ResetCompany(oldcomp);
+  RETURN;
+END;
+
+global
+procedure UninstallRemoveAll()
+begin
+  Uninstall(1);
+end;
+
+global
+procedure UninstallKeepData()
+begin
+  Uninstall(0);
+end;
+
+global
+function string 10 GetClassificationOfType(string Classifications,string CType,var string Comment)
+begin
+  string 10 res;
+  string 255 Code,RemClass;
+  record CClassVc CClassr;
+  
+  Comment = "";
+  RemClass = Classifications;
+  Code = GetNextValue(RemClass);
+  while (nonblank(Code)) begin
+    CClassr.Code = Code;
+    if (ReadFirstMain(CClassr,1,true)) then begin
+      if (CClassr.CType==CType) then begin
+        res = Code;
+        Comment = CClassr.Comment;
+        goto LGetClassificationOfType;
+      end;
+    end;
+    Code = GetNextValue(RemClass);
+  end;
+LGetClassificationOfType:;
+  GetClassificationOfType = res;
+  return;
+end;
+

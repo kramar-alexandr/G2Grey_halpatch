@@ -1,0 +1,743 @@
+external function Boolean VerifySalesmen(string,var string);
+external function Boolean AcceptanceRulesExists(Integer,string);
+external function Boolean UseTaxTemplatesforTaxCalc();
+external procedure TaxMatrixConvertB1ToB2(record TaxMatrixVc,var val,var val,var val,var val);
+external function Integer CheckUsers(string,string,var string,Boolean);
+external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
+external function Integer SetAcceptanceStatus(Integer,string,val);
+external function Boolean AllowedToTakeFromLocation(string);
+external function Boolean QTTestCredMan(record QTVc,var Integer);
+external function Boolean IsVATCodeDefined(string);
+external function Boolean VATAccIsClosed(string,var string,Integer);
+external function val GetINCostPrice(string,string,Boolean);
+external updating procedure SMSWhenQT(record QTVc,Integer);
+external function Integer CheckRates(string,val,val,val,val,val,var string);
+external updating procedure UpdateVARItemsQT(record QTVc);
+external function Boolean IsRecipeClosed(string);
+external function Date ConvertPlanShipString(string);
+external function Boolean ReadFirstItem(string,var record INVc,Boolean,Boolean);
+external function Boolean CorrectM4ValProc(val);
+external function Boolean CheckAllowedSize(record INVc,val,val,val);
+external function Integer CheckObjs(string,string,var string);
+
+external function Integer PayTermType(string);
+external function Integer CheckVATNrMask(string,string,Integer,var string);
+external function Boolean Date2Test(string,Date,string,Integer);
+external function Boolean SerNrTestQTVc(LongInt,Date,var Boolean);
+external procedure QTSumup(var record QTVc);
+external procedure SwapM4Val(var val,var val);
+external procedure B1ToB2Val(val,val,val,var val);
+external procedure ConvertToDualBase(var string,date,var val,var val,var val,var val,var val,var val,Boolean);
+external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
+external procedure GetCurUser(var record UserVc);
+external function Boolean GetItemPriceDiscount3(string,val,var record INVc,string,val,val,val,val,val,string,string,string,string,
+                                                var val,var string,var val,var string,var val,var string,Integer,var Boolean,Date,
+                                                string,Boolean,var Boolean,string,var string,var val,string,string,var string);
+external function Boolean INVc_AllowSales(record INVc,var LongInt);
+
+procedure SetQTAcceptanceFlag(var record QTVc QTr,record QTVc prevQTr,LongInt stat)
+begin
+  val bc1v;
+    
+  Boolean testf;
+  
+  testf = true;
+  switch (stat) begin
+    case Rs_update:
+//      if (prevQTr.OKFlag!=0) then begin
+//        testf = false;
+//      end;
+    otherwise
+      ;
+  end;
+  if (testf) then begin
+    switch (QTr.AcceptanceStatus) begin
+      case kAcceptanceStatePending:
+      case kAcceptanceStateApproved:
+      case kAcceptanceStateRejected:
+      otherwise
+        bc1v = MulRateToBase1(QTr.CurncyCode,QTr.Sum4,QTr.FrRate,QTr.ToRateB1,QTr.ToRateB2,QTr.BaseRate1,QTr.BaseRate2,DefaultCurRoundOff);
+        QTr.AcceptanceStatus = SetAcceptanceStatus(kAcceptanceQT,QTr.CustCode,bc1v);      
+    end;
+  end;
+  return;
+end;
+
+procedure SetQTAcceptanceFlag1(var record QTVc QTr,record QTVc prevQTr,LongInt stat)
+begin
+  val bc1v;
+    
+  Boolean testf;
+  
+  testf = true;
+  switch (stat) begin
+    case Rs_update:
+//      if (prevQTr.OKFlag!=0) then begin
+//        testf = false;
+//      end;
+    otherwise
+      ;
+  end;
+  if (testf) then begin
+    switch (QTr.AcceptanceStatus) begin
+      case kAcceptanceStateNotRequired:// Edit ************************** Friday, 26 October 2012 12:43:37
+      case kAcceptanceStatePending:
+      case kAcceptanceStateApproved:
+      case kAcceptanceStateRejected:
+      otherwise
+        bc1v = MulRateToBase1(QTr.CurncyCode,QTr.Sum4,QTr.FrRate,QTr.ToRateB1,QTr.ToRateB2,QTr.BaseRate1,QTr.BaseRate2,DefaultCurRoundOff);
+        QTr.AcceptanceStatus = SetAcceptanceStatus(kAcceptanceQT,QTr.CustCode,bc1v);      
+    end;
+  end;
+  return;
+end;
+
+function Boolean QTCheckForSalesmanPrice(record QTVc QTr, Integer i, string pricelist, var string errstr)
+begin 
+  record INVc INr;
+  val t,s,price,vreb;
+  val baseprice,calcprice;
+  val temp,tax2prc;
+  string 255 curitemname,salesacc,vatcode,tax2code,taxtemplatecode;
+  Boolean dummyf,calcpricef,res;
+  row QTVc QTrw;
+  
+  res = true;
+  if nonblank(pricelist) then begin
+    MatRowGet(QTr,i,QTrw);
+    if (GetItemPriceDiscount3(QTrw.ArtCode,QTrw.Quant,INr,QTr.CurncyCode,
+                                QTr.FrRate,QTr.ToRateB1,QTr.ToRateB2,QTr.BaseRate1,QTr.BaseRate2,
+                                QTr.LangCode,QTr.CustCat,pricelist,QTr.RebCode,
+                                price,curitemname,vreb,vatcode,baseprice,salesacc,
+                                QTr.ExportFlag,calcpricef,QTr.QTDate,QTr.CustCode,true,dummyf,QTr.PayDeal,tax2code,tax2prc,QTr.Region,QTr.Location,taxtemplatecode)) then begin
+      calcprice = QTrw.Sum/QTrw.Quant;
+      if (price>calcprice) then begin
+        errstr = calcprice;
+        errstr = errstr & USetStr(20111) & price;
+        res = false;
+      end;  
+    end;              
+  end;
+  QTCheckForSalesmanPrice = res;        
+  return;
+end;  
+
+global
+function LongInt QTVcRecordDefaults(var record QTVc QTr,record QTVc QT2r,LongInt long3,LongInt long4)
+begin
+  record QTSettBlock QTSb;
+  LongInt res;
+  LongInt newnr;
+  Date blankd;
+  record UserVc Userr;
+  record AccBlock ARAccRec;
+  val fr,to1,to2,br1,br2;
+  string 10 curcode;
+  record ProjectBlock ProjectRec;
+
+  BlockLoad(QTSb);
+  BlockLoad(ARAccRec);
+  BlockLoad(ProjectRec);
+  QTr.SerNr = -1;
+  QTr.OrderNr = -1;
+  QTr.QTDate = CurrentDate;
+  if (QTSb.DefaultValidDays>0) then begin
+    QTr.ValidUntilDate = AddDay(QTr.QTDate,QTSb.DefaultValidDays);
+  end;
+  QTr.CustCat = "";
+  QTr.ExportFlag = 0;
+  QTr.Rejected = 0;
+  QTr.RejectDate = blankd;
+  QTr.DiscSum = blankval;
+  QTr.DiscPerc = blankval;
+  QTr.TotGP = blankval;
+  QTr.Probability = blankval;
+  QTr.TotQty = blankval;
+  QTr.TotWeight = blankval;
+  QTr.TotVolume = blankval;      
+  QTr.SumTime = blankval;
+  QTr.SumOther = blankval;      
+  QTr.SumStocked = blankval;      
+  QTr.SumMaterial = blankval;      
+  QTr.InclVAT = ARAccRec.BasePriceInclVAT;
+  QTr.NoTAXonVAT = ARAccRec.NoTAXonVAT;
+  QTr.TotalwoTAX = ARAccRec.TotalwoTAX;
+  QTr.DaysToDelivery = -1;
+  if (SingleUserMode) then begin
+    QTr.SerNr = NextSerNr("QTVc",QTr.QTDate,-1,false,"");
+  end;
+  GetCurUser(Userr);
+  QTr.Objects = Userr.PersObjx;
+  QTr.OurContact = Userr.CurOurContact;
+  QTr.Location = Userr.Location;
+  QTr.SalesMan = Userr.Code;
+  QTr.SalesGroup = Userr.SalesGroup;
+  QTr.PayDeal = "";
+  curcode = QTr.CurncyCode;
+  GetFullCurncyRate(curcode,QTr.QTDate,fr,to1,to2,br1,br2);
+  QTr.CurncyCode = curcode;
+  QTr.FrRate = fr;
+  QTr.ToRateB1 = to1; 
+  QTr.ToRateB2 = to2;
+  QTr.BaseRate1 = br1;
+  QTr.BaseRate2 = br2;
+  QTr.BudTime = ProjectRec.BudTime;
+  QTr.BudOther = ProjectRec.BudOther;
+  QTr.BudStocked = ProjectRec.BudStocked;
+  QTr.BudMaterial = ProjectRec.BudMaterial;
+  QTr.AcceptanceStatus = kAcceptanceStateNotRequired;
+  if (AcceptanceRulesExists(kAcceptanceQT,QTr.CustCode)) then begin
+    QTr.AcceptanceStatus = kAcceptanceStateNotStarted;
+  end;
+  QTVcRecordDefaults = res;  
+  RETURN;
+END;
+
+global
+procedure RecalculateWeightQTVc(var record QTVc QTp,Boolean readf)
+BEGIN
+  row QTVc QTrw;
+  Integer rwcnt,i;
+  record INVc INr;
+  
+  if (readf) then begin
+    if (ReadFirstMain(QTp,0,true)) then begin end;
+  end;
+  QTp.TotQty = blankval;
+  QTp.TotVolume = blankval;
+  QTp.TotWeight = blankval;
+  rwcnt = MatRowCnt(QTp);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(QTp,i,QTrw);
+    QTp.TotQty = QTp.TotQty + QTrw.Quant;
+    if (ReadFirstItem(QTrw.ArtCode,INr,true,true)) then begin
+      QTp.TotVolume = QTp.TotVolume + QTrw.Quant*INr.Volume;
+      QTp.TotWeight = QTp.TotWeight + QTrw.Quant*INr.Weight;
+    end;          
+  end;
+  RETURN;
+END;
+
+global
+function LongInt QTVcRecordUpdate(var record QTVc QTr,record QTVc QT2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+
+  RecalculateWeightQTVc(QTr,false);  
+  SetQTAcceptanceFlag1(QTr,QT2r,stat);
+  QTVcRecordUpdate = res; 
+  RETURN;
+END;
+
+global
+updating function LongInt QTVcRecordUpdateAfter(var record QTVc QTr,record QTVc QT2r,LongInt long3,LongInt long4)
+BEGIN
+  LongInt res;
+
+  UpdateVARItemsQT(QTr);
+  if (QTr.Rejected==2) and (QT2r.Rejected!=2) then begin
+    SMSWhenQT(QTr,1);  
+  end;
+  QTVcRecordUpdateAfter = res; 
+  RETURN;
+END;
+
+global
+function LongInt QTVcRecordSave(var record QTVc QTr,record QTVc QT2r,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+
+  RecalculateWeightQTVc(QTr,false);
+  SetQTAcceptanceFlag(QTr,QT2r,stat);
+  QTVcRecordSave = res; 
+  RETURN;
+END;
+
+global
+updating function LongInt QTVcRecordSaveAfter(var record QTVc QTr,record QTVc QT2r,LongInt long3,LongInt long4)
+BEGIN
+  LongInt res;
+
+  UpdateVARItemsQT(QTr);
+  if (QTr.Rejected==2) then begin
+    SMSWhenQT(QTr,1);  
+  end;
+  QTVcRecordSaveAfter = res; 
+  RETURN;
+END;
+
+global
+function LongInt QTVcRecordDuplicate(var record QTVc QTr,record QTVc QT2r,LongInt long3,LongInt long4)
+begin
+  record QTSettBlock QTSb;
+  LongInt res;
+  val fr,to1,to2,br1,br2;
+  string 10 curcode;
+  Date blankd;
+  Integer i,rwcnt;
+  row QTVc QTrw;
+
+  BlockLoad(QTSb);
+  QTr.SerNr = -1;
+  QTr.DiscSum = blankval;
+  QTr.DiscPerc = blankval;
+  QTr.Probability = blankval;
+  QTr.OrderNr = -1;
+  QTr.Rejected = 0;
+  QTr.Closed = 0;
+  QTr.RejectDate = blankd;
+  curcode = QTr.CurncyCode;
+  GetFullCurncyRate(curcode,QTr.QTDate,fr,to1,to2,br1,br2);
+  QTr.CurncyCode = curcode;
+  QTr.FrRate = fr;
+  QTr.ToRateB1 = to1; 
+  QTr.ToRateB2 = to2;
+  QTr.BaseRate1 = br1;
+  QTr.BaseRate2 = br2;
+  QTr.QTDate = CurrentDate;
+  if (QTSb.DefaultValidDays>0) then begin
+    QTr.ValidUntilDate = AddDay(QTr.QTDate,QTSb.DefaultValidDays);
+  end;
+  rwcnt = MatRowCnt(QTr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(QTr,i,QTrw);
+    QTrw.Invoiced = -1;
+    QTrw.InvDate = blankd;
+    QTrw.BasePrice = GetINCostPrice("",QTrw.ArtCode,false);
+    MatRowPut(QTr,i,QTrw);
+  end;
+  if (SingleUserMode) then begin
+    QTr.SerNr = NextSerNr("QTVc",QTr.QTDate,-1,false,"");
+  end;
+  QTr.AcceptanceStatus = kAcceptanceStateNotRequired;
+  if (AcceptanceRulesExists(kAcceptanceQT,QTr.CustCode)) then begin
+    QTr.AcceptanceStatus = kAcceptanceStateNotStarted;
+  end;
+  QTVcRecordDuplicate = res;  
+  RETURN;
+END;
+
+procedure QTVcConvertB1ToB2(record QTVc QTp,val fr,var val to1,var val to2,var val br1,var val br2)
+BEGIN
+  row QTVc QTrw;
+  Integer i,rwcnt;
+  val t;
+  record TaxMatrixVc TMr;
+
+  SwapM4Val(br1,br2);
+  SwapM4Val(to1,to2); 
+  rwcnt = MatRowCnt(QTp);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(QTp,i,QTrw);
+    B1ToB2Val(QTrw.rowGP,br1,br2,t);
+    QTrw.rowGP = t;
+    B1ToB2Val(QTrw.BasePrice,br1,br2,t);
+    QTrw.BasePrice = t;    
+    MatRowPut(QTp,i,QTrw);
+  end;
+  RETURN;
+END;
+
+global
+updating function LongInt QTVcRecordImport(var record QTVc QTr,record QTVc QT2r,LongInt long3,LongInt long4)
+BEGIN
+  LongInt res;  
+  Boolean gBase1ToBase2,gToDualBase;
+  record ConvMasterBlock cvm;
+  val fr,to1,to2,br1,br2,t;
+  string 10 curncy;
+  Integer rwcnt,i;
+  row QTVc QTrw;
+  record AccBlock Accb;
+
+  BlockLoad(cvm);  
+  BlockLoad(Accb);  
+  if (QTr.SerNr==-99) then begin
+    QTr.SerNr = NextSerNr("QTVc",QTr.QTDate,-1,false,"");
+  end;
+  if (cvm.DualBaseCurrencyFlag!=0) then begin gToDualBase = true; end;
+  if (cvm.Base1ToBase2Flag!=0) then begin gBase1ToBase2 = true; end;
+  if (gToDualBase) then begin
+    fr = QTr.FrRate;
+    to1 = QTr.ToRateB1;
+    to2 = QTr.ToRateB2;
+    br1 = QTr.BaseRate1;
+    br2 = QTr.BaseRate2;
+    t = QTr.Sum4;
+    curncy = QTr.CurncyCode;
+    ConvertToDualBase(curncy,QTr.QTDate,fr,to1,to2,br1,br2,t,true);
+    QTr.CurncyCode = curncy;
+    QTr.FrRate = fr;
+    QTr.ToRateB1 = to1;
+    QTr.ToRateB2 = to2;
+    QTr.BaseRate1 = br1;
+    QTr.BaseRate2 = br2;
+    QTr.Sum4 = t;  
+  end;
+  if (gBase1ToBase2) then begin
+    to1 = QTr.ToRateB1;
+    to2 = QTr.ToRateB2;
+    br1 = QTr.BaseRate1;
+    br2 = QTr.BaseRate2;  
+    QTVcConvertB1ToB2(QTr,QTr.FrRate,to1,to2,br1,br2);
+    QTr.ToRateB1 = to1;
+    QTr.ToRateB2 = to2;
+    QTr.BaseRate1 = br1;
+    QTr.BaseRate2 = br2;
+    QTr.BaseSum4 = MulRateToBase1(QTr.CurncyCode,QTr.Sum4,QTr.FrRate,QTr.ToRateB1,QTr.ToRateB2,QTr.BaseRate1,QTr.BaseRate2,DefaultCurRoundOff);
+  end;
+  if (QTr.TotGP==0) then begin      
+    rwcnt = MatRowCnt(QTr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(QTr,i,QTrw);
+      if (nonblank(QTrw.ArtCode)) then begin
+        QTr.TotGP = QTr.TotGP + QTrw.rowGP;
+      end;
+    end;
+  end;
+  if (blankdate(QTr.PlanShipDate)) then begin
+    QTr.PlanShipDate = ConvertPlanShipString(QTr.PlanShip);
+  end;  
+  if (QTr.NoTAXonVAT==-1) then begin
+    QTr.NoTAXonVAT = Accb.NoTAXonVAT;
+  end;
+  QTVcRecordImport = res;  
+  RETURN;
+END;
+
+function Boolean CheckCurncyRates(string crncy,val from,val to1,val to2,val base1,val base2)
+BEGIN
+  Boolean res;
+  record BaseCurBlock bascur;
+
+  res = true;
+  BlockLoad(bascur);
+  if ((nonblank(crncy)) and (bascur.BaseCur1!=crncy) and (bascur.BaseCur2!=crncy)) then begin
+    if ((to1==0) and (to2==0)) then begin
+      res = false;
+    end;
+  end;
+  CheckCurncyRates = res;
+  RETURN;
+END;
+
+global
+function LongInt QTVcRecordCheck(record QTVc QTp,record QTVc QT2p,LongInt stat,LongInt long4)
+BEGIN
+  LongInt res;
+  record ProjectBlock PRRec;
+  record SRBlock SRRec;
+  record QTVc locQTr;
+  record CUVc CUr;
+  record CUVc CU2r;
+  record INVc INr;
+  record PRVc PRr;
+  row QTVc QTrw;
+  Integer i,rwcnt,errcode;
+  LongInt oldnr,ErrorCode;
+  Boolean gentrans;
+  string 255 tstr,errstr;
+  Integer insertmode,updatemode;
+  record QTSettBlock QTSetb;
+  record UserVc User;
+  record TaxTemplateVc TTr;
+
+  res = 0;
+  insertmode = 1;//Rs_insert
+  updatemode = 2;//Rs_update
+  BlockLoad(SRRec);
+  BlockLoad(PRRec);
+  BlockLoad(QTSetb);
+  if (stat==updatemode) then begin
+    if (QTp.SerNr<=0) then begin
+      QTp.SerNr = QT2p.SerNr;
+    end;
+  end;  
+  oldnr = QTp.SerNr;
+  if (QTp.SerNr<=0) then begin
+    QTp.SerNr = NextSerNr("QTVc",QTp.QTDate,SRRec.LastQTNr,false,"");
+  end;
+  if ((stat==insertmode) or (QTp.SerNr!=QT2p.SerNr)) then begin
+    locQTr.SerNr = QTp.SerNr;
+    if (ReadFirstMain(locQTr,1,true)) then begin
+      RecordCheckError(1547,"",-1,"SerNr");      
+      res = -1; 
+      goto LQTVcRecordCheck;
+    end;
+  end;
+  if (SerNrTestQTVc(QTp.SerNr,QTp.QTDate,gentrans)==false) then begin
+    RecordCheckError(1557,"",-1,"SerNr");      
+    res = -1; 
+    goto LQTVcRecordCheck;
+  end;
+  if (Date2Test("QTVc",QTp.QTDate,"QTDate",-1)==false) then begin
+    res = -1;
+    goto LQTVcRecordCheck;
+  end;
+  if (QTSetb.ReqQTClass!=0) then begin
+    if (blank(QTp.QuoteClass)) then begin
+      RecordCheckError(20109,"",-1,"QuoteClass");
+      res = -1;
+      goto LQTVcRecordCheck;  
+    end;
+  end;  
+  CUr.Code = QTp.CustCode;
+  if (ReadFirstMain(CUr,1,true)==false) then begin
+    RecordCheckError(1120,QTp.CustCode,-1,"CustCode");      
+    res = -1; 
+    goto LQTVcRecordCheck;
+  end;
+  if (CUr.CUType==0) then begin
+    RecordCheckError(1120,QTp.CustCode,-1,"CustCode");      
+    res = -1; 
+    goto LQTVcRecordCheck;
+  end;
+  errcode = CheckVATNrMask(QTp.VATNr,CUr.CountryCode,CUr.CustType,tstr);
+  if (errcode!=0) then begin
+    RecordCheckError(errcode,tstr,-1,"VATNr");      
+    res = -1; 
+    goto LQTVcRecordCheck;
+  end;
+  if (CUr.blockedFlag!=0) then begin
+    RecordCheckError(1265,QTp.CustCode,-1,"CustCode");      
+    res = -1; 
+    goto LQTVcRecordCheck;
+  end;
+  if (PayTermType(QTp.PayDeal)==3) then begin
+    RecordCheckError(1227,QTp.PayDeal,-1,"PayDeal");      
+    res = -1; 
+    goto LQTVcRecordCheck;
+  end;
+//  if (nonblank(QTp.Objects)) then begin
+    errcode = CheckObjs("",QTp.Objects,errstr);
+    if (errcode!=0) then begin
+      RecordCheckError(errcode,errstr,-1,"Objects");      
+      res = -1; 
+      goto LQTVcRecordCheck;
+    end;
+//  end;
+  if (QTp.ExportFlag!=0) then begin
+    if (UserCanAction("DisallowExpSales",false)) then begin
+      RecordCheckError(20049,"",-1,"CustCode");   
+      res = -1; 
+      goto LQTVcRecordCheck;
+    end; 
+  end;
+  if (QTp.ExportFlag==0) then begin
+    if (UserCanAction("DisallowDomSales",false)) then begin
+      RecordCheckError(20056,"",-1,"CustCode");   
+      res = -1; 
+      goto LQTVcRecordCheck;
+    end; 
+  end;
+  if (nonblank(QTp.PRCode)) then begin
+    PRr.Code = QTp.PRCode;
+    if (ReadFirstMain(PRr,1,true)) then begin
+      if ((QTp.CustCode!=PRr.CustCode) and (nonblank(PRr.CustCode))) then begin
+        RecordCheckError(1218,"",-1,"PRCode");      
+        res = -1; 
+        goto LQTVcRecordCheck;
+      end;
+      if (nonblank(PRr.CurncyCode)) then begin
+        if (QTp.CurncyCode!=PRr.CurncyCode) then begin
+          RecordCheckError(20573,"",-1,"PRCode");      
+          res = -1;
+          goto LQTVcRecordCheck;
+        end;
+      end;
+    end else begin
+      RecordCheckError(1232,"",-1,"PRCode");      
+      res = -1; 
+      goto LQTVcRecordCheck;
+    end;    
+    if (PRr.Terminated!=0) then begin
+      RecordCheckError(2086,"" & PRr.Code,-1,"PRCode");      
+      res = -1; 
+      goto LQTVcRecordCheck;
+    end;        
+    if (PRRec.AllowSingleQuote!=0) then begin
+      locQTr.PRCode = QTp.PRCode;
+      if (ReadFirstKey("PRCode",locQTr,1,true)) then begin
+        if (locQTr.SerNr!=QTp.SerNr) then begin
+          RecordCheckError(2080,"",-1,"PRCode");      
+          res = -1; 
+          goto LQTVcRecordCheck;
+        end;
+      end;
+    end;
+  end;
+  if (nonblank(CUr.CurncyCode)) then begin
+    if (CUr.CurncyCode!=QTp.CurncyCode) then begin
+      RecordCheckError(1217,"",-1,"CurncyCode");      
+      res = -1; 
+      goto LQTVcRecordCheck;
+    end;
+  end;      
+  if (nonblank(QTp.SalesMan)) then begin    
+    if (VerifySalesmen(QTp.SalesMan,tstr)==false) then begin
+      RecordCheckError(1290,": " & tstr,-1,"SalesMan");
+      res = -1; 
+      goto LQTVcRecordCheck;
+    end;
+  end;
+  if (nonblank(QTp.OrgCust)) then begin
+    CU2r.Code = QTp.OrgCust;
+    if (ReadFirstMain(CU2r,1,true)) then begin
+      if ((nonblank(CUr.CurncyCode) or nonblank(CU2r.CurncyCode)) and CUr.CurncyCode!=CU2r.CurncyCode) then begin
+        RecordCheckError(1217,"",-1,"OrgCust");      
+        res = -1; 
+        goto LQTVcRecordCheck;
+      end;
+    end;
+  end;
+  if (AllowedToTakeFromLocation(QTp.Location)==false) then begin
+    RecordCheckError(1768,"",-1,"Location");      
+    res = -1;
+    goto LQTVcRecordCheck;
+  end;
+/*  
+  if (CheckCurncyRates(QTp.CurncyCode,QTp.FrRate,QTp.ToRateB1,QTp.ToRateB2,QTp.BaseRate1,QTp.BaseRate2)==false) then begin
+    RecordCheckError(1582,"",-1,"ToRateB1");      
+    res = -1; 
+    goto LQTVcRecordCheck;
+  end;  
+*/  
+  errcode = CheckRates(QTp.CurncyCode,QTp.FrRate,QTp.ToRateB1,QTp.ToRateB2,QTp.BaseRate1,QTp.BaseRate2,tstr);
+  if (errcode!=0) then begin
+    RecordCheckError(errcode,"",-1,tstr);      
+    res = -1; 
+    goto LQTVcRecordCheck;
+  end;      
+  if (QTp.Rejected!=0) then begin
+    if ((stat==insertmode) or (QTp.Rejected!=QT2p.Rejected)) then begin
+      if (blankdate(QTp.RejectDate)) then begin
+        QTp.RejectDate = CurrentDate;
+      end;
+    end;
+  end;
+  if (QTTestCredMan(QTp,errcode)==false) then begin
+    MessageBox(errcode,"");
+  end;    
+  if (nonblank(QTp.SalesMan)) then begin
+    errcode = CheckUsers(QTp.SalesMan,"",tstr,true);  
+    if (errcode!=0) then begin
+      RecordCheckError(errcode,tstr,-1,"SalesMan");      
+      res = -1;
+      goto LQTVcRecordCheck;
+    end;      
+  end;
+  User.Code = CurrentUser;
+  if ReadFirstMain(User,1,true) then begin 
+  end;
+  rwcnt = MatRowCnt(QTp);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(QTp,i,QTrw);
+    switch (QTrw.stp) begin
+      case 1:
+        if (VATAccIsClosed(QTrw.VATCode,tstr,1)) then begin
+          RecordCheckError(1258,tstr,i,"VATCode");      
+          res = -1; 
+          goto LQTVcRecordCheck;
+        end;          
+        if ((nonblank(QTrw.VATCode)) and (IsVATCodeDefined(QTrw.VATCode)==false)) then begin
+          RecordCheckError(1120,QTrw.VATCode,i,"VATCode");      
+          res = -1; 
+          goto LQTVcRecordCheck;
+        end;
+        if (nonblank(QTrw.ArtCode)) then begin
+          if (ReadFirstItem(QTrw.ArtCode,INr,true,false)==false) then begin
+            RecordCheckError(1120,QTrw.ArtCode,i,"ArtCode");      
+            res = -1; 
+            goto LQTVcRecordCheck;
+          end;
+          if (!INVc_AllowSales(INr,ErrorCode)) then begin
+            RecordCheckError(ErrorCode,"",i,"ArtCode");      
+            res = -1; 
+            goto LQTVcRecordCheck;
+          end;
+          if (INr.Terminated!=0) then begin
+            RecordCheckError(1120,QTrw.ArtCode,i,"ArtCode");      
+            res = -1; 
+            goto LQTVcRecordCheck;
+          end;
+          if (long4!=0) then begin
+            if (IsRecipeClosed(INr.Recepy)) then begin
+              RecordCheckError(2088,"",i,"ArtCode");      
+              res = -1; 
+              goto LQTVcRecordCheck;
+            end;
+          end;
+          if (CheckAllowedSize(INr,QTrw.UnitXval,QTrw.UnitYval,QTrw.UnitZval)==false) then begin
+            RecordCheckError(1480,QTrw.ArtCode,i,"UnitXval");      
+            res = -1; 
+            goto LQTVcRecordCheck;
+          end;
+        end;
+//        if (nonblank(QTrw.Objects)) then begin
+          tstr = QTp.Objects;
+          if (nonblank(tstr)) then begin tstr = tstr & ","; end;
+          tstr = tstr & QTrw.Objects;
+          errcode = CheckObjs(QTrw.SalesAcc,tstr,errstr);
+          if (errcode!=0) then begin
+            RecordCheckError(errcode,errstr,i,"Objects");      
+            res = -1; 
+            goto LQTVcRecordCheck;
+          end;
+//        end;
+        if (QTrw.Sum!=0) then begin
+          if (nonblank(QTrw.ArtCode)) then begin
+            if (UseTaxTemplatesforTaxCalc) then begin
+              if (blank(QTrw.TaxTemplateCode)) then begin
+                RecordCheckError(24201,"",i,"TaxTemplateCode");      
+                res = -1;
+                goto LQTVcRecordCheck;
+              end;
+              TTr.Code = QTrw.TaxTemplateCode;
+              if (ReadFirstMain(TTr,1,true)==false) then begin
+                RecordCheckError(1120,QTrw.TaxTemplateCode,-1,"TaxTemplateCode");                
+                res = -1; 
+                goto LQTVcRecordCheck;
+              end;
+            end else begin
+              if (blank(QTrw.VATCode)) then begin
+                RecordCheckError(1134,"",i,"VATCode");      
+                res = -1;
+                goto LQTVcRecordCheck;
+              end;
+            end;
+          end; 
+          if (CorrectM4ValProc(QTrw.vRebate)==false) then begin
+            RecordCheckError(1019,"",i,"vRebate");      
+            res = -1; 
+            goto LQTVcRecordCheck;
+          end;
+        end;
+        if (QTCheckForSalesmanPrice(QTp,i,User.MinPLCode,errstr)==false) then begin 
+          RecordCheckError(20115,errstr,i,"Price");      
+          res = -1; 
+          goto LQTVcRecordCheck;
+        end;  
+    end;
+  end;
+LQTVcRecordCheck:;
+  if (res!=0) then begin QTp.SerNr = oldnr; end;
+  QTVcRecordCheck = res;
+  RETURN;
+END;
+
+global
+updating function LongInt QTVcRecordRemove(var record QTVc QTr,record QTVc QT2r,LongInt long3,LongInt long4)
+begin
+  LongInt res;
+  record ORVc ORr;
+  record ORVc oldORr;
+
+  ORr.QuoteNr = QTr.SerNr;
+  if (ReadFirstKey("QuoteNr",ORr,1,true)) then begin
+    RecordCopy(oldORr,ORr);
+    ORr.QuoteNr = -1;
+    RecordUpdate(oldORr,ORr,true);
+  end;
+  QTVcRecordRemove = res; 
+  return;
+end;
