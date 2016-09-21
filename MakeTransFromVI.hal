@@ -634,7 +634,16 @@ BEGIN
     errstrno = 1075;
     goto LMakeTransFromVI;
   end;
-  ftxt = VIp.VECode;
+  // Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 21 September 2016 11:29:33
+	
+  if(nonblank(VIp.InvoiceNr))then begin
+		ftxt = VIp.InvoiceNr & ", ";
+  end;
+  
+	// Edit End ---------------------------------------------- Edit End
+	
+  ftxt = ftxt & VIp.VECode;// Edit ************************** Wednesday, 21 September 2016 11:28:27
   ftxt = ftxt & " ";
   ftxt = ftxt & VIp.VEName;
   if (nonblank(VIp.CurncyCode)) then begin
