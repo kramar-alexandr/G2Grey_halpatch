@@ -890,11 +890,11 @@ BEGIN
   string 10 oldsalesman;
   string 60 objs;
 
-  //RemoveOldProjectObjects(oldprcode,QTr.Objects);// Edit ************************** Wednesday, 21 September 2016 11:25:59
+  RemoveOldProjectObjects(oldprcode,QTr.Objects);
   PRr.Code = QTr.PRCode;
   if (ReadFirstMain(PRr,1,true)) then begin
     if (QTr.CustCode!=PRr.CustCode) then begin
-      //RemoveOldCustObjects(QTr.CustCode,QTr.Objects);// Edit ************************** Wednesday, 21 September 2016 11:25:55
+      RemoveOldCustObjects(QTr.CustCode,QTr.Objects);
       QTr.CustCode = PRr.CustCode;
       if (PasteCustInQT(QTr,QTr.CustCode,"",warning,true)) then begin
         BlockLoad(PRb);
@@ -902,7 +902,7 @@ BEGIN
         QTr.BudOther = PRb.BudOther;
         QTr.BudStocked = PRb.BudStocked;
         QTr.BudMaterial = PRb.BudMaterial;    
-        //QTr.Objects = AddObjectToObjectList(QTr.Objects,PRr.Objects);// Edit ************************** Wednesday, 21 September 2016 11:25:49
+        QTr.Objects = AddObjectToObjectList(QTr.Objects,PRr.Objects);
         oldsalesman = QTr.SalesMan;
         QTr.SalesMan = PRr.Leader;
         if (nonblank(PRr.PrSalesMan)) then begin
@@ -918,7 +918,7 @@ BEGIN
         res = true;
       end;
     end else begin
-      //QTr.Objects = AddObjectToObjectList(QTr.Objects,PRr.Objects);// Edit ************************** Wednesday, 21 September 2016 11:25:45
+      QTr.Objects = AddObjectToObjectList(QTr.Objects,PRr.Objects);
       res = true;
 
     end;
