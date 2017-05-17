@@ -235,6 +235,9 @@ BEGIN
   string 30 phonetmp;
   integer pos;
   boolean testf,test2f,test3f;
+  record QTVc QTr;
+  record POVc POr;
+  string 200 salesman;
 
   if ((Actr.OKFlag!=0) and (Act2r.OKFlag==0)) then begin
     ActOK(Actr);
@@ -260,7 +263,7 @@ BEGIN
   end;
   
   testf = false;
-  if (Act2r.OKFlag==0) and (Actr.OKFlag==1) then begin
+  //if (Act2r.OKFlag==0) and (Actr.OKFlag==1) then begin
     if Actr.TodoFlag==1 then begin
       while (loopmain(ARr,1,testf==false)) begin
         if ARr.AcceptanceActType==Actr.ActType then begin
@@ -271,9 +274,22 @@ BEGIN
         end;
       end;
     end;
-  end;
+  //end;
   if testf begin
-    ExtractObj(Actr.MainPersons,pos,person);
+  	switch (Actr.FromFileName) begin
+      case "POVc":
+      	POr.SerNr = Actr.FromSerNr;
+      	if(readfirstmain(POr,1,true))then begin
+      		salesman = POr.SalesMan;
+      	end;
+      case "QTVc":
+        QTr.SerNr = Actr.FromSerNr;
+      	if(readfirstmain(QTr,1,true))then begin
+      		salesman = QTr.SalesMan;
+      	end;
+    end;
+  	
+    ExtractObj(salesman,pos,person);
     while (nonblank(person)) begin
       Ur.Code = person;
       if ReadFirstMain(Ur,1,true) then begin
@@ -303,19 +319,13 @@ BEGIN
           reciever = reciever & phone & ",";
         end;
       end;
-      ExtractObj(Actr.MainPersons,pos,person);
+      ExtractObj(salesman,pos,person);
     end;
     reciever = left(reciever,len(reciever) - 1);
     test2f = false;
     switch (Actr.FromFileName) begin
       case "POVc":
         text = "PO ";
-        test2f = true;
-      case "IPVc":
-        text = "Payment ";
-        test2f = true;
-      case "PIVc":
-        text = "Payment ";
         test2f = true;
       case "QTVc":
         text = "CE ";
@@ -324,16 +334,20 @@ BEGIN
     if test2f then begin
       text = text & Actr.FromSerNr & " was ";
       test3f = false;
-      if (Actr.ActResult==appr) then begin
+      if (Actr.ActResult=="ACPT") then begin
         text = text & "approved ";
         test3f = true;
       end;
-      if (Actr.ActResult==corr) then begin
+      /*if (Actr.ActResult==corr) then begin
         text = text & "sent for correction ";
         test3f = true;
-      end;
-      if (Actr.ActResult==rej) then begin
+      end;*/
+      if (Actr.ActResult=="REJEC") then begin
         text = text & "rejected ";
+        test3f = true;
+      end;
+      if (Actr.ActResult=="CANCL") then begin
+        text = text & "canceled ";
         test3f = true;
       end;
       if test3f then begin
