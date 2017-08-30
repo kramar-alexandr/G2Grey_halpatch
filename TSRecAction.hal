@@ -162,6 +162,23 @@ BEGIN
         res = -1;
         goto LTSVcRecordCheck;
       end;
+      // Edit Start ---------------------------------------------- Edit Start
+	//Friday, 7 July 2017 14:00:16
+	
+      if(PRr.Terminated!=0)then begin
+      	RecordCheckError(31016,"",i,"PRCode");      
+        res = -1;
+        goto LTSVcRecordCheck;
+      end;
+      if(PRr.PRStage!="1")then begin
+      	RecordCheckError(31017,"",i,"PRCode");      
+        res = -1;
+        goto LTSVcRecordCheck;
+      end;
+      
+	// Edit End ---------------------------------------------- Edit End
+	
+      
       if (stat!=updatemode) or (TSr.OKFlag==0) then begin
         if (PRr.Terminated>0) then begin
           RecordCheckError(1236,"",i,"PRCode");      

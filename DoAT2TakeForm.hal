@@ -45,6 +45,7 @@ BEGIN
   record AT2UnitVc AT2Unitr;
   string 255 tstr,respp;
   val t,t2;
+  record UserVc Userr;// Edit ************************** Thursday, 18 May 2017 17:29:44
   
   rwcnt = MatRowCnt(AT2Taker);
   for (i=0;i<rwcnt;i=i+1) begin
@@ -84,15 +85,28 @@ BEGIN
       OUTFORMFIELD("F_REVALUATEDVALUE",t);
     end;  
     OUTFORMFIELD("F_PURCHVAL",AT2Unitr.PurchVal);  
+    // Edit Start ---------------------------------------------- Edit Start
+	//Thursday, 18 May 2017 17:28:17
+	
     if (FIELDINFORM("MYF_PERSON")) then begin
     	tstr = "";
     	tstr = AT2Taker.RespPerson;
     	if(nonblank(AT2Takerw.LoanPerson))then begin
     		tstr = AT2Takerw.LoanPerson;
     	end;
+    	if(nonblank(tstr))then begin
+    		Userr.Code = tstr;
+    		if(readfirstmain(USerr,1,true))then begin
+    			if(nonblank(Userr.Name))then begin
+    				tstr = Userr.Name;
+    			end;
+    		end;
+    	end;
     	OUTFORMFIELD("MYF_PERSON",tstr);  
     end;
     
+	// Edit End ---------------------------------------------- Edit End
+	
     EndFormRow;        
   end;  
   RETURN;
