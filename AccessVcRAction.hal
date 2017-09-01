@@ -73,12 +73,12 @@ begin
 		end;
 	
 	
-		For(i=0;i<mtrw;i=i+1) begin
+		For(i=0;i<mtrw2;i=i+1) begin
 			matrowget(Accs2r,i,Accs2rw);
 			remf = true;
-			For(k=0;k<mtrw2;k=k+1) begin
+			For(k=0;k<mtrw;k=k+1) begin
 				matrowget(Accsr,k,Accsrw);
-				if(Accsrw.AccType==Accs2rw.AccType and Accsrw.AccName==Accs2rw.AccName)then begin
+				if(Accsrw.AccType==Accs2rw.AccType and Accsrw.AccName==Accs2rw.AccName and Accsrw.AccType>0 and Accs2rw.AccType>0)then begin
 					remf = false;
 				end;
 			end; 
