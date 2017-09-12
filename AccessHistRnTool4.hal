@@ -6,6 +6,7 @@ global function string 255 GetSettingName(string accname)begin
 		res = accname;
 	end;
 	switch(accname)begin
+		case "AccessLClass": res = "Access Groups";
 		case "ExportVATIVXMLTClass": res = "Export of discharged Tax Invoices";
 		case "RecordHistoryLClass": res = "History of registry changes";
 		case "IVDebRowsLClass": res = "Tax Code Codes";

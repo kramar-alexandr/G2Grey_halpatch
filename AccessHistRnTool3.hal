@@ -9,6 +9,8 @@ function string 255 GetReportName(string accname)begin
 	end;
 	
 	switch(accname)begin
+		case "POStatRClass": res = "Purchase Order Status";
+		case "POStatRn": res = "Purchase Order Status";
 		case "krProjectInfoRClass": res = "A note on the projects";
 		case "ChangedTSRClass": res = "Edited timetables";
 		case "PurOrdJRClass": res = "Purchase Order History (new)";

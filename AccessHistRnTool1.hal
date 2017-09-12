@@ -313,6 +313,11 @@ function string 255 GetRecordName(string accname)begin
 		res = accname;
 	end;
 	switch(accname)begin
+		case "CUEmployeeVc": res = "Contacts";
+		case "ActVc": res = "Activities";
+		case "NotepadVc": res = "Notes";
+		case "CurncyCodeVc": res = "Currencies";
+		case "UserVc": res = "Users";
 		case "AcceptanceRulesVc": res = "Acceptance Rules";
 		case "ContractsVc": res = "Contracts";
 		case "WayListVc": res = "Mileages";
