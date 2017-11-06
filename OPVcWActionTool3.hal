@@ -1,0 +1,1753 @@
+external function val AbsoluteVal(val);
+external procedure OPVc_PasteVATCode(var record OPVc,Integer);
+external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
+external function val MulWithRateToBase1(var string,Date,val,roundmode);
+external function Boolean FindWHVETax(string,Date,var record WHVEVc);
+external function roundmode GetVATRoundMode(record RoundBlock);
+external function roundmode SetRoundModeD(Integer);
+external function roundmode DefaultRoundMode();
+external function string 255 GetSupplierOnAccountAC(string);
+external procedure Mul2VAT(string,val,var val,var val,Integer);
+external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
+external procedure MulVATIV(string,val,var val,var val,Integer,Integer);
+external procedure ExtractObj(string,var Integer,var string);
+external function Boolean PasteInvIn2OPr(var record OPVc,Integer,Date,Integer,val,var string,Boolean,var Boolean);
+external function Integer GetCheck(string,string,LongInt,var string,var string,var string,var val,var Date);
+external function Boolean GetPMCurrency(string,var string);
+external procedure MatchOPRowSums(string,string,Date,string,var val,var string,var val,string,var val,Boolean,Boolean,Boolean);
+external function Integer GetVATLaw();
+external procedure CurValToOtherCur(Date,string,val,string,var val,roundmode);
+external procedure OPSumup(var record OPVc,Boolean);
+
+global
+procedure ChangeOPInvVal(row OPVc oprp,Date tdp)
+begin
+  val t;
+
+  if (oprp.PInvCurncy==oprp.RecCurncy) then begin
+    oprp.PInvVal = oprp.RecVal;
+  end else begin
+    CurValToOtherCur(tdp,oprp.RecCurncy,oprp.RecVal,oprp.PInvCurncy,t,DefaultCurRoundOff);
+    oprp.PInvVal = t;
+  end;
+  return;
+end;
+
+procedure ChangeOPRecVal(Integer rownr,row OPVc oprp,Date tdp)
+BEGIN
+  val t;
+  
+  ChangeOPInvVal(oprp,tdp);
+  if (oprp.BankCurncy==oprp.PInvCurncy) then begin
+    oprp.BankVal = oprp.PInvVal;
+  end else begin
+    if (oprp.BankCurncy==oprp.RecCurncy) then begin
+      oprp.BankVal = oprp.RecVal;
+    end else begin
+      CurValToOtherCur(tdp,oprp.RecCurncy,oprp.RecVal,oprp.BankCurncy,t,DefaultCurRoundOff);
+      oprp.BankVal = t;
+    end;
+  end;
+  if (oprp.PInvVal<0) then begin
+    oprp.B1BankVal = -oprp.B1BankVal;
+    oprp.B2BankVal = -oprp.B2BankVal;
+  end;
+  RETURN;
+END;
+
+procedure ChangeOPBankCurncy(var record OPVc OPp,string curcode)
+BEGIN
+  row OPVc OPrw;
+  Integer rwcnt,i;
+  
+  rwcnt = MatRowCnt(OPp);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(OPp,i,OPrw);
+    OPrw.BankCurncy = curcode;
+    ChangeOPRecVal(i,OPrw,OPp.TransDate);
+    MatRowPut(OPp,i,OPrw);
+  end;
+  RETURN;
+END;
+
+global
+procedure OPVc_PastePayCurCode(var record OPVc OPp)
+BEGIN
+  ChangeOPBankCurncy(OPp,OPp.PayCurCode);
+  OPSumup(OPp,true);
+  RETURN;
+END;
+
+procedure ChangeOPTotPay(var record OPVc OPp,val totvalp)
+BEGIN
+  row OPVc OPrw;
+  Integer rwcnt,i;
+  val oldbtot,sumt,incr,diff;
+  
+  rwcnt = MatRowCnt(OPp);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(OPp,i,OPrw);
+    if ((OPrw.stp==1) and (OPrw.ovst==0)) then begin
+      oldbtot = oldbtot + OPrw.BankVal;
+    end;
+  end;
+  diff = totvalp/oldbtot;
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(OPp,i,OPrw);
+    if ((OPrw.stp==1) and (OPrw.ovst==0)) then begin
+      sumt = totvalp + oldbtot;
+      OPrw.BankVal = OPrw.BankVal*diff;
+      OPrw.BankVal = Round(OPrw.BankVal,DefaultRoundMode);
+      if (OPrw.BankVal==0) then begin OPrw.BankVal = blankval; end;
+      MatRowPut(OPp,i,OPrw);
+      incr = incr + OPrw.BankVal;
+    end;
+  end;
+  for (i=rwcnt-1;i>=0;i=i-1) begin
+    MatRowGet(OPp,i,OPrw);
+    if ((OPrw.stp==1) and (OPrw.ovst==0)) then begin
+      if (OPrw.BankVal!=0) then begin
+        sumt = totvalp - incr;
+        OPrw.BankVal = OPrw.BankVal + sumt;
+        if (OPrw.BankVal==0) then begin OPrw.BankVal = blankval; end;
+        MatRowPut(OPp,i,OPrw);
+        goto LChangeOPTotPay;
+      end;
+    end;
+  end;
+LChangeOPTotPay:;
+  RETURN;
+END;
+
+global
+procedure OPVc_PasteCurPayVal(var record OPVc OPp)
+BEGIN
+  ChangeOPTotPay(OPp,OPp.CurPayVal);
+  OPSumup(OPp,true);
+  RETURN;
+END;
+
+global
+procedure OPVc_PasteVECode(var record OPVc OPp,Integer rownr)
+BEGIN
+  record APAccBlock APAccRec;
+  record BaseCurBlock bascur;
+  record VIVc VIr;
+  record CUVc VEr;
+  string 5 crncy,thepm;
+  string 255 t1,t2;
+  row OPVc OPrw;
+  
+  MatRowGet(OPp,rownr,OPrw);
+  BlockLoad(APAccRec);
+  VIr.SerNr = OPrw.VISerNr;
+  if (ReadFirstMain(VIr,1,true)) then begin
+    if (OPrw.VECode!=VIr.VECode) then begin
+      MessageBox(1251," " & OPrw.VECode);
+    end;
+  end;
+  VEr.Code = OPrw.VECode;
+  if (ReadFirstMain(VEr,1,true)) then begin
+    t1 = VEr.Name;
+    if (GetVATLaw==5) then begin//vatSwedish
+      if (nonblank(VEr.BankAccount)) then begin  //Then bankfile now supports both formats
+        t2 = VEr.BankAccount;
+      end else begin
+        t2 = VEr.Bank;
+      end;
+    end else begin
+      t2 = VEr.BankAccount;
+    end;
+    if (APAccRec.OnAccUseObj!=0) then begin
+      OPrw.Objects = VEr.VEObjects;
+    end;    
+    if (OPrw.VISerNr<0) then begin
+      OPrw.APAcc = GetSupplierOnAccountAC(VEr.Code);
+    end;  
+    OPrw.VEName = VEr.Name;// Edit ************************** Monday, 6 November 2017 13:36:08  
+  end;
+  OPrw.BankAcc = t2;
+  OPrw.SortCode = VEr.SortCode;
+  OPrw.Comment = t1;
+  crncy = VEr.VECurncyCode; 
+  if (blank(crncy)) then begin
+    BlockLoad(bascur);  
+    crncy = bascur.StdBaseCur;
+  end;             
+  OPrw.PInvCurncy = crncy;  
+  OPrw.BankCurncy = crncy;  
+  OPrw.RecCurncy = crncy;
+  if (nonblank(OPrw.PayMode)) then begin
+    thepm = OPrw.PayMode;
+  end else begin
+    thepm = OPp.PayMode;
+  end;  
+  if (GetPMCurrency(thepm,crncy)) then begin end;  
+  if (nonblank(crncy)) then begin
+    OPrw.BankCurncy = crncy;
+  end;
+  MatRowPut(OPp,rownr,OPrw);
+  RETURN;
+END;
+
+procedure ChangeOPRecCur(Integer rownr,row OPVc oprp,Date tdp)
+BEGIN
+  Boolean copytobank;
+  val t;
+
+  if (oprp.PInvCurncy==oprp.RecCurncy) then begin
+    if (oprp.RecVal!=oprp.BankVal) then begin copytobank = true; end;
+    oprp.RecVal = oprp.PInvVal;
+  end else begin
+    if (oprp.RecVal!=oprp.BankVal) then begin copytobank = true; end;
+    CurValToOtherCur(tdp,oprp.PInvCurncy,oprp.PInvVal,oprp.RecCurncy,t,DefaultCurRoundOff);
+    oprp.RecVal = t;
+  end;
+  oprp.RecVal = oprp.RecVal;
+  oprp.PInvVal = oprp.PInvVal;
+  if (copytobank) then begin
+    oprp.BankVal = oprp.RecVal;
+    oprp.BankCurncy = oprp.RecCurncy;
+    oprp.BankVal = oprp.BankVal;
+    oprp.BankCurncy = oprp.BankCurncy;
+  end;
+  if (oprp.VISerNr==-1) then begin
+    oprp.PInvCurncy = oprp.RecCurncy;
+    oprp.PInvVal = oprp.RecVal;
+  end;  
+  RETURN;
+END;
+
+global
+procedure OPVc_PasteRecCurncy(var record OPVc OPp,Integer rownr)
+BEGIN
+  row OPVc OPrw;
+  
+  MatRowGet(OPp,rownr,OPrw);
+  ChangeOPRecCur(rownr,OPrw,OPp.TransDate);
+  MatRowPut(OPp,rownr,OPrw);
+  if (nonblank(OPrw.VATCode)) then begin
+    OPVc_PasteVATCode(OPp,rownr);
+  end;
+  OPSumup(OPp,true);
+  RETURN;
+END;
+
+global
+function Boolean OPVc_PasteToRateB1BankVal(var record OPVc OPp,Integer rownr)
+BEGIN
+  Boolean res;
+  row OPVc OPrw;
+  record BaseCurBlock bascur;
+
+  BlockLoad(bascur);  
+  MatRowGet(OPp,rownr,OPrw);
+  if (nonblank(OPrw.ToRateB1BankVal)) then begin
+    if (OPrw.BankCurncy!=bascur.BaseCur1) then begin
+      OPrw.B1BankVal = OPrw.ToRateB1BankVal*OPrw.BankVal;
+      OPrw.B1BankVal = Round(OPrw.B1BankVal,DefaultRoundMode);
+      MatRowPut(OPp,rownr,OPrw);
+      res = true;
+    end else begin
+      OPrw.B1BankVal = OPrw.ToRateB1BankVal*OPrw.PInvVal;
+      OPrw.B1BankVal = Round(OPrw.B1BankVal,DefaultRoundMode);
+      if (blank(OPrw.ToRateB1BankVal)) then begin
+        OPrw.B1BankVal = blankval;
+      end;
+      OPrw.BankVal = OPrw.B1BankVal;
+      MatRowPut(OPp,rownr,OPrw);
+      res = true;
+    end;
+    OPSumup(OPp,false);
+  end;
+  OPVc_PasteToRateB1BankVal = res;
+  RETURN;
+END;
+
+global
+procedure OPVc_PasteRecVal(var record OPVc OPp,Integer rownr)
+BEGIN
+  row OPVc OPrw;
+  val t,rs,t1,v;
+  record AccBlock Accb;
+  record RoundBlock Rb;
+  record VIVc VIr;
+  
+  BlockLoad(Rb);  
+  MatRowGet(OPp,rownr,OPrw);
+  ChangeOPRecVal(rownr,OPrw,OPp.TransDate);
+  if (nonblank(OPrw.VATCode)) then begin
+    if (OPrw.VISerNr<0) then begin
+      BlockLoad(Accb);  
+      MulVATIV(OPrw.VATCode,OPrw.PInvVal,t,t1,1,Accb.NoTAXonVAT);
+      OPrw.VATVal = Round(t,GetVATRoundMode(Rb));
+      OPrw.TAX1Sum = Round(t1,GetVATRoundMode(Rb));
+    end else begin
+      VIr.SerNr = OPrw.VISerNr;
+      if (ReadFirstMain(VIr,1,true)) then begin
+        v = VIr.PayVal;
+        if (VIr.InvType==kInvoiceTypeCredit) then begin
+          v = -v;
+        end;
+        if (nonblank(VIr.VATVal)) then begin
+          t = VIr.VATVal;
+        end else begin
+          t = VIr.CalcVATVal;
+        end;
+        if (v==OPrw.PInvVal) then begin
+          OPrw.VATVal = t;
+          if (VIr.InvType==kInvoiceTypeCredit) then begin
+            OPrw.VATVal = -OPrw.VATVal;
+          end;
+        end else begin
+          OPrw.VATVal = OPrw.PInvVal*t;
+          OPrw.VATVal = OPrw.VATVal/(VIr.PayVal-VIr.WithHoldingTax);
+        end;
+      end else begin
+        Mul2VAT(OPrw.VATCode,OPrw.PInvVal,t,rs,1);
+        OPrw.VATVal = Round(t,GetVATRoundMode(Rb));
+      end;
+    end;
+  end else begin
+    OPrw.VATVal = blankval;
+    OPrw.TAX1Sum = blankval;
+  end;  
+  MatRowPut(OPp,rownr,OPrw);
+  OPVc_PasteToRateB1BankVal(OPp,rownr);
+  OPSumup(OPp,true);
+  RETURN;
+END;
+
+procedure ChangeOPBankVal(Integer rownr,row OPVc oprp,Date tdp)
+BEGIN
+  val t;
+  
+  if (oprp.RecVal==0) then begin
+    if (oprp.BankCurncy==oprp.PInvCurncy) then begin
+      oprp.PInvVal = oprp.BankVal;
+    end else begin
+      if (oprp.BankCurncy==oprp.RecCurncy) then begin
+        oprp.PInvVal = oprp.BankVal;
+      end else begin
+        CurValToOtherCur(tdp,oprp.BankCurncy,oprp.BankVal,oprp.PInvCurncy,t,DefaultCurRoundOff);
+        oprp.PInvVal = t;
+      end;
+    end;  
+    if (oprp.BankCurncy==oprp.RecCurncy) then begin
+      oprp.RecVal = oprp.BankVal;
+    end else begin
+      CurValToOtherCur(tdp,oprp.BankCurncy,oprp.BankVal,oprp.RecCurncy,t,DefaultCurRoundOff);
+      oprp.RecVal = t;
+    end;
+  end;  
+  RETURN;
+END;
+
+global
+procedure OPVc_PasteBankVal(var record OPVc OPp,Integer rownr)
+BEGIN
+  row OPVc OPrw;
+  
+  MatRowGet(OPp,rownr,OPrw);
+  if (OPrw.BankCurncy==OPrw.RecCurncy) then begin
+    ChangeOPRecVal(rownr,OPrw,OPp.TransDate);          
+  end else begin
+    ChangeOPBankVal(rownr,OPrw,OPp.TransDate);
+  end;
+  MatRowPut(OPp,rownr,OPrw);
+  OPSumup(OPp,true);
+  RETURN;
+END;
+
+global
+procedure OPVc_PasteBankFeeVal(var record OPVc OPp,Integer rownr)
+BEGIN
+  row OPVc OPrw;
+  
+  MatRowGet(OPp,rownr,OPrw);
+  ChangeOPBankVal(rownr,OPrw,OPp.TransDate);
+  MatRowPut(OPp,rownr,OPrw);
+  OPSumup(OPp,true);
+  RETURN;
+END;
+
+function val SubSameSupplierAmount(record OPVc OPp,Integer rownr,row OPVc oprp,string curncy)
+BEGIN
+  row OPVc OPrw;
+  Integer i,rwcnt;
+  val recamount,temp;
+
+  rwcnt = MatRowCnt(OPp);
+  for (i=0;i<rwcnt;i=i+1) begin
+    if (i!=rownr) then begin
+      MatRowGet(OPp,i,OPrw);
+      if (OPrw.VECode==oprp.VECode) then begin
+        CurValToOtherCur(OPp.TransDate,oprp.RecCurncy,oprp.RecVal,curncy,recamount,DefaultCurRoundOff);
+        temp = temp - recamount;
+      end;
+    end;
+  end;
+  SubSameSupplierAmount = temp;
+  RETURN;
+END;
+
+function Boolean PasteVendIn2OPr(var record OPVc OPp,row OPVc OPrw,Date tdp)
+BEGIN
+  Boolean res;
+  record CUVc VEr;
+  val tot;
+  record APAccBlock APAccRec;
+              
+  BlockLoad(APAccRec);
+  VEr.Code = OPrw.VECode;
+  if (ReadFirstMain(VEr,1,true)) then begin  
+    OPrw.VECode = VEr.Code;
+    OPrw.Comment = VEr.Name;
+    OPrw.PInvVal = tot;
+    OPrw.PInvCurncy = VEr.VECurncyCode;
+    OPrw.BankVal = tot;
+    OPrw.BankCurncy = VEr.VECurncyCode;
+    OPrw.RecVal = tot;
+    OPrw.RecCurncy = VEr.VECurncyCode;
+    if (APAccRec.OnAccUseObj!=0) then begin
+      OPrw.Objects = VEr.VEObjects;
+    end;                
+    res = true;
+  end else begin
+    res = false;
+  end;
+  PasteVendIn2OPr = res;
+  RETURN;
+END;
+
+function val FindOwnCheckAmount(var record OPVc OPp,Integer rownr,LongInt checknr,val checkamount,Integer cht)
+BEGIN
+  val res,t,v;
+  row OPVc OPrw;
+  Integer i;
+  record OwnCheckVc OwnCheckr;
+  record CheckVc Checkr;
+  
+  res = checkamount;  
+  switch (cht) begin
+    case 1:
+      Checkr.SerNr = checknr;
+      if (ReadFirstMain(Checkr,1,true)) then begin
+        for (i=0;i<rownr;i=i+1) begin
+          MatRowGet(OPp,i,OPrw);
+          if (OPrw.ChequeNr==Checkr.SerNr) then begin
+            CurValToOtherCur(OPp.TransDate,OPrw.RecCurncy,OPrw.RecVal,Checkr.CurncyCode,t,DefaultCurRoundOff);
+            v = v + t;
+          end;
+        end;
+      end;
+    case 2:
+      OwnCheckr.SerNr = checknr;
+      if (ReadFirstMain(OwnCheckr,1,true)) then begin
+        for (i=0;i<rownr;i=i+1) begin
+          MatRowGet(OPp,i,OPrw);
+          if (OPrw.ChequeNr==OwnCheckr.SerNr) then begin
+            CurValToOtherCur(OPp.TransDate,OPrw.RecCurncy,OPrw.RecVal,OwnCheckr.CurncyCode,t,DefaultCurRoundOff);
+            v = v + t;
+          end;
+        end;
+      end;
+  end;
+  res = res - v;  
+  FindOwnCheckAmount = res;
+  RETURN;
+END;
+
+function Boolean PasteCheckInOP(var record OPVc OPp,Integer rownr,row OPVc oprp,LongInt checknr)
+BEGIN
+  Boolean res;
+  row OPVc OPrw;
+  row OPVc OP2rw;
+  val temp,checkamount,recamount,t,openrecval;
+  string 20 curncy;
+  Integer cht;
+  Integer row1,i,rwcnt;
+  string 2 thepm;
+  string 255 tstr;
+  Date td;
+  Boolean newrowf,instf;
+  
+  rwcnt = MatRowCnt(OPp);
+  if (nonblank(oprp.PayMode)) then begin
+    thepm = oprp.PayMode;
+  end else begin
+    thepm = OPp.PayMode; 
+  end;
+  MatRowGet(OPp,rownr,OPrw);
+  openrecval = OPrw.RecVal;
+  cht = GetCheck(OPp.PayMode,oprp.PayMode,checknr,tstr,tstr,curncy,checkamount,td);
+  checkamount = FindOwnCheckAmount(OPp,rownr,checknr,checkamount,cht);
+  if ((cht>0) and (checknr!=-1)) then begin
+    if (true) then begin
+      if (GetPMCurrency(thepm,tstr)) then begin end;  
+      oprp.BankCurncy = tstr;
+      OPrw.RecCurncy = curncy;
+      
+      CurValToOtherCur(OPp.TransDate,curncy,checkamount,oprp.RecCurncy,recamount,DefaultCurRoundOff);
+      if (recamount>oprp.RecVal) and (oprp.RecVal<>0) then begin
+        CurValToOtherCur(OPp.TransDate,oprp.RecCurncy,oprp.RecVal,curncy,t,DefaultCurRoundOff);
+        OPrw.RecVal = t;
+      end else begin
+        OPrw.RecVal = checkamount;
+      end;      
+      oprp.BankCurncy = tstr;
+      oprp.RecCurncy = curncy;
+      oprp.RecVal = OPrw.RecVal;
+      MatRowPut(OPp,rownr,oprp);        
+      OPVc_PasteRecVal(OPp,rownr);
+      MatRowGet(OPp,rownr,oprp);
+      if (blank(openrecval)) then begin
+        openrecval = OPrw.RecVal;
+      end;
+    end;  
+    if (true) then begin
+      CurValToOtherCur(OPp.TransDate,curncy,checkamount,oprp.RecCurncy,recamount,DefaultCurRoundOff);
+      if (checkamount<0) then begin checkamount = blankval; end;
+      if (recamount<0) then begin recamount = blankval; end;
+      if (checkamount!=openrecval) then begin
+        CurValToOtherCur(OPp.TransDate,oprp.RecCurncy,oprp.RecVal,curncy,recamount,DefaultCurRoundOff);
+        temp = openrecval - checkamount;
+        if (rownr<99) then begin
+          if (temp>0) then begin          
+	          row1 = rownr + 1;
+            CopyRow(OPp,oprp,OP2rw);
+	          OP2rw.BankVal = temp;
+	          OP2rw.PInvVal = temp;
+	          OP2rw.RecVal = temp;         
+	          OP2rw.ChequeNr = -1;
+	          MatRowInsert(OPp,row1,OP2rw);
+  	        OPVc_PasteRecVal(OPp,row1);
+	        end else begin
+	          temp = -temp;
+	          newrowf = true;
+	          if (rownr<(rwcnt-1)) then begin
+  	          row1 = rownr + 1;
+	            while (row1<rwcnt) begin
+                MatRowGet(OPp,row1,OPrw);        
+                if (blank(OPrw.WHTax)) then begin
+                  OPrw.ChequeNr = oprp.ChequeNr;
+                  MatRowPut(OPp,row1,OPrw);        
+                  res = PasteCheckInOP(OPp,row1,OPrw,OPrw.ChequeNr);
+                  newrowf = false;
+                  goto LOutLoop;
+                end;
+                row1 = row1 + 1;
+              end;
+              MatRowGet(OPp,row1,OPrw);              
+LOutLoop:;          
+            end;    
+	          if (newrowf) then begin
+		          row1 = rownr + 1;
+		          ClearRow(OPp,OP2rw,1);  
+		          OP2rw.stp = 1;
+		          OP2rw.VECode = oprp.VECode;
+		          res = PasteVendIn2OPr(OPp,OP2rw,OPp.TransDate);
+		          OP2rw.ChequeNr = oprp.ChequeNr;
+		          OP2rw.PayMode = oprp.PayMode;
+		          OP2rw.BankCurncy = curncy;
+		          OP2rw.RecCurncy = curncy;
+		          OP2rw.PInvCurncy = curncy;
+		          OP2rw.BankVal = temp;
+		          OP2rw.PInvVal = temp;
+		          OP2rw.RecVal = temp;                  
+		          MatRowInsert(OPp,row1,OP2rw);
+	  	        OPVc_PasteRecVal(OPp,row1);
+	          end;
+	        end;
+        end;
+      end else begin
+        temp = oprp.RecVal;
+        row1 = rownr + 1;
+        ClearRow(OPp,OPrw,1);  
+        for (i=0;i<row1;i=i+1) begin
+          MatRowGet(OPp,i,OPrw);
+          if (OPrw.ChequeNr==oprp.ChequeNr) then begin
+            if (oprp.RecCurncy==curncy) then begin
+              temp = temp - OPrw.RecVal;
+            end;
+          end;
+        end; 
+        if (temp>0) then begin        
+          MatRowInsert(OPp,row1,OPrw);                 
+          temp = oprp.RecVal;        
+          if (PasteInvIn2OPr(OPp,rownr,OPp.TransDate,1,temp,tstr,false,instf)) then begin end;
+        end;
+      end;
+      res = true;
+    end else begin
+      MessageBox(1217,"");
+    end;    
+  end else begin
+    if ((cht>0) and (checknr==-1)) then begin res = false; end;
+  end;
+  PasteCheckInOP = res;
+  RETURN;
+END;
+
+global
+function Boolean OPVc_PasteChequeNr(var record OPVc OPp,Integer rownr)
+BEGIN
+  Boolean res;
+  row OPVc OPrw;
+  
+  MatRowGet(OPp,rownr,OPrw);
+  if (OPrw.ChequeNr!=-1) then begin
+    res = PasteCheckInOP(OPp,rownr,OPrw,OPrw.ChequeNr);
+  end;
+  MatRowPut(OPp,rownr,OPrw);
+  OPSumup(OPp,true);
+  OPVc_PasteChequeNr = res;
+  RETURN;
+END;
+
+procedure PastePOInOPr(var record OPVc OPp,row OPVc oprp,Date tdp)
+BEGIN
+  record APAccBlock APAccRec;
+  record RoundBlock RoundRec;
+  record CUVc VEr;
+  record POVc POr;
+  row POVc POrw;
+  val rv,rebval;
+  val fr,to1,to2,br1,br2;
+  val vatval;
+  string 2 vatcod;
+  string 20 curncycode,thepm,bankcurncy;
+  Integer i,rwcnt;
+  string 255 objstr;
+  string 10 invcur,bankcur,reccur;
+  val pinvval,bankval,recval;
+  record OPPVc OPPr;
+  
+  BlockLoad(RoundRec);  
+  BlockLoad(APAccRec);  
+  POr.SerNr = oprp.PrepayNr;
+  curncycode = oprp.PInvCurncy;
+  if (ReadFirstMain(POr,1,true)) then begin
+    oprp.VECode = POr.VECode;
+    oprp.Comment = POr.Addr0;
+    
+    if(nonblank(POr.Comment))then begin// Edit ************************** Friday, 3 November 2017 14:09:17
+    	oprp.Comment = POr.Comment;
+    end;
+    
+    VEr.Code = POr.VECode;
+    objstr = POr.Objects;
+    if (ReadFirstMain(VEr,1,true)) then begin
+      oprp.BankAcc = VEr.BankAccount;
+      oprp.VEName = VEr.Name;// Edit ************************** Monday, 6 November 2017 13:36:08
+    end;
+    curncycode = POr.CurncyCode;
+    fr = POr.FrRate;
+    to1 = POr.ToRateB1;
+    to2 = POr.ToRateB2;
+    br1 = POr.BaseRate1;
+    br2 = POr.BaseRate2;
+    rwcnt = MatRowCnt(POr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(POr,i,POrw);
+      if (POrw.Sum!=0) then begin
+        if (blank(vatcod)) then begin
+          vatcod = POrw.VATCode;
+        end else begin
+          if (vatcod!=POrw.VATCode) then begin
+            goto L33PastePOInOPr;
+          end;
+        end;
+      end;
+    end;
+L33PastePOInOPr:;
+  end else begin
+    VEr.Code = oprp.VECode;
+    if (ReadFirstMain(VEr,1,true)) then begin
+      vatcod = VEr.VEVATCode;
+    end;
+    if (blank(vatcod)) then begin
+      switch (VEr.ExportFlag) begin
+        case 4: vatcod = APAccRec.VATCodeExp;
+        case 3: vatcod = APAccRec.VATCodeEU;
+        case 2: vatcod = APAccRec.VATCodeExp;
+        case 1: vatcod = APAccRec.VATCodeEU;
+        otherwise vatcod = APAccRec.VATCodeDom;
+      end;
+    end;
+    if (APAccRec.PreOPBookVAT!=0) then begin
+      oprp.VATCode = vatcod;
+    end;
+    goto LPastePOInOPr;
+  end;
+  rv = POr.Sum4;
+  if (oprp.RecVal>0) then begin
+    if (oprp.RecVal<POr.Sum4) then begin  
+      rv = oprp.RecVal;
+    end;
+  end;
+  OPPr.SerNr = oprp.PrepayNr;
+  if ReadFirstMain(OPPr,1,true) then begin
+    if (curncycode==OPPr.CurncyCode) or blank(curncycode) then begin
+      curncycode = OPPr.CurncyCode;
+      rv = rv - OPPr.PPVal;    
+      oprp.VECode = OPPr.VECode;
+    end else begin
+      oprp.PrepayNr= -1;
+    end;
+  end else begin
+//    goto LPastePOInOPr;
+  end;  
+  
+  if (nonblank(oprp.PayMode)) then begin
+    thepm = oprp.PayMode;
+  end else begin
+    thepm = OPp.PayMode;
+  end;
+  if (GetPMCurrency(thepm,bankcurncy)) then begin end;
+  oprp.BankCurncy = bankcurncy;
+  oprp.RecCurncy = curncycode;
+  oprp.PInvCurncy = curncycode;
+  oprp.PInvVal = rv;
+  oprp.RecVal = rv;
+/*  
+  GetFullCurncyRate(curncycode,OPp.TransDate,fr,to1,to2,br1,br2);
+  oprp.FrRateBankVal = fr;
+  oprp.ToRateB1BankVal = to1;
+  oprp.ToRateB2BankVal = to2;
+  oprp.BaseRate1BankVal = br1;
+  oprp.BaseRate2BankVal = br2;
+*/
+
+  GetFullCurncyRate(curncycode,OPp.TransDate,oprp.FrRateBankVal,oprp.ToRateB1BankVal,oprp.ToRateB2BankVal,oprp.BaseRate1BankVal,oprp.BaseRate2BankVal); 
+
+  if (bankcurncy!=curncycode) then begin
+    CurValToOtherCur(OPp.TransDate,curncycode,rv,bankcurncy,rv,DefaultCurRoundOff);
+    oprp.BankVal = rv;
+   end else begin
+    oprp.BankVal = rv;
+  end;
+  invcur = oprp.PInvCurncy;
+  pinvval = oprp.PInvVal;
+  bankcur = oprp.BankCurncy;
+  bankval = oprp.BankVal;
+  reccur = oprp.RecCurncy;
+  recval = oprp.RecVal;  
+  MatchOPRowSums(OPp.PayMode,oprp.PayMode,OPp.TransDate,invcur,pinvval,bankcur,bankval,reccur,recval,true,true,true);
+  oprp.PInvCurncy = invcur;
+  oprp.PInvVal = pinvval;
+  oprp.BankCurncy = bankcur;
+  oprp.BankVal = bankval;
+  oprp.RecCurncy = reccur;
+  oprp.RecVal = recval;
+  oprp.PInvOutstand = blankval;
+  if (APAccRec.OnAccUseObj!=0) then begin
+    oprp.Objects = objstr;
+  end;   
+  oprp.VATCode = vatcod;
+  vatval = POr.Sum3;
+  oprp.VATVal = vatval;
+LPastePOInOPr:;
+  RETURN;
+END;
+
+global
+procedure OPVc_PastePrepayNr(var record OPVc OPp,Integer rownr)
+BEGIN
+  row OPVc OPrw;
+  val t,rs;
+  
+  MatRowGet(OPp,rownr,OPrw);
+  PastePOInOPr(OPp,OPrw,OPp.TransDate);
+  if (nonblank(OPrw.VATCode)) then begin
+    Mul2VAT(OPrw.VATCode,OPrw.PInvVal,t,rs,1);
+    OPrw.VATVal = t;
+  end else begin
+    OPrw.VATVal = blankval;
+  end;
+  MatRowPut(OPp,rownr,OPrw);
+  OPSumup(OPp,true);
+  RETURN;
+END;
+
+global
+procedure OPVc_PasteOrderNr(var record OPVc OPp,Integer rownr)
+BEGIN
+  row OPVc OPrw;
+  
+  MatRowGet(OPp,rownr,OPrw);
+  OPrw.PrepayNr = OPrw.OrderNr;
+  OPrw.OrderNr = OPrw.OrderNr;
+  PastePOInOPr(OPp,OPrw,OPp.TransDate);
+  MatRowPut(OPp,rownr,OPrw);
+  OPSumup(OPp,true);
+  RETURN;
+END;
+
+function val WHTaxForInvoice(LongInt skipopnr,LongInt vinr,string whtax)
+BEGIN
+  val res;
+  Boolean found,testf;
+  record OPrsVc OPrsr;
+  record OPVc OPr;
+  row OPVc OPrw;
+  Integer i,rwcnt;
+  
+  found = true;
+  OPrsr.VINr = vinr;
+  OPrsr.TransType = 1;
+  while (LoopKey("VIKey",OPrsr,2,found)) begin
+    if (OPrsr.TransType!=1) then begin found = false; end;
+    if (OPrsr.VINr!=vinr) then begin found = false; end;
+    if (found) then begin
+      testf = true;
+      if (skipopnr>0) then begin
+        if (skipopnr==OPrsr.TransNr) then begin testf = false; end;
+      end;
+      if (testf) then begin
+        OPr.SerNr = OPrsr.TransNr;
+        if (ReadFirstMain(OPr,1,true)) then begin
+          if (OPr.DoneFlag!=0) then begin
+            rwcnt = MatRowCnt(OPr);
+            for (i=0;i<rwcnt;i=i+1) begin
+              MatRowGet(OPr,i,OPrw);
+              if ((OPrw.VISerNr==VINr) and (OPrw.WHTax==whtax)) then begin
+                res = res + OPrw.RecVal;
+              end;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+  WHTaxForInvoice = res;
+  RETURN;
+END;
+
+function val WHTaxForSupplier(record OPVc OPp,string vecode,string whtax)
+BEGIN
+  val res;
+  row OPVc OPrw;
+  Integer i,rwcnt;
+
+  rwcnt = MatRowCnt(OPp);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(OPp,i,OPrw);
+    if (OPrw.VECode==vecode) then begin
+      res = res + WHTaxForInvoice(OPp.SerNr,OPrw.VISerNr,whtax);
+    end;
+  end;
+  WHTaxForSupplier = res;
+  RETURN;
+END;
+
+function val WHTaxForSupplierInMonth(string vecode,Date td,string whtax)
+BEGIN
+  val res;
+  record OPrsVc OPrsr;
+  Boolean found;
+  Date sd,ed;
+  record OPVc OPr;
+  row OPVc OPrw;
+  Integer i,rwcnt;
+  LongInt LastTransNr;
+  
+  sd.year = td.year;
+  sd.month = td.month;
+  sd.day = 1;
+  ed.year = td.year;
+  ed.month = td.month;
+  ed.day = DaysInMonth(ed.year,ed.month);
+
+  found = true;
+  OPrsr.TransType = 1;
+  OPrsr.VECode = vecode;
+  OPrsr.TransDate = sd;
+  while (LoopKey("TransType",OPrsr,3,found)) begin
+    if (OPrsr.VECode!=vecode) then begin found = false; end;
+    if (OPrsr.TransType!=1) then begin found = false; end;
+    if (OPrsr.TransDate>ed) then begin found = false; end;
+    if (found) then begin
+      if (OPrsr.TransNr!=LastTransNr) then begin
+        LastTransNr = OPrsr.TransNr;
+        OPr.SerNr = OPrsr.TransNr;
+        if (ReadFirstMain(OPr,1,true)) then begin
+          if (OPr.DoneFlag!=0) then begin
+            rwcnt = MatRowCnt(OPr);
+            for (i=0;i<rwcnt;i=i+1) begin
+              MatRowGet(OPr,i,OPrw);
+              if (OPrw.VECode==vecode) and (OPrw.WHTax==whtax) then begin
+                res = res + OPrw.RecVal;
+              end;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+  WHTaxForSupplierInMonth = res;
+  RETURN;
+END;
+
+procedure SubWHTaxAlreadyPaid(record OPVc OPp,Array Integer areswhtaxcalc,Array string areswhtax,Array string aresvecode,Array LongInt aresvinr,Array val arestaxv,Integer arescnt)
+BEGIN
+  Integer ai;
+
+  for (ai=0;ai<arescnt;ai=ai+1) begin
+    switch (areswhtaxcalc[ai]) begin
+      case 0:
+        arestaxv[ai] = arestaxv[ai] - WHTaxForSupplierInMonth(aresvecode[ai],OPp.TransDate,areswhtax[ai]);
+      case 1:
+        arestaxv[ai] = arestaxv[ai] - WHTaxForSupplier(OPp,aresvecode[ai],areswhtax[ai]);
+      case 2:
+        arestaxv[ai] = arestaxv[ai] - WHTaxForInvoice(-1,aresvinr[ai],areswhtax[ai]);
+    end;
+  end;
+  RETURN;
+END;
+
+function Boolean AccountInRange(string acc,string accrange)
+BEGIN
+  Boolean res;
+  string 255 tstr;
+  string 10 fracc,toacc;
+  Integer pos;
+  
+  pos = 0;
+  ExtractObj(accrange,pos,tstr);
+  while (nonblank(tstr)) begin
+    fracc = FirstInRange(tstr,10);
+    toacc = LastInRange(tstr,10);
+    if (acc>=fracc) and (acc<=toacc) then begin
+      res = true;
+      goto LAccountInRange;
+    end;
+    ExtractObj(accrange,pos,tstr);
+  end;
+LAccountInRange:;  
+  AccountInRange = res;
+  RETURN;
+END;
+
+function Boolean WHTaxApplyAccNumberinVI(LongInt VISerNr,string whtaxaccnumbers)
+begin
+  Boolean res;
+  Integer i,rwcnt;
+  record VIVc VIr;
+  row VIVc VIrw;
+  
+  VIr.SerNr = VISerNr;
+  if (ReadFirstMain(VIr,1,true)) then begin
+    rwcnt = MatRowCnt(VIr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(VIr,i,VIrw);
+      if (AccountInRange(VIrw.AccNumber,whtaxaccnumbers)) then begin
+        res = true;
+        goto LWHTaxApplyAccNumberinVI;
+      end;
+    end;
+  end;
+LWHTaxApplyAccNumberinVI:;  
+  WHTaxApplyAccNumberinVI = res;
+  return;
+end;
+
+function val ThisInvoiceDeductCreditNotes(LongInt VISerNr,string accnumbers,var val vinetval,var val vivatval,var val viextaxval,var val vipayval)
+BEGIN
+  val res;
+  record OPrsVc OPrsr;
+  Boolean found;
+  record VIVc VIr;
+  row VIVc VIrw;
+  Integer i,rwcnt;
+  val vatv,t1,tmp;
+  
+  found = true;
+  OPrsr.VINr = VISerNr;
+  OPrsr.TransType = 0;
+  while (LoopKey("VIKey",OPrsr,2,found)) begin
+    if (OPrsr.VINr!=VISerNr) then begin found = false; end;
+    if (OPrsr.TransType!=0) then begin found = false; end;
+    if (found) then begin
+      VIr.SerNr = OPrsr.TransNr;
+      if (ReadFirstMain(VIr,1,true)) then begin
+        if (VIr.InvType==3) then begin
+          rwcnt = MatRowCnt(VIr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(VIr,i,VIrw);
+            if (AccountInRange(VIrw.AccNumber,accnumbers)) then begin
+				      tmp =  VIrw.Sum;
+              tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				            
+              vinetval = vinetval - tmp;
+              MulVATIV(VIrw.VATCode,VIrw.Sum,vatv,t1,0,VIr.NoTAXonVAT);
+              if (VIrw.VATVal!=0) then begin
+                vatv = VIrw.VATVal;
+              end;
+				      tmp = vatv;
+              tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				            
+              vivatval = vivatval - tmp;
+				      tmp = t1;
+              tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				            
+              viextaxval = viextaxval - t1;
+            end;
+          end;
+				  tmp = VIr.PayVal;
+          tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				            
+          vipayval = vipayval - tmp;
+          res = res + tmp;
+        end;
+      end;
+    end;
+  end;
+  RETURN;
+END;
+
+procedure ThisInvoiceAmounts(LongInt VISerNr,string accnumbers,var val vinetval,var val vivatval,var val viextaxval,var val vipayval,var val vicreval,
+                             var val viapval)
+BEGIN
+  record VIVc VIr;
+  row VIVc VIrw;
+  Integer i,rwcnt;
+  val vatv,t1,tmp;
+  record APVc APr;
+  
+  vinetval = blankval;
+  vivatval = blankval;
+  viextaxval = blankval;
+  viapval = blankval;
+  VIr.SerNr = VISerNr;
+  if (ReadFirstMain(VIr,1,true)) then begin
+    rwcnt = MatRowCnt(VIr);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(VIr,i,VIrw);
+      if (AccountInRange(VIrw.AccNumber,accnumbers)) then begin
+				tmp =  VIrw.Sum;
+        tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				            
+        vinetval = vinetval + tmp;
+        
+        MulVATIV(VIrw.VATCode,VIrw.Sum,vatv,t1,0,VIr.NoTAXonVAT);
+        if (VIrw.VATVal!=0) then begin
+          vatv = VIrw.VATVal;
+        end;
+				tmp =  vatv;
+        tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				                    
+        vivatval = vivatval + tmp;
+				tmp =  t1;
+        tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				                    
+        viextaxval = viextaxval + tmp;
+      end;
+    end;
+		tmp =  VIr.PayVal;
+    tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				                    
+    vipayval = tmp;
+    vicreval = ThisInvoiceDeductCreditNotes(VISerNr,accnumbers,vinetval,vivatval,viextaxval,vipayval);
+    APr.SerNr = VISerNr;
+    if (ReadFirstMain(APr,1,true)) then begin end;
+    viapval = MulRateToBase1(VIr.CurncyCode,APr.RVal,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);
+  end;
+  RETURN;
+END;
+
+function val ThisInvoicePaymentAmount(LongInt VISerNr,record OPVc OPp)
+BEGIN
+  val res;
+  row OPVc OPrw;
+  Integer i,rwcnt;
+  
+  rwcnt = MatRowCnt(OPp);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(OPp,i,OPrw);
+    if (OPrw.VISerNr==VISerNr) then begin
+      res = res + OPrw.PInvVal;
+    end;
+  end;
+  ThisInvoicePaymentAmount = res;
+  RETURN;
+END;
+
+global
+function Boolean GetWHTaxRow(string whtax,var row WHTaxBlock WHTaxrw)
+BEGIN
+  Boolean res;
+  Integer i,rwcnt;
+  record WHTaxBlock WHTaxRec;
+  
+  ClearRow(WHTaxRec,WHTaxrw,1);
+  res = true;
+  BlockLoad(WHTaxRec);
+  rwcnt = MatRowCnt(WHTaxRec);
+  for (i=0 ;i<rwcnt;i=i+1) begin
+    MatRowGet(WHTaxRec,i,WHTaxrw);
+    if (WHTaxrw.Code==whtax) then begin
+      goto LGetWHTaxRow;
+    end;
+  end;
+  res = false;
+LGetWHTaxRow:;
+  GetWHTaxRow = res;
+  RETURN;
+END;
+
+procedure ThisSupplierPaymentAmount(LongInt VISerNr,string vecode,record OPVc OPp,string accnumbers,var val vivatval,var val vipayval,var val vinetval)
+BEGIN
+  row OPVc OPrw;
+  Integer i,rwcnt;
+  record VIVc VIr;
+  row VIVc VIrw;
+  Integer vi,virwcnt;
+  val vivat,vatv,t1,tmp;
+  
+  rwcnt = MatRowCnt(OPp);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(OPp,i,OPrw);
+    if (OPrw.VECode==vecode) then begin
+		  VIr.SerNr = OPrw.VISerNr;
+		  if (ReadFirstMain(VIr,1,true)) then begin
+        virwcnt = MatRowCnt(VIr);
+				for (vi=0;vi<virwcnt;vi=vi+1) begin
+				  MatRowGet(VIr,vi,VIrw);
+				  if (AccountInRange(VIrw.AccNumber,accnumbers)) then begin
+				    if (VISerNr<0) or (VISerNr==VIr.SerNr) then begin
+/*same as in ThisSupplierMonthInvoicesAmounts*/				  
+              tmp = (VIrw.Sum*OPrw.PInvVal)/VIr.PayVal;
+              tmp = MulWithRateToBase1(VIr.CurncyCode,OPp.TransDate,tmp,DefaultCurRoundOff);
+              vinetval = vinetval + tmp;
+              MulVATIV(VIrw.VATCode,VIrw.Sum,vatv,t1,0,VIr.NoTAXonVAT);
+              if (VIrw.VATVal!=0) then begin
+                vatv = VIrw.VATVal;
+              end;
+              tmp = (vatv*OPrw.PInvVal)/VIr.PayVal;
+              tmp = MulWithRateToBase1(VIr.CurncyCode,OPp.TransDate,tmp,DefaultCurRoundOff);
+              vivatval = vivatval + tmp;
+//              viextaxval = viextaxval + (t1*OPrw.PInvVal)/VIr.PayVal;              
+              tmp = (VIrw.Sum*OPrw.PInvVal)/VIr.PayVal;
+              tmp = MulWithRateToBase1(VIr.CurncyCode,OPp.TransDate,tmp,DefaultCurRoundOff);
+              vipayval = vipayval + tmp;
+            end;
+				  end;
+				end;
+/*				
+		    vivat = VIr.VATVal;
+		    if (blank(vivat)) then begin
+		      vivat = VIr.CalcVATVal;
+		    end;
+		    vivatval = vivatval + (OPrw.BankVal/VIr.PayVal)*vivat; 
+		    vipayval = vipayval + (OPrw.BankVal/VIr.PayVal)*VIr.PayVal; 
+		    vinetval = vinetval + (OPrw.BankVal/VIr.PayVal)*(VIr.PayVal-vivat);
+*/		    
+		  end;
+    end;
+  end;
+  RETURN;
+END;
+
+procedure AddWHTaxToPayment(record BaseCurBlock BCb,var record OPVc OPp,Array Integer areswhtaxcalc,Array string areswhtax,Array string areswhtaxaccnumbers,Array string aresvecode,Array LongInt aresvinr,Array val arestaxv,
+                            Array val aresbasev,Integer arescnt)
+BEGIN
+  row OPVc baseOPrw;
+  row OPVc taxOPrw;
+  Integer ai;
+  Integer i,rwcnt,rownr;
+  val supptot;
+  val tax,base,firstrestaxv;
+  vector Boolean whtaxaccnum;
+  val vinetval,vivatval,viextaxval,vipayval,vicreval,viapval;
+  val PInvVal;
+  row WHTaxBlock WHTaxrw;
+  record WHCalcFormVc WHCalcFormr;
+    
+  rwcnt = MatRowCnt(OPp);
+  for (ai=0;ai<arescnt;ai=ai+1) begin
+    switch (areswhtaxcalc[ai]) begin
+      case 0: 
+        if (arestaxv[ai]!=0) then begin
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(OPp,i,baseOPrw);
+            if (baseOPrw.VECode==aresvecode[ai]) and (arestaxv[ai]!=0) then begin
+              ClearRow(OPp,taxOPrw,1);
+              CopyRow(OPp,baseOPrw,taxOPrw);
+              CurValToOtherCur(OPp.TransDate,BCb.BaseCur1,arestaxv[ai],baseOPrw.PInvCurncy,firstrestaxv,DefaultCurRoundOff);
+              if (AbsoluteVal(firstrestaxv)<=AbsoluteVal(baseOPrw.PInvVal)) then begin
+                CurValToOtherCur(OPp.TransDate,BCb.BaseCur1,arestaxv[ai],baseOPrw.RecCurncy,firstrestaxv,DefaultCurRoundOff);
+                taxOPrw.RecVal = firstrestaxv;
+              end else begin
+                taxOPrw.RecVal = baseOPrw.PInvVal;
+              end;
+              if (taxOPrw.RecVal!=0) then begin
+                arestaxv[ai] = arestaxv[ai] - MulWithRateToBase1(taxOPrw.RecCurncy,OPp.TransDate,taxOPrw.RecVal,DefaultCurRoundOff);
+                
+                taxOPrw.WHTax = areswhtax[ai];
+                taxOPrw.WHTaxBase = aresbasev[ai];
+                rownr = MatRowCnt(OPp);
+                ChangeOPRecVal(rownr,taxOPrw,OPp.TransDate);          
+                MatRowInsert(OPp,rownr,taxOPrw);            
+                
+                baseOPrw.RecVal = baseOPrw.RecVal - taxOPrw.RecVal;
+                if (baseOPrw.RecVal==0) then begin
+//                  MatRowDelete(OPp,i);
+                end else begin
+                  ChangeOPRecVal(i,baseOPrw,OPp.TransDate);          
+                  MatRowPut(OPp,i,baseOPrw);
+                end;
+              end;
+            end;
+          end;
+        end;
+      case 1: 
+        if (arestaxv[ai]>0) then begin
+          supptot = 0;
+          firstrestaxv = 0;
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(OPp,i,baseOPrw);
+            if (baseOPrw.VECode==aresvecode[ai]) then begin
+              if (WHTaxApplyAccNumberinVI(baseOPrw.VISerNr,areswhtaxaccnumbers[ai])) then begin
+                supptot = supptot + baseOPrw.PInvVal;
+                whtaxaccnum[baseOPrw.VISerNr] = true;
+              end;
+            end;
+          end;
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(OPp,i,baseOPrw);
+            if (baseOPrw.VECode==aresvecode[ai]) and (arestaxv[ai]>0) and (whtaxaccnum[baseOPrw.VISerNr]==true) then begin
+              ClearRow(OPp,taxOPrw,1);              
+              CopyRow(OPp,baseOPrw,taxOPrw);
+              if (firstrestaxv==0) then begin
+                firstrestaxv = arestaxv[ai];
+                CurValToOtherCur(OPp.TransDate,BCb.BaseCur1,arestaxv[ai],baseOPrw.RecCurncy,firstrestaxv,DefaultCurRoundOff);
+              end;
+              base = aresbasev[ai];
+              GetWHTaxRow(areswhtax[ai],WHTaxrw);
+              WHCalcFormr.PayCode = WHTaxrw.WHCalcForm;
+              if (ReadFirstMain(WHCalcFormr,1,true)) then begin
+                switch (WHCalcFormr.TaxCalc) begin
+                  case 1: 
+                    vipayval = blankval; vivatval = blankval; vinetval = blankval;
+                    ThisSupplierPaymentAmount(baseOPrw.VISerNr,baseOPrw.VECode,OPp,WHTaxrw.AccNumbers,vivatval,vipayval,vinetval);
+                    PInvVal = vipayval - viapval - vicreval;
+
+                    tax = (firstrestaxv*PInvVal)/aresbasev[ai];
+                    base = (base*PInvVal)/aresbasev[ai];
+                  otherwise
+                    tax = (firstrestaxv*baseOPrw.PInvVal)/supptot;
+                    base = (base*baseOPrw.PInvVal)/supptot;
+                end;
+              end else begin
+                tax = (firstrestaxv*baseOPrw.PInvVal)/supptot;
+                base = (base*baseOPrw.PInvVal)/supptot;
+              end;
+              if (tax<=baseOPrw.PInvVal) then begin
+                taxOPrw.RecVal = tax;
+              end else begin
+                taxOPrw.RecVal = baseOPrw.PInvVal;
+              end;
+              if (taxOPrw.RecVal!=0) then begin
+                arestaxv[ai] = arestaxv[ai] - taxOPrw.RecVal;
+                taxOPrw.WHTax = areswhtax[ai];
+                taxOPrw.WHTaxBase = base;
+                rownr = MatRowCnt(OPp);
+                ChangeOPRecVal(rownr,taxOPrw,OPp.TransDate);          
+                MatRowInsert(OPp,rownr,taxOPrw);            
+                
+                baseOPrw.RecVal = baseOPrw.RecVal - taxOPrw.RecVal;
+                if (baseOPrw.RecVal==0) then begin
+//                  MatRowDelete(OPp,i);
+                end else begin
+                  ChangeOPRecVal(i,baseOPrw,OPp.TransDate);          
+                  MatRowPut(OPp,i,baseOPrw);
+                end;
+              end;
+            end;
+          end;
+        end;
+      case 2: 
+        if (arestaxv[ai]>0) then begin
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(OPp,i,baseOPrw);
+            if (baseOPrw.VISerNr==aresvinr[ai]) and (arestaxv[ai]>0) then begin
+              ClearRow(OPp,taxOPrw,1);
+              CopyRow(OPp,baseOPrw,taxOPrw);
+              if (arestaxv[ai]<=baseOPrw.PInvVal) then begin
+                taxOPrw.RecVal = arestaxv[ai];
+              end else begin
+                taxOPrw.RecVal = baseOPrw.PInvVal;
+              end;
+              if (taxOPrw.RecVal!=0) then begin
+                arestaxv[ai] = arestaxv[ai] - taxOPrw.RecVal;
+                taxOPrw.WHTax = areswhtax[ai];
+                taxOPrw.WHTaxBase = aresbasev[ai];
+                rownr = MatRowCnt(OPp);
+                ChangeOPRecVal(rownr,taxOPrw,OPp.TransDate);          
+                MatRowInsert(OPp,rownr,taxOPrw);            
+                
+                baseOPrw.RecVal = baseOPrw.RecVal - taxOPrw.RecVal;
+                if (baseOPrw.RecVal==0) then begin
+//                  MatRowDelete(OPp,i);
+                end else begin
+                  ChangeOPRecVal(i,baseOPrw,OPp.TransDate);          
+                  MatRowPut(OPp,i,baseOPrw);
+                end;
+              end;
+            end;
+          end;
+        end;
+    end;    
+  end;
+  RETURN;
+END;
+
+/*
+procedure ThisSupplierMonthInvoicesAmounts(row OPVc baseOPrw,Date td,string AccNumbers,var val vinetval,var val vivatval,var val viextaxval,var val vipayval,
+                                           var val vicreval,var val viapval)
+BEGIN
+  record OPrsVc OPrsr;
+  Boolean found;
+  Date sd,ed;
+  record VIVc VIr;
+  row VIVc VIrw;
+  Integer i,rwcnt;
+  val vatv,t1;
+  record APVc APr;
+  val vivat;
+  
+  sd.year = td.year;
+  sd.month = td.month;
+  sd.day = 1;
+  ed.year = td.year;
+  ed.month = td.month;
+  ed.day = DaysInMonth(ed.year,ed.month);
+
+  vinetval = blankval;
+  vivatval = blankval;
+  viextaxval = blankval;
+  viapval = blankval;
+  vicreval = blankval;
+  vipayval = blankval;
+  found = true;
+  OPrsr.TransType = 0;
+  OPrsr.VECode = baseOPrw.VECode;
+  OPrsr.TransDate = sd;
+
+  while (LoopKey("TransType",OPrsr,3,found)) begin
+    if (OPrsr.VECode!=baseOPrw.VECode) then begin found = false; end;
+    if (OPrsr.TransType!=0) then begin found = false; end;
+    if (OPrsr.TransDate>ed) then begin found = false; end;
+    if (found) then begin
+      if (DateInRange(OPrsr.TransDate,sd,ed)) then begin
+//      if (OPrsr.TransDate<=ed) then begin
+      VIr.SerNr = OPrsr.TransNr;
+      if (ReadFirstMain(VIr,1,true)) then begin
+        if (VIr.InvType!=3) then begin//credit note without number?
+          rwcnt = MatRowCnt(VIr);
+          for (i=0;i<rwcnt;i=i+1) begin
+            MatRowGet(VIr,i,VIrw);
+            if (AccountInRange(VIrw.AccNumber,accnumbers)) then begin
+              vinetval = vinetval + VIrw.Sum;
+              MulVATIV(VIrw.VATCode,VIrw.Sum,vatv,t1,0,VIr.NoTAXonVAT);
+              if (VIrw.VATVal!=0) then begin
+                vatv = VIrw.VATVal;
+              end;
+              vivatval = vivatval + vatv;
+              viextaxval = viextaxval + t1;              
+              vipayval = vipayval + VIrw.Sum;
+            end;
+          end;
+          vipayval = vipayval + VIr.PayVal;
+          vicreval = vicreval + ThisInvoiceDeductCreditNotes(VIr.SerNr,accnumbers,vinetval,vivatval,viextaxval,vipayval);
+//          APr.SerNr = VIr.SerNr;
+//          if (ReadFirstMain(APr,1,true)) then begin end;
+//          viapval = viapval + APr.RVal;
+StopAlert("viapval " & viapval & " VIr.SerNr " & VIr.SerNr );        
+        end;
+      end;
+      end;
+    end;
+  end;
+  RETURN;
+END;
+*/
+
+procedure ThisSupplierMonthInvoicesAmounts(row OPVc baseOPrw,Date td,string AccNumbers,var val vinetval,var val vivatval,var val viextaxval,var val vipayval,
+                                           var val vicreval,var val viapval)
+BEGIN
+  record OPrsVc OPrsr;
+  Boolean found;
+  Date sd,ed;
+  record OPVc OPr;
+  row OPVc OPrw;
+  record VIVc VIr;
+  row VIVc VIrw;
+  Integer i,rwcnt;
+  Integer opi,oprwcnt;
+  val vatv,t1;
+  record APVc APr;
+  val vivat,tmp;
+  
+  sd.year = td.year;
+  sd.month = td.month;
+  sd.day = 1;
+  ed.year = td.year;
+  ed.month = td.month;
+  ed.day = DaysInMonth(ed.year,ed.month);
+
+  vinetval = blankval;
+  vivatval = blankval;
+  viextaxval = blankval;
+  viapval = blankval;
+  vicreval = blankval;
+  vipayval = blankval;
+  found = true;
+  OPrsr.TransType = 1;
+  OPrsr.VECode = baseOPrw.VECode;
+  OPrsr.TransDate = sd;
+
+  while (LoopKey("TransType",OPrsr,3,found)) begin
+    if (OPrsr.VECode!=baseOPrw.VECode) then begin found = false; end;
+    if (OPrsr.TransType!=1) then begin found = false; end;
+    if (OPrsr.TransDate>ed) then begin found = false; end;
+    if (found) then begin
+      if (DateInRange(OPrsr.TransDate,sd,ed)) then begin
+        OPr.SerNr = OPrsr.TransNr;
+        if (ReadFirstMain(OPr,1,true)) then begin
+          if (OPr.DoneFlag!=0) then begin
+          oprwcnt = MatRowCnt(OPr);
+          for (opi=0;opi<oprwcnt;opi=opi+1) begin
+			      MatRowGet(OPr,opi,OPrw);
+			      if (OPrw.VISerNr==OPrsr.VINr) then begin
+				    VIr.SerNr = OPrw.VISerNr;
+				    if (ReadFirstMain(VIr,1,true)) then begin
+              if (VIr.VECode==OPrsr.VECode) then begin
+				        if (VIr.InvType!=3) then begin//credit note without number?
+				          rwcnt = MatRowCnt(VIr);
+				          for (i=0;i<rwcnt;i=i+1) begin
+				            MatRowGet(VIr,i,VIrw);
+				            if (AccountInRange(VIrw.AccNumber,accnumbers)) then begin
+				              tmp = (VIrw.Sum*OPrw.PInvVal)/VIr.PayVal; 
+                      tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				            
+				              vinetval = vinetval + tmp;
+				              MulVATIV(VIrw.VATCode,VIrw.Sum,vatv,t1,0,VIr.NoTAXonVAT);
+				              if (VIrw.VATVal!=0) then begin
+				                vatv = VIrw.VATVal;
+				              end;
+				              tmp = (vatv*OPrw.PInvVal)/VIr.PayVal;
+                      tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				            
+				              vivatval = vivatval + tmp;
+
+				              tmp = (t1*OPrw.PInvVal)/VIr.PayVal;
+                      tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				            
+				              viextaxval = viextaxval + tmp;
+
+				              tmp =  (VIrw.Sum*OPrw.PInvVal)/VIr.PayVal;
+                      tmp = MulRateToBase1(VIr.CurncyCode,tmp,VIr.FrRate,VIr.ToRateB1,VIr.ToRateB2,VIr.BaseRate1,VIr.BaseRate2,DefaultCurRoundOff);				            
+				              vipayval = vipayval + tmp;
+//StopAlert("1-vipayval " & vipayval & " VIr.SerNr " & VIr.SerNr & " OPrsr.TransType " & OPrsr.TransType & " OPrsr.TransNr " & OPrsr.TransNr);
+				            end;
+				          end;
+				          vicreval = vicreval + ThisInvoiceDeductCreditNotes(VIr.SerNr,accnumbers,vinetval,vivatval,viextaxval,vipayval);
+				        end;
+				      end;
+				    end;
+				    end;
+		      end;
+		      end;
+		    end;
+      end;
+    end;
+  end;
+  RETURN;
+END;
+
+procedure ThisSupplierInvoicesAmounts(record OPVc OPp,string vecode,string accnumbers,var val vinetval,var val vivatval,var val viextaxval,
+                                      var val vipayval,var val vicreval,var val viapval)
+BEGIN
+  row OPVc OPrw;
+  record VIVc VIr;
+  row VIVc VIrw;
+  Integer vi,vrwcnt;
+  Integer oi,orwcnt;
+  val vatv,t1;
+  record APVc APr;
+  
+  vinetval = blankval;
+  vivatval = blankval;
+  viextaxval = blankval;
+  vipayval = blankval;
+  vicreval = blankval;
+  viapval = blankval;
+  orwcnt = MatRowCnt(OPp);
+  for (oi=0;oi<orwcnt;oi=oi+1) begin
+    MatRowGet(OPp,oi,OPrw);
+    VIr.SerNr = OPrw.VISerNr;
+    if (ReadFirstMain(VIr,1,true)) then begin
+      vrwcnt = MatRowCnt(VIr);
+      for (vi=0;vi<vrwcnt;vi=vi+1) begin
+        MatRowGet(VIr,vi,VIrw);
+        if (AccountInRange(VIrw.AccNumber,accnumbers)) then begin
+          vinetval = vinetval + VIrw.Sum;
+          MulVATIV(VIrw.VATCode,VIrw.Sum,vatv,t1,0,VIr.NoTAXonVAT);
+          if (VIrw.VATVal!=0) then begin
+            vatv = VIrw.VATVal;
+          end;
+          vivatval = vivatval + vatv;
+          viextaxval = viextaxval + t1;
+        end;
+      end;
+      vipayval = vipayval + VIr.PayVal;
+      vicreval = vicreval + ThisInvoiceDeductCreditNotes(OPrw.VISerNr,accnumbers,vinetval,vivatval,viextaxval,vipayval);
+      APr.SerNr = OPrw.VISerNr;
+      if (ReadFirstMain(APr,1,true)) then begin end;
+      viapval = viapval + APr.RVal;
+    end;
+  end;
+  RETURN;
+END;
+
+function val CalulateWithholdTax(string whtax,record WHCalcFormVc WHCalcFormr,val taxcalcbase,val TAXPrc,val Discount)
+BEGIN
+  val tax,ltaxcalcbase;
+  row WHCalcFormVc WHCalcFormrw;
+  Integer i,rwcnt,rownr;
+  row OPVc taxOPrw;
+  val MinAmount,Percent;
+  
+  ltaxcalcbase = AbsoluteVal(taxcalcbase) - WHCalcFormr.NoTaxAmount;
+  tax = blankval;
+  rwcnt = MatRowCnt(WHCalcFormr);
+  for (i=0;i<rwcnt;i=i+1) begin
+    MatRowGet(WHCalcFormr,i,WHCalcFormrw);
+    if ((ltaxcalcbase>=WHCalcFormrw.From) and ((ltaxcalcbase<=WHCalcFormrw.To)) or (blank(WHCalcFormrw.To))) then begin
+      ltaxcalcbase = ltaxcalcbase - WHCalcFormrw.From;
+      Percent = TAXPrc;
+      if (Percent==0) then begin
+        Percent = WHCalcFormrw.Percent;
+      end;
+      if (nonblank(Percent)) then begin
+        tax = (ltaxcalcbase*Percent)/100;
+      end;
+      tax = tax + WHCalcFormrw.FixAmount;
+      MinAmount = WHCalcFormrw.MinAmount;
+
+      if (MinAmount==0) then begin
+        MinAmount = WHCalcFormr.MinAmount;
+      end;
+      if (Discount!=0) then begin
+        tax = (tax*Discount)/100;
+      end;
+      if (tax<MinAmount) then begin
+        tax = blankval;
+      end;
+      goto LCalulateWithholdTax;
+    end;
+  end;
+LCalulateWithholdTax:;
+  if (taxcalcbase<0) then begin
+    tax = -tax;
+  end;
+  CalulateWithholdTax = tax;
+  RETURN;
+END;
+
+procedure AddToWHTaxArray(string whtax,string whtaxaccnumbers,string vecode,LongInt VISerNr,val tax,Integer TaxCalc,val base,
+                          Array string areswhtax,Array string areswhtaxaccnumbers,Array string aresvecode,Array LongInt aresvinr,Array val arestaxv,
+                          Array Integer areswhtaxcalc,Array val aresbasev,var Integer arescnt)
+BEGIN
+  Integer i;
+  
+  for (i=0;i<arescnt;i=i+1) begin
+    if (whtax==areswhtax[i]) and (vecode==aresvecode[i]) and (VISerNr==aresvinr[i]) and (areswhtaxcalc[i]) then begin
+      arestaxv[arescnt] = arestaxv[arescnt] + tax;
+      goto LAddToWHTaxArray;
+    end;
+  end;
+  areswhtax[arescnt] = whtax;
+  areswhtaxaccnumbers[arescnt] = whtaxaccnumbers;
+  aresvecode[arescnt] = vecode;
+  aresvinr[arescnt] = VISerNr;
+  arestaxv[arescnt] = tax;
+  areswhtaxcalc[arescnt] = TaxCalc;
+  aresbasev[arescnt] = base;
+  arescnt = arescnt + 1;
+LAddToWHTaxArray:;  
+  RETURN;
+END;
+
+procedure AddToAlreadyCalculatedArray(string whtax,string vecode,string VISerNr,Integer TaxCalc,
+                                      Array string awhtax,Array Integer awhtaxcalc,Array string avecode,Array string avinr,var Integer acnt)
+BEGIN
+  awhtax[acnt] = whtax;
+  awhtaxcalc[acnt] = TaxCalc;
+  avecode[acnt] = vecode;
+  avinr[acnt] = VISerNr;
+  acnt = acnt + 1;
+  RETURN;
+END;
+
+function Boolean WHTaxAlreadyCalculated(string whtax,string vecode,string VISerNr,Integer TaxCalc,
+                                        Array string awhtax,Array Integer awhtaxcalc,Array string avecode,Array string avinr,Integer acnt)
+BEGIN
+  Boolean res,testf;
+  Integer i;
+  
+  for (i=0;i<acnt;i=i+1) begin
+    testf = false;
+    switch (TaxCalc) begin
+      case 0:
+        if (whtax==awhtax[i]) and (vecode==avecode[i]) then begin
+          testf = true;
+        end;
+      case 1:
+        if (whtax==awhtax[i]) and (vecode==avecode[i]) then begin
+          testf = true;
+        end;
+      case 2:
+        if (whtax==awhtax[i]) and (VISerNr==avinr[i]) then begin
+          testf = true;
+        end;
+    end;
+    if (testf) then begin 
+      res = true;
+      i = acnt;
+    end;
+  end;
+  WHTaxAlreadyCalculated = res;
+  RETURN;
+END;
+ 
+procedure CalulateWithholdTaxes(string vecode,string whtax,var record OPVc OPp,row OPVc baseOPrw,val TAXPrc,val Discount,
+                              Array string awhtax,Array Integer awhtaxcalc,Array string avecode,Array string avinr,var Integer acnt,
+                              Array string aresvecode,Array string areswhtax,Array string areswhtaxaccnumbers,Array LongInt aresvinr,Array val arestaxv,Array Integer areswhtaxcalc,
+                              Array val aresbasev,var Integer arescnt)
+BEGIN
+/*milticur?*/
+  row OPVc taxOPrw;
+  row WHTaxBlock WHTaxrw;
+  record WHCalcFormVc WHCalcFormr;
+  row WHCalcFormVc WHCalcFormrw;
+  val tax;
+  val taxcalcbase;
+  val vinetval,vivatval,viextaxval,vipayval,vicreval,viapval;
+  val PInvVal;
+  LongInt VISerNr;
+    
+  if (GetWHTaxRow(whtax,WHTaxrw)) then begin
+    if (nonblank(WHTaxrw.WHCalcForm)) then begin    
+      WHCalcFormr.PayCode = WHTaxrw.WHCalcForm;
+      if (ReadFirstMain(WHCalcFormr,1,true)) then begin
+        taxcalcbase = 0;
+        switch (WHCalcFormr.TaxCalc) begin
+          case 0: 
+            if (WHTaxAlreadyCalculated(whtax,vecode,baseOPrw.VISerNr,WHCalcFormr.TaxCalc,awhtax,awhtaxcalc,avecode,avinr,acnt)==false) then begin
+              ThisSupplierMonthInvoicesAmounts(baseOPrw,OPp.TransDate,WHTaxrw.AccNumbers,vinetval,vivatval,viextaxval,vipayval,vicreval,viapval);
+              ThisSupplierPaymentAmount(-1,baseOPrw.VECode,OPp,WHTaxrw.AccNumbers,vivatval,vipayval,vinetval);
+              PInvVal = vipayval - viapval - vicreval;
+              VISerNr = -1;
+            end;
+          case 1: 
+            if (WHTaxAlreadyCalculated(whtax,vecode,baseOPrw.VISerNr,WHCalcFormr.TaxCalc,awhtax,awhtaxcalc,avecode,avinr,acnt)==false) then begin
+//              ThisSupplierInvoicesAmounts(OPp,baseOPrw.VECode,WHTaxrw.AccNumbers,vinetval,vivatval,viextaxval,vipayval,vicreval,viapval);
+//why do we need this ? it is same as line above so we do it 2 times ? 
+              ThisSupplierPaymentAmount(-1,baseOPrw.VECode,OPp,WHTaxrw.AccNumbers,vivatval,vipayval,vinetval);
+              PInvVal = vipayval - viapval - vicreval;
+              VISerNr = -1;
+            end;
+          case 2: 
+            if (WHTaxAlreadyCalculated(whtax,vecode,baseOPrw.VISerNr,WHCalcFormr.TaxCalc,awhtax,awhtaxcalc,avecode,avinr,acnt)==false) then begin
+              ThisInvoiceAmounts(baseOPrw.VISerNr,WHTaxrw.AccNumbers,vinetval,vivatval,viextaxval,vipayval,vicreval,viapval);
+              PInvVal = vipayval - viapval - vicreval;
+              PInvVal = PInvVal + ThisInvoicePaymentAmount(baseOPrw.VISerNr,OPp);
+              VISerNr = baseOPrw.VISerNr;
+            end;
+        end;
+        if (WHCalcFormr.BaseCalcVAT!=0) then begin taxcalcbase = (PInvVal*vivatval)/vipayval; end;
+        if (WHCalcFormr.BaseCalcExTax!=0) then begin taxcalcbase = taxcalcbase + (PInvVal*viextaxval)/vipayval; end;
+        if (WHCalcFormr.BaseCalcNet!=0) then begin taxcalcbase = taxcalcbase + (PInvVal*vinetval)/vipayval; end;
+        if (WHTaxrw.BaseMin>0) then begin
+          if (AbsoluteVal(taxcalcbase)<WHTaxrw.BaseMin) then begin taxcalcbase = 0; end;
+        end;
+        if (taxcalcbase!=0) then begin                
+          tax = CalulateWithholdTax(whtax,WHCalcFormr,taxcalcbase,TAXPrc,Discount);        
+          if (tax!=0) then begin
+            AddToAlreadyCalculatedArray(whtax,vecode,baseOPrw.VISerNr,WHCalcFormr.TaxCalc,awhtax,awhtaxcalc,avecode,avinr,acnt);
+            AddToWHTaxArray(whtax,WHTaxrw.AccNumbers,vecode,VISerNr,tax,WHCalcFormr.TaxCalc,taxcalcbase,areswhtax,areswhtaxaccnumbers,aresvecode,aresvinr,arestaxv,areswhtaxcalc,aresbasev,arescnt);
+          end;
+        end;
+      end;
+    end;
+  end;
+  RETURN;
+END;
+
+global
+function Integer CalulateWithholdTaxesFromOP(var record OPVc OPp)
+BEGIN
+  Integer res;
+  row OPVc OPrw;
+  record WHVEVc WHVEr;
+  row WHVEVc WHVErw;
+  Integer i,rwcnt,opi,oprwcnt;
+  Integer pos;
+  string 10 whtax;
+  Array string 50 avecode;
+  Array string 5 awhtax;
+  Array string 20 avinr;
+  Array Integer awhtaxcalc;
+  Integer acnt;  
+
+  Array string 50 aresvecode;
+  Array string 5 areswhtax;
+  Array string 100 areswhtaxaccnumbers;
+  Array LongInt aresvinr;
+  Array val arestaxv;
+  Array val aresbasev;
+  Array Integer areswhtaxcalc;
+  Integer arescnt;  
+  record BaseCurBlock BCb;
+
+  BlockLoad(BCb);  
+  oprwcnt = MatRowCnt(OPp);
+  for (opi=0;opi<oprwcnt;opi=opi+1) begin
+    MatRowGet(OPp,opi,OPrw);    
+//    if (OPrw.RecCurncy!=BCb.BaseCur1) then begin
+//      res = 24080;
+//      goto LCalulateWithholdTaxesFromOP; 
+//    end;
+    if (FindWHVETax(OPrw.VECode,OPp.TransDate,WHVEr)) then begin
+      rwcnt = MatRowCnt(WHVEr);
+      for (i=0;i<rwcnt;i=i+1) begin
+        MatRowGet(WHVEr,i,WHVErw);
+        if (nonblank(WHVErw.WHTax)) then begin
+          CalulateWithholdTaxes(WHVEr.VECode,WHVErw.WHTax,OPp,OPrw,WHVErw.TAXPrc,WHVErw.Discount,awhtax,awhtaxcalc,avecode,avinr,acnt,
+                                aresvecode,areswhtax,areswhtaxaccnumbers,aresvinr,arestaxv,areswhtaxcalc,aresbasev,arescnt);
+          res = 0;
+        end;
+      end;
+    end;
+  end;
+
+  SubWHTaxAlreadyPaid(OPp,areswhtaxcalc,areswhtax,aresvecode,aresvinr,arestaxv,arescnt);
+  AddWHTaxToPayment(BCb,OPp,areswhtaxcalc,areswhtax,areswhtaxaccnumbers,aresvecode,aresvinr,arestaxv,aresbasev,arescnt);
+LCalulateWithholdTaxesFromOP:;  
+  CalulateWithholdTaxesFromOP = res;
+  RETURN;
+END;
+
+// Used?
+global
+function val ThisMonthPaidToVE(string vecode,Date td)
+BEGIN
+  val res;
+  Date sd,ed;
+  record CUVc VEr;
+
+  sd.year = td.year;
+  sd.month = td.month;
+  sd.day = 1;
+  ed.year = td.year;
+  ed.month = td.month;
+  ed.day = DaysInMonth(ed.year,ed.month);
+  
+  VEr.Code = vecode;
+  res = -GetTurnover(VEr,"vepaidvalue",sd,ed);
+  ThisMonthPaidToVE = res;
+  RETURN;
+END;
+

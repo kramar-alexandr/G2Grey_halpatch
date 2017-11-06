@@ -233,6 +233,7 @@ BEGIN
   record APInstallVc APInstallr; 
   record VITBlock VITb; 
   Date RebDate;
+  string 255 newcomment;// Edit ************************** Friday, 3 November 2017 14:07:00
 
   BlockLoad(RTr);
   BlockLoad(VITb);
@@ -305,6 +306,7 @@ BEGIN
     if (vifound) then begin
       t2 = VIr.BankAcc;
       tstr = VIr.InvoiceNr;
+      newcomment = VIr.Comment;// Edit ************************** Friday, 3 November 2017 14:06:28
       reb2 = blankval;
       if (userebf!=0) then begin
         rebdays = DateDiff(VIr.RebDate,TransDate);
@@ -333,6 +335,7 @@ BEGIN
       VEr.Code = APr.VECode;
     end;
     if (ReadFirstMain(VEr,1,true)) then begin
+    	oprp.VEName = VEr.Name;// Edit ************************** Monday, 6 November 2017 13:36:08
       if (nonblank(tstr)) then begin
         tstr = tstr & ", ";
       end;
@@ -419,6 +422,9 @@ BEGIN
     oprp.BankAcc = t2;
     oprp.VECode = VEr.Code;
     oprp.Comment = tstr;
+    if(nonblank(newcomment))then begin// Edit ************************** Friday, 3 November 2017 14:00:41
+			oprp.Comment = newcomment;// Edit ************************** Friday, 3 November 2017 14:00:42
+		end;// Edit ************************** Friday, 3 November 2017 14:00:42
     oprp.VATVal = vatval;
     oprp.VATCode = vatcode;
     oprp.PInvOutstand = remval;
