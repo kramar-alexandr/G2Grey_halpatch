@@ -268,6 +268,61 @@ begin
   return;
 end;
 
+global 
+updating function boolean EasySendTurboSMStoUser(string reciever, string text,var string error)
+begin
+  string 50 cookie;
+  record SMSConfigBlock SMSb;
+  boolean res;
+  record USerVc Userr;
+  string 255 phonetmp,phone;
+  
+  
+  Userr.Code = reciever;
+  if(readfirstmain(Userr,1,true))then begin
+  	if nonblank(Userr.Phone1) then begin
+			phonetmp = Userr.Phone1;
+		end else begin
+			phonetmp = Userr.Phone2;
+		end;
+		if nonblank(phonetmp) then begin
+			phonetmp = StrReplace(phonetmp,"-","");
+			phonetmp = StrReplace(phonetmp," ","");
+			phonetmp = StrReplace(phonetmp,"(","");
+			phonetmp = StrReplace(phonetmp,")","");
+			phonetmp = StrReplace(phonetmp,"*","");
+			switch (left(phonetmp,1)) begin
+				case "+":
+					phone = phonetmp;
+				case "3":
+					phone = "+" & phonetmp;
+				case "8":
+					phone = "+3" & phonetmp;
+				case "0":
+					phone = "+38" & phonetmp;
+				otherwise
+					phone = "+380" & phonetmp;
+			end;
+			BlockLoad(SMSb);
+			if AuthTurboSMS(cookie) then begin
+				if SMSb.Balance>0 then begin
+					error = "SMS sended to " & reciever & " " & phone & " " & text;
+					res = SendSMSTurboSMS(cookie,phone,text);
+				end;
+			end;
+		end else begin
+			logtext(0,"EasySendTurboSMStoUser blank phone");
+			error = "Blank phone";
+		end;
+  end else begin
+  	logtext(0,"EasySendTurboSMStoUser Unknown user");
+  	error = "Unknown user";
+  end;
+  
+  EasySendTurboSMStoUser = res;
+  return;
+end;
+
 global
 updating procedure TestRn(record RcVc RepSpec)
 begin
