@@ -165,6 +165,9 @@ BEGIN
       OPrw.APAcc = GetSupplierOnAccountAC(VEr.Code);
     end;  
     OPrw.VEName = VEr.Name;// Edit ************************** Monday, 6 November 2017 13:36:08  
+    if(nonblank(VEr.Comment0))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 30 January 2018 17:23:12
+    	t1 = VEr.Comment0;
+    end;
   end;
   OPrw.BankAcc = t2;
   OPrw.SortCode = VEr.SortCode;
@@ -403,6 +406,9 @@ BEGIN
   if (ReadFirstMain(VEr,1,true)) then begin  
     OPrw.VECode = VEr.Code;
     OPrw.Comment = VEr.Name;
+    if(nonblank(VEr.Comment0))then begin
+    	OPrw.Comment = VEr.Comment0;
+    end;
     OPrw.PInvVal = tot;
     OPrw.PInvCurncy = VEr.VECurncyCode;
     OPrw.BankVal = tot;
