@@ -77,6 +77,8 @@ BEGIN
       testf = true;
       if (blank(ObjBalr.Object)) then begin testf = false; end;
       if (Mid(ObjBalr.Object,len(ObjBalr.Object)-1,1)==":") then begin testf = false; end;
+      if (Mid(ObjBalr.Object,len(ObjBalr.Object)-2,1)==":") then begin testf = false; end;
+
       if (nonblank(RepSpec.ObjType)) then begin
         if (CheckObjType(ObjBalr.Object,RepSpec.ObjType)==false) then begin 
           testf = false;
