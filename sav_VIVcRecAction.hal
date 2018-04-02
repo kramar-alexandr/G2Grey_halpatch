@@ -673,7 +673,7 @@ Invoice may hapen in locked period they say
           if (nonblank(VIrw.PRCode)) then begin
             PRr.Code = VIrw.PRCode;
             if (ReadFirstMain(PRr,1,true)) then begin
-              if (PRr.Terminated>0) then begin
+              if (PRr.Terminated>0 and PRr.Terminated!=3) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 12:52:36
                 RecordCheckError(1236,"",i,"PRCode");      
                 res = -1;
                 goto L99VIVcRecordCheck;
@@ -806,7 +806,7 @@ Invoice may hapen in locked period they say
             if (nonblank(VIrw.PRCode)) then begin
               PRr.Code = VIrw.PRCode;
               if (ReadFirstMain(PRr,1,true)) then begin
-                if (PRr.Terminated>0) then begin
+                if (PRr.Terminated>0 and PRr.Terminated!=3) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 12:52:39
                   RecordCheckError(1236,"",i,"PRCode");      
                   res = -1;
                   goto L99VIVcRecordCheck;

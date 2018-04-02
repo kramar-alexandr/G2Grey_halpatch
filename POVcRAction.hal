@@ -906,7 +906,7 @@ begin
       res = 1232; 
       goto LPOVcRecordCheck;
     end;
-    if (PRr.Terminated!=0) then begin
+    if (PRr.Terminated!=0 and PRr.Terminated!=3) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 12:51:29
       if (disperrf) then begin
         RecordCheckError(1232,"",-1,"PRCode");      
       end;
@@ -1102,7 +1102,7 @@ begin
             res = 1232; 
             goto LPOVcRecordCheck;
           end;
-          if (PRr.Terminated!=0) then begin
+          if (PRr.Terminated!=0 and PRr.Terminated!=3) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 12:51:41
             if (disperrf) then begin
               RecordCheckError(1232,"",i,"PRCode");      
             end;

@@ -484,6 +484,11 @@ begin
     end else begin
       PRr.FinishedDate = bd;
     end;
+    if (PRr.Terminated==3) then begin
+      PRr.PreFinishedDate = CurrentDate;
+    end else begin
+      PRr.PreFinishedDate = bd;
+    end;
   end;
   if (WindowState(wn)==updatemode) then begin
     GetPrevWindowRecord(wn,PR2r);
@@ -492,6 +497,14 @@ begin
     end else begin
       if (PR2r.Terminated!=1) then begin
         PRr.FinishedDate = bd;
+      end;
+    end;
+    
+    if (PRr.Terminated==3) and (PR2r.Terminated!=3) then begin
+      PRr.PreFinishedDate = CurrentDate;
+    end else begin
+      if (PR2r.Terminated!=3) then begin
+        PRr.PreFinishedDate = bd;
       end;
     end;
   end;

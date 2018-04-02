@@ -801,7 +801,7 @@ BEGIN
         end;
       end;
       if (RepSpec.flags[10]==1) then begin
-        if (PRr.Terminated!=0) then begin
+        if (PRr.Terminated!=0 and PRr.Terminated!=3) then begin
           testf = false;
         end;
       end;

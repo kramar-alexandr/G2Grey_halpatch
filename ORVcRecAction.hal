@@ -288,7 +288,7 @@ BEGIN
       res = -1;
       goto LORVcRecordCheck;
     end;    
-    if (PRr.Terminated!=0) then begin
+    if (PRr.Terminated!=0 and PRr.Terminated!=3) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 12:51:17
       RecordCheckError(1232,"",-1,"PRCode");      
       res = -1;
       goto LORVcRecordCheck;
