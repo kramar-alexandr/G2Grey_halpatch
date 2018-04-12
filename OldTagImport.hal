@@ -1,0 +1,45 @@
+procedure ReadImportTagContractsVcRecord(record ContractsVc CTr)
+begin
+  string 255 tstr;
+  integer rwcnt;
+  
+  RecordNew(CTr);
+  CTr.SerNr = NextSerNr("ContractsVc",CurrentDate,-1,false,"");
+  CTr.CustCode = ImportField;
+  CTr.Code = ImportField;
+  CTr.TransDate = Stringtodate(ImportField);
+  CTr.PayDeal = ImportField;
+  CTr.SearchKey = ImportField;
+  CTr.Type = ImportField;
+  CTr.OKFlag = StringToInt(ImportField);
+  CTr.Closed = StringToInt(ImportField);
+  CTr.ActDate = StringToDate(ImportField);
+  
+  
+  
+  return;
+end;
+
+global
+updating procedure ReadImportTagContractsVc(string thetag)
+begin
+  record ContractsVc CTr;
+  
+  while (NextImportLine(false)) begin
+    ReadImportTagContractsVcRecord(CTr);
+    RecordImportStore(CTr,false);
+  end;
+  
+  return;
+end;
+
+global
+function string 120 ReadRecordIdStrContractsVc(Integer compnr,string thetag)
+begin
+  record ContractsVc CTr;
+  
+  //ContractsVc.SerNr = StringToLongint(ImportField);
+  ReadRecordIdStrContractsVc = BuildRecordIdStr(CTr,compnr);
+  return;
+end;
+
