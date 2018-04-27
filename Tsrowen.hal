@@ -79,6 +79,9 @@ lprfound:;
         OutString(0,0,username,false);
         OutString(0,0,department,false);
         OutString(0,0,role,false);
+        if(TSrw.Qty==0)then begin
+        	TSrw.Qty = 0;// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 27 April 2018 10:24:16
+        end;
         OutVal(0,0,TSrw.Qty,M4Qty,false);
         OutString(0,0,PRr.CustCode,false);//client
         OutString(0,0,TSrw.PRCode,false);//JN
