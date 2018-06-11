@@ -169,6 +169,18 @@ LVerifySalesmen:;
   return; 
 end;
 
+global function boolean ChechDocType(string doctype)// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 11 June 2018 10:05:54
+begin
+	boolean res;
+	record DocumentTypeVc DTr;
+	
+	DTr.Type = doctype;
+	res = readfirstmain(DTr,1,true);
+	
+	ChechDocType = res;
+return;
+end;
+
 global
 updating function LongInt IVVcRecordCheck(record IVVc IVp,record IVVc IV2p,LongInt stat,LongInt long4)
 BEGIN
@@ -279,6 +291,7 @@ BEGIN
     res = -1;
     goto L99;        
   end; 
+  
   if (MainCLRec.CashCollection!=0) then begin
     if (CLInforIVRecordExists(IVp.SerNr,"IVVc",clin)) then begin
       errcode = CheckCLInAmount(clin,IVp.Sum4,IVp.BaseSum4,IVp.CurncyCode);
@@ -885,6 +898,29 @@ L12:;
       if (IV2p.OKFlag==0) then begin transf = true; end;
     end;  
   end;
+  
+  // Edit Start ---------------------------------------------- Edit Start
+	//Monday, 11 June 2018 10:02:19
+	
+  if(transf)then begin
+		if(blank(IVp.DocumentType))then begin
+			res=-1;
+			RecordCheckError(1058,"",-1,"DocumentType");        
+			goto L99;
+		end;
+	end;
+	
+	if(nonblank(IVp.DocumentType))then begin
+		if(ChechDocType(IVp.DocumentType)==false)then begin
+			res=-1;
+			RecordCheckError(1290,"",-1,"DocumentType");        
+			goto L99;
+		end;
+	end;
+  
+	// Edit End ---------------------------------------------- Edit End
+	
+  
   if (transf) then begin
     if ((IVp.InvType==kInvoiceTypeCash) and (TouchScreenInterface)) then begin//is POS client
       testf = false;
