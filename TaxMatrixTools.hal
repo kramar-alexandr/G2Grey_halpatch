@@ -1,0 +1,277 @@
+external function val AbsoluteVal(val);
+external procedure ExtractObj(string,var Integer,var string);
+external function string 60 AddObjectToObjectList(string,string);
+external procedure B1ToB2Val(val,val,val,var val);
+external function roundmode DefaultRoundMode();
+external procedure GetVATdouble(string,var val,var val,Integer);
+external procedure GetVATRow(string,var row VATCodeBlock);
+external function Integer VATType(string);
+
+enum kVATCalcRule begin
+  kVATCalcRuleFullAmount = 0,
+  kVATCalcRuleInRangeAmount = 3,
+  kVATCalcRuleSkip = 4
+end;
+
+function val CalculateTaxValue(string vatcode,val vatrate,val abaseval,Integer InclVAT,Integer NoTAXonVAT) 
+begin
+  val res;
+  val vatperc,tax1percdummy,baseval,absbaseval;
+  row VATCodeBlock VATCbrw;
+  Boolean testf;
+  
+  GetVATRow(vatcode,VATCbrw);
+  baseval = abaseval;
+  absbaseval = AbsoluteVal(baseval);
+  testf = true;
+  if (nonblank(VATCbrw.VATCode)) then begin
+  if (blank(VATCbrw.MinBaseAmount)==false) or (blank(VATCbrw.MaxBaseAmount)==false) then begin
+    if (absbaseval<VATCbrw.MinBaseAmount) then begin
+      testf = false;
+    end;
+    if (blank(VATCbrw.MaxBaseAmount)==false) then begin
+      if (absbaseval>VATCbrw.MaxBaseAmount) then begin
+        testf = false;
+      end;
+    end;
+    if (testf) then begin
+      switch (VATCbrw.CalcRule) begin
+        case kVATCalcRuleInRangeAmount:
+          if (abaseval>0) then begin
+            baseval = baseval - VATCbrw.MinBaseAmount;
+          end else begin
+            baseval = baseval + VATCbrw.MinBaseAmount;
+          end;
+          if (abaseval>0) then begin
+            if (baseval<0) then begin testf = false; end;
+          end else begin
+            if (baseval>0) then begin testf = false; end;
+          end;        
+      end;
+    end;
+  end;
+  end;
+  if (testf) then begin
+    if (InclVAT!=0) then begin
+      if (blank(VATCbrw.IncVatpr)) then begin
+        vatperc = VATCbrw.ExVatpr;
+        if (nonblank(vatperc)) then begin
+          switch (VATCbrw.InclinTotal) begin
+            case kTaxTransInclinTotalNo:
+            otherwise
+              vatperc = (1-(100.00/(100.00+vatperc)))*100.00;
+          end;
+        end;
+      end else begin
+        vatperc = VATCbrw.IncVatpr;
+      end;
+    end else begin
+      if (blank(VATCbrw.ExVatpr)) then begin
+        vatperc = VATCbrw.IncVatpr;        
+        if (vatperc!=blankval) then begin
+          vatperc = ((100.00/(100.00-vatperc))-1)*100.00;
+        end;
+      end else begin
+        vatperc = VATCbrw.ExVatpr;
+      end;
+    end; 
+    if (nonblank(vatrate)) then begin
+      vatperc = vatrate;
+    end;
+    switch (InclVAT) begin
+      case kBasePriceNotInclVAT:
+        res = (baseval * vatperc)/ 100.00;
+      case kBasePriceInclVATandTax:
+        res = (baseval * vatperc)/ 100.00;
+      case kBasePriceInclVAT:
+        res = (baseval * vatperc)/ 100.00;
+    end;  
+  end;
+  res = Round(res,DefaultRoundMode);
+  CalculateTaxValue = res;
+  return;
+end;
+
+global
+function Boolean UseTaxTemplatesforTaxCalc()
+begin
+  record CYBlock CYb;
+  
+  BlockLoad(CYb);
+  UseTaxTemplatesforTaxCalc = CYb.UseTaxTemplatesforTaxCalc!=0;
+  return;
+end;
+
+global
+procedure MulVATIVExecute(string vatc,val vval,var val rval,var val tax1,Integer InclVAT,Integer NoTAXonVAT,roundmode r)
+begin
+  val drval,dvval,t1val;
+  val vatprc,t,absbaseval;
+  row VATCodeBlock VATCbrw;
+  Boolean testf;
+  
+  if (blank(vval)) then begin
+    rval = blankval;
+    tax1 = blankval;
+    goto LMulVATIV;
+  end;
+  if (vval==0) then begin
+    rval = 0;
+    tax1 = 0;
+    goto LMulVATIV;
+  end;
+  if (UseTaxTemplatesforTaxCalc) then begin
+    rval = CalculateTaxValue(vatc,blankval,vval,InclVAT,NoTAXonVAT);
+    goto LMulVATIV;
+  end;
+  
+  GetVATdouble(vatc,drval,t1val,InclVAT);
+  GetVATRow(vatc,VATCbrw); 
+  dvval = vval;  
+  absbaseval = AbsoluteVal(dvval);
+  testf = true;
+  if (blank(VATCbrw.MinBaseAmount)==false) or (blank(VATCbrw.MaxBaseAmount)==false) then begin
+    if (absbaseval<VATCbrw.MinBaseAmount) then begin
+      testf = false;
+    end;
+    if (blank(VATCbrw.MaxBaseAmount)==false) then begin
+      if (absbaseval>VATCbrw.MaxBaseAmount) then begin
+        testf = false;
+      end;
+    end;
+    if (testf) then begin
+      switch (VATCbrw.CalcRule) begin
+        case kVATCalcRuleInRangeAmount:
+          if (vval>0) then begin
+            dvval = dvval - VATCbrw.MinBaseAmount;
+          end else begin
+            dvval = dvval + VATCbrw.MinBaseAmount;
+          end;
+          if (vval>0) then begin
+            if (dvval<0) then begin testf = false; end;
+          end else begin
+            if (dvval>0) then begin testf = false; end;
+          end;        
+      end;
+    end;
+  end;
+  
+  if (testf) then begin
+    switch (InclVAT) begin
+      case 0:
+        switch (NoTAXonVAT) begin
+          case 0:
+            drval = drval * (dvval / 100);
+            t1val = t1val * ((dvval+drval) / 100); 
+          case 1:
+            t1val = t1val * (dvval/100); 
+            drval = drval * (dvval / 100);
+          case 2:
+            t1val = t1val * (dvval / 100);  
+/*            
+            if (t1val<VATCbrw.Tax1Min) then begin
+              t1val = blankval;
+            end;
+*/            
+            drval = drval * ((dvval+t1val) / 100); 
+          otherwise
+            drval = drval * (dvval / 100);
+            t1val = t1val * ((dvval+drval) / 100); 
+        end;
+/*            
+        if (t1val<VATCbrw.Tax1Min) then begin
+          t1val = blankval;
+        end;
+*/            
+      case 1:    
+        switch (NoTAXonVAT) begin
+          case 0:
+            t1val = t1val * (dvval / 100);  
+            drval = drval * ((dvval-t1val) / 100);
+            if (t1val<VATCbrw.Tax1Min) then begin
+              t1val = blankval;
+              drval = drval * ((dvval-t1val) / 100);
+            end;
+          case 1:
+            GetVATdouble(vatc,drval,t1val,0);
+            t = (1-(100/(100+drval+t1val)))*100;
+            messagebox(0,"dvval*t " & dvval*t/100);
+  //          dvval = dvval - Round(t * (dvval / 100),2);
+  					messagebox(0,"dvval= dvval " & dvval & " dvval - t * (dvval / 100) " & t);	
+            dvval = dvval - t * (dvval / 100);
+						messagebox(0,"drval= drval " & drval & " (dvval / 100) " & dvval);	
+            drval = drval * (dvval / 100);
+            t1val = t1val * (dvval / 100); 
+               messagebox(0,drval);
+
+          case 2:
+            drval = drval * (dvval / 100);
+            t1val = t1val * ((dvval-drval)/ 100);  
+          otherwise
+            t1val = t1val * (dvval / 100);  
+            drval = drval * ((dvval-t1val) / 100);
+        end;
+      case 2:
+        switch (NoTAXonVAT) begin
+          case 0:
+            drval = drval * dvval / 100;
+            t1val = t1val * dvval / 100;
+          case 1:
+            drval = drval * dvval / 100;
+            t1val = t1val * (dvval-drval) / 100;
+          case 2:
+            vatprc = drval;
+            drval = drval * dvval / 100;
+            t1val = t1val * (dvval-drval) / 100;
+            GetVATdouble(vatc,vatprc,t,0);
+            drval = drval + t1val * vatprc / 100;
+          otherwise
+            drval = drval * dvval / 100;
+            t1val = t1val * dvval / 100;
+        end;
+    end;  
+  end else begin
+    rval = 0;
+    tax1 = 0;
+  end;
+  rval = drval;
+  tax1 = t1val;
+  rval = Round(rval,r);
+  tax1 = Round(tax1,r);
+LMulVATIV:;  
+  return;
+end;
+
+global
+procedure MulVATIV(string vatc,val vval,var val rval,var val tax1,Integer InclVAT,Integer NoTAXonVAT)
+begin
+  MulVATIVExecute(vatc,vval,rval,tax1,InclVAT,NoTAXonVAT,DefaultRoundMode);
+  return;
+end;
+
+procedure TaxMatricesConjunction(record TaxMatrixVc TMr,var record TaxMatrixVc resTMr)
+begin
+  row TaxMatrixVc resTMrw;
+  Integer resi,resrwcnt;
+  row TaxMatrixVc TMrw;
+  Integer i,rwcnt;
+
+  rwcnt = MatRowCnt(TMr);
+  if (rwcnt==0) then begin goto Lfound; end;
+  resrwcnt = MatRowCnt(resTMr);
+  for (resi=0;resi<resrwcnt;resi=resi+1) begin
+    MatRowGet(resTMr,resi,resTMrw);
+    for (i=0;i<rwcnt;i=i+1) begin
+      MatRowGet(TMr,i,TMrw);
+      if (TMrw.VATCode==resTMrw.VATCode) and (TMrw.CalcBase==resTMrw.CalcBase) then begin
+        goto Lfound;
+      end;
+    end;
+    MatRowDelete(resTMr,resi);
+    resi = -1;
+    resrwcnt = MatRowCnt(resTMr);
+Lfound:;
+  end;
+  return;
+end;
+

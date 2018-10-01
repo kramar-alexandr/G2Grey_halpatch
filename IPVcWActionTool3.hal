@@ -54,6 +54,7 @@ BEGIN
     if (IPrw.InvoiceNr<0) then begin
       BlockLoad(Accb);  
       MulVATIV(IPrw.VATCode,IPrw.InvVal,t,t1,1,Accb.NoTAXonVAT);
+      messagebox(0,t);
       IPrw.VATVal = Round(t,GetVATRoundMode(Rb));
       IPrw.TAX1Sum = Round(t1,GetVATRoundMode(Rb));
     end else begin
