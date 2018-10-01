@@ -27,6 +27,8 @@ external function Integer TypeOfCurncy(var string,var Integer);
 external procedure GetFullCurncyRateText(Boolean,var string,val,val,val,val,val);
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
 
+SetLangMode(LangUkrainian,"UKR",0);
+
 function string 255 GetRateAsText(string curncycode,Date td)
 begin
   Integer oldstyle;
@@ -596,12 +598,16 @@ begin
   TotSum = 0;
   TotSum2 = 0;
   SetRepCol(2,430);
+  SetRepCol(6,240);
+  SetRepCol(7,260);
   if ((RepSpec.ArtMode==0) or (RepSpec.ArtMode==3)) then begin
     if (RepSpec.PocketPC == 0) then begin
       StartFormat(15);
       OutString(0,0,USetStr(2352),false);//0
       OutString(60,0,USetStr(2353),false);//60
       OutString(130,0,USetStr(2354),false);//110
+      OutString(6,0,"Тип",false);//110
+      OutString(7,0,"Док.",false);//110
       OutString(285,0,USetStr(2358),false);//280
       if (RepSpec.flags[15]!=0) then begin
         OutString(360,0,USetStr(2328),true);
@@ -779,6 +785,9 @@ begin
       end;
       if(nonblank(RepSpec.f9))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 April 2018 11:43:09
       	if (RepSpec.f9!=IVr.DocumentType) then begin testf = false; end;
+      end;
+      if(nonblank(RepSpec.f10))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 April 2018 11:43:09
+      	if (RepSpec.f10!=IVr.DocumentsFlag) then begin testf = false; end;
       end;
       if (nonblank(RepSpec.f8)) then begin
         if (IVr.ARAcc<frdebacc) or (IVr.ARAcc>todebacc) then begin
@@ -1069,6 +1078,9 @@ begin
             end;
             OutDate(60,0,IVr.InvDate,false);
             OutStringCut(130,280,0,IVr.Addr0,false,0);
+            OutString(6,0,IVr.DocumentType,false);//200// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 1 October 2018 18:46:04
+      			OutString(7,0,IVr.DocumentsFlag,false);//200// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 1 October 2018 18:46:05
+
             tstr = "";
             if (IVr.InvType==1) then begin
               tstr = USetStr(2361);

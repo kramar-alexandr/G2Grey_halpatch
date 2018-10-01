@@ -18,6 +18,8 @@ external procedure HTCustClassType(string,var string);
 external function Boolean SetInSet2(string,string);
 external procedure ClassTypef(string,string,var Boolean);
 
+SetLangMode(LangUkrainian,"UKR",0);
+
 function
 Boolean CheckAllInvoiceLines(string rowobj,string prcode,record VIVc VIr,var val invval,var val vatval,var val ivnvat)
 BEGIN
@@ -179,16 +181,22 @@ begin
     rw = rw + 1;
   end;
   EndHeader;
+  
+  SetRepCol(6,220);// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 1 October 2018 18:45:03
+  SetRepCol(7,240);// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 1 October 2018 18:45:04
+  
   if (RepSpec.ArtMode==0) then begin
     SetRepCol(2,40);// Edit ************************** Monday, 24 December 2012 16:31:23
     SetRepCol(3,140);
-    SetRepCol(4,220);
+    SetRepCol(4,260);
 SetRepCol(5,90);// Edit ************************** Monday, 24 December 2012 16:31:22
     StartFormat(15);
     OutString(0,0,USetStr(4002),false);
     OutString(2,0,USetStr(4003),false);
     OutString(5,0,USetStr(8405),false);// Edit ************************** Monday, 24 December 2012 16:30:40
     OutString(3,0,USetStr(4007),false);//140
+    OutString(6,0,"Тип",false);//200
+    OutString(7,0,"Док.",false);//200
     OutString(4,0,USetStr(4004),false);//200
     OutString(400,0,USetStr(4005),true);//400
     OutString(440,0,UsetStr(6007),false);//430
@@ -210,7 +218,7 @@ SetRepCol(5,90);// Edit ************************** Monday, 24 December 2012 16:3
   if (RepSpec.ArtMode==1) then begin
     SetRepCol(2,40);// Edit ************************** Monday, 24 December 2012 16:31:15
     SetRepCol(3,140);
-    SetRepCol(4,220);
+    SetRepCol(4,260);
 SetRepCol(5,90);// Edit ************************** Monday, 24 December 2012 16:31:20
     StartFormat(15);
     OutString(0,0,USetStr(4002),false);
@@ -250,6 +258,9 @@ SetRepCol(5,90);// Edit ************************** Monday, 24 December 2012 16:3
       end;
       if(nonblank(RepSpec.f9))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 20 March 2018 14:38:10
       	if (RepSpec.f9!=VIr.DocumentType) then begin testf = false; end;
+      end;
+      if(nonblank(RepSpec.f10))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 20 March 2018 14:38:10
+      	if (RepSpec.f10!=VIr.DocumentsFlag) then begin testf = false; end;
       end;
       if (nonblank(RepSpec.AccStr)) then begin
         if (RepSpec.AccStr<>VIr.SalesMan) then begin testf = false; end;
@@ -372,6 +383,8 @@ SetRepCol(5,90);// Edit ************************** Monday, 24 December 2012 16:3
           OutDateOvst(2,0,VIr.InvDate,false,VIr.Invalid);
           OutDateOvst(5,0,VIr.TransDate,false,VIr.Invalid);// Edit ************************** Monday, 24 December 2012 16:27:47
           OutStringOvst(3,0,VIr.InvoiceNr,false,VIr.Invalid);
+          OutString(6,0,VIr.DocumentType,false);//200// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 1 October 2018 18:46:04
+    			OutString(7,0,VIr.DocumentsFlag,false);//200// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 1 October 2018 18:46:05
           OutStringOvst(4,0,VIr.VEName,false,VIr.Invalid);
           OutValOvst(410,0,iv,M4Val,true,VIr.Invalid);
           OutStringOvst(415,0,VIr.CurncyCode,false,VIr.Invalid);
