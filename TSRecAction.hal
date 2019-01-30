@@ -193,11 +193,11 @@ BEGIN
           goto LTSVcRecordCheck;
         end;
       end;
-      if (IsPRPhaseLocked(TSrw.PRCode,TSr.RegDate,errstr)) then begin
+      /*if (IsPRPhaseLocked(TSrw.PRCode,TSr.RegDate,errstr)) then begin
         RecordCheckError(20408," " & errstr,i,"PRCode");      
         res = -1;
         goto LTSVcRecordCheck;
-      end;
+      end;*/
       if (UserCanAction("DisallowPostPRActualsfornonPRMan",false)) then begin
         if (CheckProjectMember(PRr)==false) then begin 
           RecordCheckError(1274,StringFromStringSet(3,"DisallowPostPRActualsfornonPRMan"),i,"PRCode");        
