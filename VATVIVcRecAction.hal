@@ -255,11 +255,13 @@ BEGIN
   end;  
   if (VATVIp.Invalid==0) then begin
   if ((VATVI2p.OKFlag==1) and (stat==updatemode)) then begin
-    if (AllowOKingOKedVATVI(VATVIp,VATVI2p)) then begin
-      goto LVATVIVcRecordCheck;
+  	if(VATVIp.OKFlag==0)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 16 April 2019 17:18:04
+			if (AllowOKingOKedVATVI(VATVIp,VATVI2p)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 16 April 2019 15:47:10
+				goto LVATVIVcRecordCheck;
+			end;
+			res = -1;
+			goto LVATVIVcRecordCheck;
     end;
-    res = -1;
-    goto LVATVIVcRecordCheck;
   end;  
   end;  
   transf = false;

@@ -53,11 +53,13 @@ begin
 	boolean TrHs;
 	record UserVc USr;
 	
-	startreportnoheaderjob("Access Hist");
+	startreportjob("Access Hist");
+	
+	endheader;
 	ACHr.TransDate = RepSpec.sStartDate;
 	TrHs = true;
 	
-	while(loopmain(ACHr,1,TrHs))begin
+	while(loopkey("DateCode",ACHr,1,TrHs))begin
 		if(ACHr.TransDate<RepSpec.sStartDate)then begin TrHs = false; end;
 		if(ACHr.TransDate>RepSpec.sEndDate)then begin TrHs = false; end;
 		
