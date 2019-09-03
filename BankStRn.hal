@@ -38,11 +38,14 @@ begin
   return;
 end;
 
-procedure PrintMyDateBank(string curcode, integer clbank, string doctype, longint docnr)// Edit ************************** Monday, 6 November 2017 14:20:01
+procedure PrintMyDateBank(string curcode, integer clbank, string doctype,string sdocnr)// Edit ************************** Monday, 6 November 2017 14:20:01
 begin  
 	record CUVc CUr;
 	record BankVc Bankr;
+	longint docnr,ppnr;
 	
+	docnr = firstinrange(sdocnr,20);
+	ppnr = lastinrange(sdocnr,20);
 	CUr.Code = curcode;
 	if(readfirstmain(CUr,1,true))then begin
 		StartFormat(15);
@@ -59,6 +62,11 @@ begin
 				OutString(15,0,"Замовлення пост.:",false);
 			 OutString(70,"DblPOVc",docnr,false);
 			end;
+			if(doctype=="CUPNr")then begin
+				OutString(15,0,"Передплата пост.:",false);
+				//OutString(70,"DblOPVc",docnr,false);
+				OutStringID(70,"DblOPVc",ppnr,false,docnr);
+			end;		
 		end;
 		if(nonblank(CUr.AccOperator))then begin
 			Bankr.Code = CUr.AccOperator;
@@ -136,6 +144,9 @@ begin
               end;
               if(OPrw.OrderNr>-1)then begin
 								PrintMyDateBank(OPrw.VECode,OPrw.KBExportNum,"POVc",OPrw.OrderNr);// Edit ************************** Monday, 6 November 2017 13:56:29
+              end;
+              if(OPrw.OrderNr==-1 and OPrw.PrepayNr>-1)then begin
+								PrintMyDateBank(OPrw.VECode,OPrw.KBExportNum,"CUPNr",OPr.SerNr & ":" & OPrw.PrepayNr);// Edit ************************** Monday, 6 November 2017 13:56:29
               end;
               totcred = totcred + OPrw.BankVal;
             end;  
