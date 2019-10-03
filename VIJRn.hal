@@ -87,7 +87,7 @@ begin
   Record CUVc VEr;
   Boolean TrHs,Accs,test2f;
   Val TotSum, iv, ivnvat, rs,vatval;
-  Boolean testf;
+  Boolean testf,foundf;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:10:05
   LongInt afr,ato;
   String 255 tstr;
   Integer rw, rwcnt, i;
@@ -101,6 +101,7 @@ begin
   LongInt runnr;
   string 255 frcredacc,tocredacc;
   string 255 frcacc,tocacc;
+  record INVc INr;
 
   runnr = 1;
   TotSum = 0;
@@ -116,6 +117,12 @@ begin
   tocredacc = LastInRange(RepSpec.f8,10);
   TotSum = 0;
   BeginCurncyTotals(curcnt);
+  
+  
+  if(nonblank(RepSpec.f11) or nonblank(RepSpec.f12))then begin
+  	RepSpec.ArtMode = 1;
+  end;
+  
   StartReportJob(USetStr(4001));
   rw = 1;
   HT2Per(RepSpec.sStartDate,RepSpec.sEndDate,tstr);
@@ -185,6 +192,7 @@ begin
   SetRepCol(6,220);// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 1 October 2018 18:45:03
   SetRepCol(7,240);// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 1 October 2018 18:45:04
   
+  
   if (RepSpec.ArtMode==0) then begin
     SetRepCol(2,40);// Edit ************************** Monday, 24 December 2012 16:31:23
     SetRepCol(3,140);
@@ -233,6 +241,8 @@ SetRepCol(5,90);// Edit ************************** Monday, 24 December 2012 16:3
     OutString(20,0,USetStr(7065),false);
     OutString(80,0,USetStr(2411),false);
     OutString(150,0,USetStr(2504),false);
+    OutString(250,0,USetStr(3523),false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:05:36
+    OutString(350,0,USetStr(3550),false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:05:36
     EndFormat;
     Gray_Divider(0,1);
   end;
@@ -262,6 +272,33 @@ SetRepCol(5,90);// Edit ************************** Monday, 24 December 2012 16:3
       if(nonblank(RepSpec.f10))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 20 March 2018 14:38:10
       	if (RepSpec.f10!=VIr.DocumentsFlag) then begin testf = false; end;
       end;
+      
+      // Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 September 2019 14:09:54
+	
+      rwcnt = MatRowCnt(VIr);
+      if(testf)then begin
+				if(nonblank(RepSpec.f11) or nonblank(RepSpec.f12))then begin
+					foundf = false;
+
+					for (i=0; i<rwcnt; i=i+1) begin
+						MatRowGet(VIr,i,VIrw);
+						if (VIrw.stp==1) then begin 
+							if(nonblank(RepSpec.f11) and VIrw.Item==RepSpec.f11)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:02:43
+								foundf = true;
+							end;  
+							if(nonblank(RepSpec.f12) and VIrw.PRCode==RepSpec.f12)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:02:43
+								foundf = true;
+							end;           
+						end;
+					end;
+					testf = foundf;
+				end;
+			end;
+      
+      
+	// Edit End ---------------------------------------------- Edit End
+	
       if (nonblank(RepSpec.AccStr)) then begin
         if (RepSpec.AccStr<>VIr.SalesMan) then begin testf = false; end;
       end;  
@@ -455,12 +492,26 @@ SetRepCol(5,90);// Edit ************************** Monday, 24 December 2012 16:3
                 if (VIrw.AccNumber<frcacc) or (VIrw.AccNumber>tocacc) then begin
                   testf = false;
                 end; 
-              end;              
+              end;   
+              if(nonblank(RepSpec.f11) and VIrw.Item!=RepSpec.f11)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:02:43
+              	testf = false;
+              end;  
+              if(nonblank(RepSpec.f12) and VIrw.PRCode!=RepSpec.f12)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:02:43
+              	testf = false;
+              end;           
               if (testf) then begin
+              	if(nonblank(VIrw.Item))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:19:07
+              		INr.Code = VIrw.Item;
+              		readfirstmain(INr,1,true);
+              	end;
                 StartFormat(15);
                 OutStringOvst(20,0,VIrw.AccNumber,false,VIr.Invalid);
                 OutStringOvst(80,0,VIrw.Objects,false,VIr.Invalid);
                 OutStringOvst(150,0,VIrw.Comment,false,VIr.Invalid);
+                OutStringOvst(250,0,VIrw.Item,false,VIr.Invalid);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:04:21
+                OutStringOvst(300,0,INr.Name,false,VIr.Invalid);
+                OutStringOvst(350,0,VIrw.PRCode,false,VIr.Invalid);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 September 2019 14:04:22
+                
                 if (VIr.InvType==3) then begin
                   OutValOvst(400,0,-VIrw.Sum,M4Val,true,VIr.Invalid);
                 end else begin
