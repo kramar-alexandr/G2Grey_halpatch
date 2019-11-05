@@ -195,15 +195,10 @@ begin
           case 1:
             GetVATdouble(vatc,drval,t1val,0);
             t = (1-(100/(100+drval+t1val)))*100;
-            messagebox(0,"dvval*t " & dvval*t/100);
   //          dvval = dvval - Round(t * (dvval / 100),2);
-  					messagebox(0,"dvval= dvval " & dvval & " dvval - t * (dvval / 100) " & t);	
             dvval = dvval - t * (dvval / 100);
-						messagebox(0,"drval= drval " & drval & " (dvval / 100) " & dvval);	
             drval = drval * (dvval / 100);
             t1val = t1val * (dvval / 100); 
-               messagebox(0,drval);
-
           case 2:
             drval = drval * (dvval / 100);
             t1val = t1val * ((dvval-drval)/ 100);  
