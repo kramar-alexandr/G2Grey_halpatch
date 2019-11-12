@@ -121,6 +121,8 @@ BEGIN
   Boolean transf;
   string 255 errstr;
   val qty;
+  integer CurCor,OldCurCor; // Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 12 November 2019 14:29:35
+  boolean isCorrection; // Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 12 November 2019 14:29:12
 
   insertmode = 1;  
   updatemode = 2;  
@@ -152,6 +154,30 @@ BEGIN
       goto LTSVcRecordCheck;
     end;
   end;
+  
+  if(stat==updatemode)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 12 November 2019 14:27:47
+		rwcnt = MatRowCnt(TSr);
+		for (i=0;i<rwcnt;i=i+1) begin
+			MatRowGet(TSr,i,TSrw);
+			if(TSrw.stp==2)then begin
+				CurCor = CurCor + 1;
+			end;
+		end;
+		
+		rwcnt = MatRowCnt(TS2r);
+		for (i=0;i<rwcnt;i=i+1) begin
+			MatRowGet(TS2r,i,TSrw);
+			if(TSrw.stp==2)then begin
+				OldCurCor = OldCurCor + 1;
+			end;
+		end;
+  	
+  	if(OldCurCor<CurCor)then begin
+  		isCorrection = true;
+  	end;
+  	
+  end;
+  
   rwcnt = MatRowCnt(TSr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(TSr,i,TSrw);
@@ -164,23 +190,25 @@ BEGIN
       end;
       // Edit Start ---------------------------------------------- Edit Start
 	//Friday, 7 July 2017 14:00:16
-	
-      if(PRr.Terminated!=0 and PRr.Terminated!=3)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 11:57:16
-      	RecordCheckError(31016,"",i,"PRCode");      
-        res = -1;
-        goto LTSVcRecordCheck;
-      end;
-      
-      if(PRr.Terminated==3 and TSrw.date>PRr.PreFinishedDate)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 11:57:16
-      	RecordCheckError(31016,"",i,"PRCode");      
-        res = -1;
-        goto LTSVcRecordCheck;
-      end;
-      
-      if(PRr.PRStage!="1")then begin
-      	RecordCheckError(31017,"",i,"PRCode");      
-        res = -1;
-        goto LTSVcRecordCheck;
+			
+			if(isCorrection==false)then begin
+				if(PRr.Terminated!=0 and PRr.Terminated!=3)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 11:57:16
+					RecordCheckError(31016,"",i,"PRCode");      
+					res = -1;
+					goto LTSVcRecordCheck;
+				end;
+			
+				if(PRr.Terminated==3 and TSrw.date>PRr.PreFinishedDate)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 11:57:16
+					RecordCheckError(31016,"",i,"PRCode");      
+					res = -1;
+					goto LTSVcRecordCheck;
+				end;
+			
+				if(PRr.PRStage!="1")then begin
+					RecordCheckError(31017,"",i,"PRCode");      
+					res = -1;
+					goto LTSVcRecordCheck;
+				end;
       end;
       
 	// Edit End ---------------------------------------------- Edit End
