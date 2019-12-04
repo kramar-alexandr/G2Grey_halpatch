@@ -251,7 +251,7 @@ begin
   string 255 ostr;
   Time t;
   Boolean dummyf;
-  transaction string 255 gAlarmVcSender;
+  transaction string 255 gAlarmVcSender;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:51:37
   
   if (Actp.Invalid==0) then begin
     consactstored = false;

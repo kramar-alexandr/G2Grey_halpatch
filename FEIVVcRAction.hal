@@ -3,8 +3,8 @@ external procedure GetSalesGroup(string,var string);
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
 external procedure GetCurUser(var record UserVc);
 external function Integer IsUnOKAllowed_FEIVVc(record FEIVVc);
-external outer function val GetCoefficient(string,string,date); // 62
-external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);// 62
+external outer function val GetCoefficient(string,string,date); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:17
+external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:18
 function val ARPayHistAmount(LongInt prepaymentnr)
 BEGIN
   record ARPayHistVc ARPayHistr;  
@@ -77,19 +77,23 @@ BEGIN
   Integer insertmode,updatemode;
   Integer curcomp;
   LongInt oldnr,sernr;
-  val t,t1,coef; // 62s
-  record ARPayHistVc ARr;
-  record BaseCurBlock BaseCurr;
-  val frrate,to1,to2,br1,br2;
+  val t,t1,coef; // 62s// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:21
+  record ARPayHistVc ARr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:22
+  record BaseCurBlock BaseCurr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:22
+  val frrate,to1,to2,br1,br2;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:23
   
   res = 0;
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:16:28
+	
   BlockLoad(BaseCurr);
   ARr.CUPNr=FEIVp.PrepaymentNr;
   ARr.FileName="IPVc";
  
   if ReadFirstMain(ARr,2,true) then begin  end; // 62e
-  curcomp = CurrentCompany;    
+
+	// Edit End ---------------------------------------------- Edit End
+	  curcomp = CurrentCompany;    
   insertmode = 1;//Rs_insert
   updatemode = 2;//Rs_update
   if (FEIVp.OKFlag==0) then begin
@@ -125,11 +129,11 @@ BEGIN
         sernr = FEIV2p.SerNr;
       end;
     end;
-    GetFullCurncyRate(ARr.CurncyCode,ARr.TransDate,frrate,to1,to2,br1,br2); // 62
+    GetFullCurncyRate(ARr.CurncyCode,ARr.TransDate,frrate,to1,to2,br1,br2); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:41
     t = AllFEIVPrepaymentAmount(sernr,FEIVp.PrepaymentNr);
-    t=MulRateToBase1(ARr.CurncyCode,t,frrate,to1,to2,br1,br2,DefaultCurRoundOff); // 62
+    t=MulRateToBase1(ARr.CurncyCode,t,frrate,to1,to2,br1,br2,DefaultCurRoundOff); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:42
     t1 = ARPayHistAmount(FEIVp.PrepaymentNr);
-    t1=MulRateToBase1(ARr.CurncyCode,t1,frrate,to1,to2,br1,br2,DefaultCurRoundOff);// 62
+    t1=MulRateToBase1(ARr.CurncyCode,t1,frrate,to1,to2,br1,br2,DefaultCurRoundOff);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:43
     if (nonblank(t1)) then begin
       if ((t+FEIVp.Sum4)>t1) then begin
         RecordCheckError(1210,"",-1,"Sum4");      
@@ -140,7 +144,7 @@ BEGIN
   end;
   rwcnt = MatRowCnt(FEIVp);
   if (rwcnt==0) then begin
-    RecordCheckError(1030,"",-1,"ArtCode");  // 62    
+    RecordCheckError(1030,"",-1,"ArtCode");  // 62    // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:16:53
     res = -1;
     goto LFEIVVcRecordCheck;        
   end;

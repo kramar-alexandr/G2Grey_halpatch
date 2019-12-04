@@ -1,3 +1,4 @@
+//no changes
 external function Boolean AnyHistoryAfterInvoice(record IVVc);
 external function Boolean AcceptanceRulesExists(Integer,string);
 external procedure IVVc_PasteLoyaltyCardNr(var record IVVc);

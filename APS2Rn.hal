@@ -583,8 +583,8 @@ BEGIN
   VEs = true;
   while (LoopMain(VEr,1,VEs)) begin
     skip2 = false;
-	 	if (VEr.blockedFlag==0) and (RepSpec.flags[11]==1) then begin skip2 = true; end; // SAV 2011_08_08
-		if (VEr.blockedFlag==1) and (RepSpec.flags[11]==0) then begin skip2 = true; end;
+	 	if (VEr.blockedFlag==0) and (RepSpec.flags[11]==1) then begin skip2 = true; end; // SAV 2011_08_08// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:49:30
+		if (VEr.blockedFlag==1) and (RepSpec.flags[11]==0) then begin skip2 = true; end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:49:27
     if (nonblank(tove)) then begin
       if (VEr.Code>tove) then begin VEs = false; end;
     end;

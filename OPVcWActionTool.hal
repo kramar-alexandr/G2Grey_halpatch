@@ -144,7 +144,7 @@ BEGIN
   vatcode = "";
   PayVal = VIp.PayVal - VIp.HoldSum - VIp.WithHoldingTax;
   payvp = payvp - VIp.HoldSum;
- // if (APAccRec.OPBookVAT!=0) then begin // SAV 2011_10_07 Для того чтобы добавляла ПДВ в строчки платежа
+ // if (APAccRec.OPBookVAT!=0) then begin // SAV 2011_10_07 Для того чтобы добавляла ПДВ в строчки платежа// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:43:59
     if (nonblank(VIp.VATVal)) then begin
       VATVal = VIp.VATVal;
     end else begin
@@ -166,7 +166,7 @@ BEGIN
         end;
       end;
     end;
-  //end;
+  //end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:44:15
 LGetOPVAT:;
   RETURN;
 END;

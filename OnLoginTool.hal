@@ -161,12 +161,12 @@ BEGIN
   Date curd,td;
   string 20 curuser;
   string 255 tstr,supervisor;
-  Boolean TrHr; // 62
-  Integer rwcnt; // 62
-  row TSVc TSrw; // 62
+  Boolean TrHr; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:17
+  Integer rwcnt; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:18
+  row TSVc TSrw; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:18
   Integer pos;
 
-SetLangMode(LangUkrainian,"UKR",0); // 62  
+SetLangMode(LangUkrainian,"UKR",0); // 62  // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:21
   BlockLoad(ForceTimeEntryRec);
   if (blankdate(ForceTimeEntryRec.StartDate)) then begin
     goto LCheckForceTimeEntry;
@@ -202,12 +202,12 @@ SetLangMode(LangUkrainian,"UKR",0); // 62
 					if (TSr.RegDate<ForceTimeEntryRec.StartDate) then begin
 						goto LCheckForceTimeEntry;
 					end;
-					rwcnt=MatRowCnt(TSr);// 62
-					MatRowGet(TSr,rwcnt-1,TSrw);// 62
-					td = TSrw.date;// 62
-            end else begin // 62
-					goto LCheckForceTimeEntry;// 62
-				end;// 62
+					rwcnt=MatRowCnt(TSr);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:29
+					MatRowGet(TSr,rwcnt-1,TSrw);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:30
+					td = TSrw.date;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:30
+            end else begin // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:31
+					goto LCheckForceTimeEntry;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:31
+				end;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:32
           end;          
       end;
       if (nonblankdate(td)) then begin
@@ -221,15 +221,15 @@ SetLangMode(LangUkrainian,"UKR",0); // 62
       end;
       if (diff<=0) then begin goto LCheckForceTimeEntry; end;
       if (ForceTimeEntryRec.Type==1) then begin
-			if diff>ForceTimeEntryRec.WarnDays then begin // 62
-				diff=diff-ForceTimeEntryRec.WarnDays; // 62
-				tstr = USetStr(2226) & " прострочено. " & USetStr(1127) & diff; // 62
-			end;// 62
+			if diff>ForceTimeEntryRec.WarnDays then begin // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:37
+				diff=diff-ForceTimeEntryRec.WarnDays; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:38
+				tstr = USetStr(2226) & " прострочено. " & USetStr(1127) & diff; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:38
+			end;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:39
 
       end else begin
         tstr = USetStr(2220);
       end;
-		/* // 62
+		/* // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:43
       tstr = tstr & diff;
       if (diff==1) then begin
         tstr = tstr & USetStr(2225);
@@ -242,9 +242,9 @@ SetLangMode(LangUkrainian,"UKR",0); // 62
         tstr = tstr & USetStr(2223);
       end else begin
         tstr = tstr & USetStr(2224);
-      end;*/ // 62
-      MessageBox(0,tstr);
-		/* // 62
+      end;*/ // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:54
+      MessageBox(0,tstr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:48
+		/* // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:45
       if (ForceTimeEntryRec.WarnDays!=-1) then begin
         if (diff>=ForceTimeEntryRec.WarnDays) then begin
           if (nonblank(Userr.Supervisor)) then begin
@@ -257,7 +257,7 @@ SetLangMode(LangUkrainian,"UKR",0); // 62
           end;
         end;
       end;
-		  */ // 62		
+		  */ // 62		// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:45:53
     end;
   end;
 LCheckForceTimeEntry:;  
@@ -875,7 +875,9 @@ LLoginWorkHoursActivityExists:;
   LoginWorkHoursActivityExists = res;
   return;
 end;
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:46:05
+	
 
 
 global
@@ -901,3 +903,5 @@ begin
   TestAcceptanceStatus = res;
   return;
 end;
+	// Edit End ---------------------------------------------- Edit End
+	

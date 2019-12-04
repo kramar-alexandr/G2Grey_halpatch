@@ -136,7 +136,9 @@ BEGIN
     CreateAlarm(Actr);  
   end;
   LinkRecordToActivity(Actr);
-  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:53:09
+	  
   
   testf = false;
   if Actr.TodoFlag==1 then begin
@@ -219,7 +221,9 @@ BEGIN
     end;
   end;
   
-  ActVcRecordSaveAfter = res;
+
+	// Edit End ---------------------------------------------- Edit End
+	  ActVcRecordSaveAfter = res;
   RETURN;
 END;
 
@@ -227,7 +231,9 @@ global
 updating function LongInt ActVcRecordUpdateAfter(var record ActVc Actr,record ActVc Act2r,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;
-  record UserVc Ur;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:53:20
+	  record UserVc Ur;
   record AcceptanceRulesVc ARr;
   string 255 reciever,text;
   string 5 person;
@@ -239,6 +245,8 @@ BEGIN
   record POVc POr;
   string 200 salesman;
 
+	// Edit End ---------------------------------------------- Edit End
+	
   if ((Actr.OKFlag!=0) and (Act2r.OKFlag==0)) then begin
     ActOK(Actr);
     CreateConsequences(Actr);

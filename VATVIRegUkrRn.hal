@@ -1,3 +1,4 @@
+//переносить как есть
 external outer function boolean TriggerCaption(integer);// проверка активности "доработок"
 external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
 external procedure NewLineExport();
@@ -86,7 +87,7 @@ procedure ExportAttributeTagXml(string tag,string pvalue,string attr,string attr
 begin
   string 255 value;
   
-  value = Convert(pvalue);
+  value = Convert(pvalue);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:27:46
   ExportTheLevel(level);
   ExportPadString("<",1," ",false);
   ExportPadString(tag,len(tag)," ",false);
@@ -138,30 +139,40 @@ end;
 procedure ExportVATVIRegUkr(record VATVIVc VATVIr,
                            array Integer avt,Array val avtsumval,Array val avtvatval,Integer acnt,
                            var LongInt seqnr,var val totsumval,var val totvatval,var LongInt rownr,
-                           var vector val vT1R01G,var vector val vT1R02G,integer Count)
+                           var vector val vT1R01G,var vector val vT1R02G,integer Count)// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:27:50
 begin
   Integer ai;
   Integer level;
   Integer T1R01GNr;
   val v;
-  boolean Trigger48;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:27:54
+	  boolean Trigger48;
   integer sign;
   record OperTypeVc OPr;
   record CUVc CUr;
-  
-  sign=1;
+
+	// Edit End ---------------------------------------------- Edit End
+	  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:28:06
+	  sign=1;
   if VATVIr.InvType==3 then begin sign=-1; end;
   OPr.Type = VATVIr.OperType;
   CUr.Code = VATVIr.VECode;
   if (ReadFirstMain(CUr,1,true)) then begin end;
   if (ReadFirstMain(OPr,1,true)) then begin end;
-  SortArray(avt,avtsumval,avtvatval,acnt);
+
+	// Edit End ---------------------------------------------- Edit End
+	  SortArray(avt,avtsumval,avtvatval,acnt);
   level = 2;
-  Trigger48 = true; // 
+  Trigger48 = true; // // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:28:12
   for (ai=0;ai<acnt;ai=ai+1) begin
     totsumval = totsumval + avtsumval[ai];
     totvatval = totvatval + avtvatval[ai];
-    ExportAttributeTagXml("T2RXXXXG1",Count,"ROWNUM",rownr,level);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:28:20
+	    ExportAttributeTagXml("T2RXXXXG1",Count,"ROWNUM",rownr,level);
     ExportAttributeTagXml("T2RXXXXG2D",DateToString(VATVIr.TransDate,"DDMMYYYY"),"ROWNUM",rownr,level);
     ExportAttributeTagXml("T2RXXXXG3D",DateToString(VATVIr.VATVIDate,"DDMMYYYY"),"ROWNUM",rownr,level);
 	 if Trigger48==false then begin // SAV NS-48 2011_12_06 
@@ -182,8 +193,12 @@ begin
 		ExportAttributeTagXml("T2RXXXXG7",CUr.VATNr,"ROWNUM",rownr,level);    
 	 end;
 	 
-    T1R01GNr = 8;
-	 if Trigger48==false then begin // SAV NS-48 2011_12_06 
+
+	// Edit End ---------------------------------------------- Edit End
+	    T1R01GNr = 8;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:28:31
+		 if Trigger48==false then begin // SAV NS-48 2011_12_06 
 		ExportAttributeTagXml("T2RXXXXG"  & T1R01GNr,ValToString(avtsumval[ai]+avtvatval[ai],M4Val,"",".",0),"ROWNUM",rownr,level);
 		vT1R01G[T1R01GNr] = vT1R01G[T1R01GNr] + avtsumval[ai] + avtvatval[ai];
 		switch (VATVIr.InvType) begin
@@ -196,8 +211,10 @@ begin
 		ExportAttributeTagXml("T2RXXXXG"  & T1R01GNr,ValToString(sign*v,M4Val,"",".",0),"ROWNUM",rownr,level);
 		vT1R01G[T1R01GNr] = vT1R01G[T1R01GNr] + v;
 		switch (VATVIr.InvType) begin
-      case kInvoiceTypeCredit:
-        vT1R02G[T1R01GNr] = vT1R02G[T1R01GNr] + v;
+
+	// Edit End ---------------------------------------------- Edit End
+	      case kInvoiceTypeCredit:
+        vT1R02G[T1R01GNr] = vT1R02G[T1R01GNr] + v;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:28:40
 		end;
 	 end;
 
@@ -206,12 +223,16 @@ begin
     v = blankval;
     if (avt[ai]==kVATTypeNormal) then begin
       v = avtsumval[ai];
-		if Trigger48 then begin // SAV NS-48 2011_12_06 
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:28:47
+			if Trigger48 then begin // SAV NS-48 2011_12_06 
 			v = VATVIr.PayVal-VATVIr.CalcVATVal;
 			v=MulRateToBase1(VATVIr.CurncyCode,v,VATVIr.FrRate,VATVIr.ToRateB1,VATVIr.ToRateB2,VATVIr.BaseRate1,VATVIr.BaseRate2,DefaultCurRoundOff);
 		end;
-    end;
-    ExportAttributeTagXml("T2RXXXXG" & T1R01GNr,ValToString(sign*v,M4Val,"",".",0),"ROWNUM",rownr,level);
+
+	// Edit End ---------------------------------------------- Edit End
+	    end;
+    ExportAttributeTagXml("T2RXXXXG" & T1R01GNr,ValToString(sign*v,M4Val,"",".",0),"ROWNUM",rownr,level);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:28:58
     vT1R01G[T1R01GNr] = vT1R01G[T1R01GNr] + v;
     switch (VATVIr.InvType) begin
       case kInvoiceTypeCredit:
@@ -222,12 +243,16 @@ begin
     v = blankval;
     if (avt[ai]==kVATTypeNormal) then begin
       v = avtvatval[ai];
-		if Trigger48 then begin // SAV NS-48 2011_12_06 
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:29:06
+			if Trigger48 then begin // SAV NS-48 2011_12_06 
 			v = VATVIr.CalcVATVal;
 			v=MulRateToBase1(VATVIr.CurncyCode,v,VATVIr.FrRate,VATVIr.ToRateB1,VATVIr.ToRateB2,VATVIr.BaseRate1,VATVIr.BaseRate2,DefaultCurRoundOff);
 		end;
-    end;
-    ExportAttributeTagXml("T2RXXXXG" & T1R01GNr,ValToString(sign*v,M4Val,"",".",0),"ROWNUM",rownr,level);
+
+	// Edit End ---------------------------------------------- Edit End
+	    end;
+    ExportAttributeTagXml("T2RXXXXG" & T1R01GNr,ValToString(sign*v,M4Val,"",".",0),"ROWNUM",rownr,level);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:29:13
     vT1R01G[T1R01GNr] = vT1R01G[T1R01GNr] + v;
     switch (VATVIr.InvType) begin
       case kInvoiceTypeCredit:
@@ -238,11 +263,15 @@ begin
     v = blankval;
     if (avt[ai]==kVATTypeNoVAT) then begin
       v = avtsumval[ai];
-		if Trigger48 then begin // SAV NS-48 2011_12_06 
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:29:19
+			if Trigger48 then begin // SAV NS-48 2011_12_06 
 			v = VATVIr.PayVal-VATVIr.CalcVATVal;
 			v=MulRateToBase1(VATVIr.CurncyCode,v,VATVIr.FrRate,VATVIr.ToRateB1,VATVIr.ToRateB2,VATVIr.BaseRate1,VATVIr.BaseRate2,DefaultCurRoundOff);
 		end;		
-    end;
+
+	// Edit End ---------------------------------------------- Edit End
+	    end;
     ExportAttributeTagXml("T2RXXXXG" & T1R01GNr,ValToString(sign*v,M4Val,"",".",0),"ROWNUM",rownr,level);
     vT1R01G[T1R01GNr] = vT1R01G[T1R01GNr] + v;
     switch (VATVIr.InvType) begin
@@ -388,7 +417,7 @@ begin
   val sign;
   LongInt rownr;
   Boolean negopf;
-  integer count;
+  integer count;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:29:32
   
   rownr = 1;
   BlockLoad(VATCodeb);
@@ -471,7 +500,7 @@ begin
           if (nonblank(RepSpec.f2)) then begin
             if (vt!=SetFromString(358,RepSpec.f2)) then begin testf = false; end;
           end;
-		  if blank(VATVIrw.Item) then begin testf = false; end;
+		  if blank(VATVIrw.Item) then begin testf = false; end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:30:02
           if (testf) then begin
             sign = 1.00;
             if (VATVIrw.Sum<0) then begin 
@@ -519,7 +548,7 @@ Lvtfound:;
           if (negopf) then begin
             VATVIr.InvType = kInvoiceTypeCredit;
           end;
-			 count = count +1;
+			 count = count +1;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:29:37
           ExportVATVIRegUkr(VATVIr,avt,avtsumval,avtvatval,acnt,seqnr,totsumval,totvatval,rownr,vT1R01G,vT1R02G, count);        
         end;
       end;

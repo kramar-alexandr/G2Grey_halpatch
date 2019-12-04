@@ -555,7 +555,7 @@ BEGIN
   val ARSOnAccBal;
   val intv;
   LongInt latedays,maxintdays;
-  Boolean testf,prflag;
+  Boolean testf,prflag;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:45:22
   val rval,rval2,t;
   val fr,to1,to2,br1,br2;
   Boolean onaccf;
@@ -623,8 +623,8 @@ BEGIN
           IVr.SerNr = IPrsr.TransNr;
           testf = true;
           if (ReadFirstMain(IVr,1,true)==false) then begin goto L20OneARSFormOpenOnDate; end;        
-			 if (nonblank(RepSpec.f6)) and (IVr.PRCode<>RepSpec.f6) then begin goto L20OneARSFormOpenOnDate; end;// SAV 2011_08_18
-			 prflag=true;
+			 if (nonblank(RepSpec.f6)) and (IVr.PRCode<>RepSpec.f6) then begin goto L20OneARSFormOpenOnDate; end;// SAV 2011_08_18// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:45:33
+			 prflag=true;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:45:31
           if (IVr.Invalid!=0) then begin goto L20OneARSFormOpenOnDate; end;                              
           if (RepSpec.flags[12]!=0) then begin
             if (IVr.NoRemndrFlag!=0) then begin
@@ -774,7 +774,7 @@ L20OneARSFormOpenOnDate:;
   if (RepSpec.flags[16]!=0) then begin
     if (acnt==0) and (ARSOnAccBal==0) then begin testf = false; end;
   end;
-  if prflag==false then begin testf = false; end;
+  if prflag==false then begin testf = false; end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:45:36
   if (testf) then begin  
     switch (reportmode) begin
       case 0: 

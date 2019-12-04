@@ -1236,7 +1236,7 @@ BEGIN
         t = t/orrp.PriceFactor;
       end;
       s = MulRateToBase1(ORp.CurncyCode,orrp.Sum,ORp.FrRate,ORp.ToRateB1,ORp.ToRateB2,ORp.BaseRate1,ORp.BaseRate2,DefaultCurRoundOff);
-      //UnpackRowFieldMatrix(orrp,"TaxMatrix",TMr);
+      //UnpackRowFieldMatrix(orrp,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:39:47
       FindSalesExVat(TMr,orrp.VATCode,s,ORp.InclVAT,ORp.NoTAXonVAT,s);
       orrp.rowGP = s - t;          
     end;

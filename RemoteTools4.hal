@@ -1,3 +1,4 @@
+//измеенний нет - можно удалить
 external procedure RowCalculateTaxMatrix_IVVc(var record IVVc,Integer,row IVVc);
 external procedure RowCalculateTaxMatrix_ORVc(var record ORVc,Integer,row ORVc);
 external procedure AddWithholdingTaxesRows_IVVc(var record IVVc);
@@ -610,9 +611,9 @@ BEGIN
       ORrw.TAX2Acc = QTrw.TAX2Acc;
       ORrw.VARList = QTrw.VARList;
       ORrw.TaxTemplateCode = QTrw.TaxTemplateCode;
-     // UnpackRowFieldMatrix(QTrw,"TaxMatrix",TMr);
-     // PackRowFieldMatrix(ORrw,"TaxMatrix",TMr);
-//RowCalculateTaxMatrix_ORVc(ORp,srw,ORrw);
+     // UnpackRowFieldMatrix(QTrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:54:36
+     // PackRowFieldMatrix(ORrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:54:36
+//RowCalculateTaxMatrix_ORVc(ORp,srw,ORrw);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:54:37
       MatRowPut(ORp,srw,ORrw);
       srw = srw + 1;
     end else begin
@@ -817,9 +818,9 @@ BEGIN
     IVrw.TAX2Acc = QTrw.TAX2Acc;
     IVrw.Perceptions = INr.Perceptions;
     IVrw.TaxTemplateCode = QTrw.TaxTemplateCode;
-   //UnpackRowFieldMatrix(QTrw,"TaxMatrix",TMr);
-   // PackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
-   // RowCalculateTaxMatrix_IVVc(IVp,srw,IVrw);
+   //UnpackRowFieldMatrix(QTrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:54:40
+   // PackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:54:41
+   // RowCalculateTaxMatrix_IVVc(IVp,srw,IVrw);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:54:41
     MatRowPut(IVp,srw,IVrw);
     srw = srw + 1;
 L22PasteQTInInv:;

@@ -4,7 +4,7 @@ external procedure ToStrTRCode(var string,Integer,LongInt);
 external function Boolean GetAccName(string,var string,Integer);
 external procedure HT2Per(Date, Date , var string);
 
-SetLangMode(LangUkrainian,"UKR",0);
+SetLangMode(LangUkrainian,"UKR",0);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:41:25
 
 procedure PrintHeaderRow(string dblstr,string nr,Integer type,Date td,string comment,string refstr)
 begin
@@ -24,7 +24,7 @@ procedure PrintRow(string description,string refstr,val v,Boolean debf,var val b
 begin  
   StartFormat(15);
    //OutString(15,0,Left(description,25),false);// Edit ************************** Monday, 6 November 2017 14:38:07
-   OutString(15,0,description,false);
+   OutString(15,0,description,false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:41:29
    OutString(190,0,Left(refstr,25),false);
    if (debf) then begin
      OutString(370,0,v,true);
@@ -38,7 +38,9 @@ begin
   return;
 end;
 
-procedure PrintMyDateBank(string curcode, integer clbank, string doctype,string sdocnr)// Edit ************************** Monday, 6 November 2017 14:20:01
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:41:35
+	procedure PrintMyDateBank(string curcode, integer clbank, string doctype,string sdocnr)// Edit ************************** Monday, 6 November 2017 14:20:01
 begin  
 	record CUVc CUr;
 	record BankVc Bankr;
@@ -95,7 +97,9 @@ begin
   return;
 end;
 
-procedure PrintPayments(record RcVc RepSpec,string pmcode,var val totcred,var val bal)
+
+	// Edit End ---------------------------------------------- Edit End
+	procedure PrintPayments(record RcVc RepSpec,string pmcode,var val totcred,var val bal)
 begin
   record OPVc OPr;
   row OPVc OPrw;
@@ -139,7 +143,9 @@ begin
                 payheaderf = true;
               end;
               PrintRow(OPrw.Comment,OPrw.rkPayNumber,OPrw.BankVal,false,bal);
-              if(OPrw.VISerNr>-1)then begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:41:40
+	              if(OPrw.VISerNr>-1)then begin
 								PrintMyDateBank(OPrw.VECode,OPrw.KBExportNum,"VIVc",OPrw.VISerNr);// Edit ************************** Monday, 6 November 2017 13:56:29
               end;
               if(OPrw.OrderNr>-1)then begin
@@ -148,7 +154,9 @@ begin
               if(OPrw.OrderNr==-1 and OPrw.PrepayNr>-1)then begin
 								PrintMyDateBank(OPrw.VECode,OPrw.KBExportNum,"CUPNr",OPr.SerNr & ":" & OPrw.PrepayNr);// Edit ************************** Monday, 6 November 2017 13:56:29
               end;
-              totcred = totcred + OPrw.BankVal;
+
+	// Edit End ---------------------------------------------- Edit End
+	              totcred = totcred + OPrw.BankVal;
             end;  
           end;
         end;

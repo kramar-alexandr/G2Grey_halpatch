@@ -139,7 +139,9 @@ BEGIN
   string 255 tstr;
   Date td,nild;
   record BaseCurBlock bascur;
-  array val sumdiff,sumdiff2;// Edit ************************** Tuesday, 11 February 2014 10:12:39
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:46:42
+	  array val sumdiff,sumdiff2;// Edit ************************** Tuesday, 11 February 2014 10:12:39
   array string 5 acur;
   integer cui,curw;// Edit ************************** Tuesday, 11 February 2014 10:12:40
   boolean cufind;// Edit ************************** Tuesday, 11 February 2014 10:13:54
@@ -147,9 +149,13 @@ BEGIN
   row FBVc FBrw;
   
   
-  BlockLoad(bascur);
+
+	// Edit End ---------------------------------------------- Edit End
+	  BlockLoad(bascur);
   
-  curw = 0;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:46:49
+	  curw = 0;
   
   FBr.TransDate = "";
   TrHs = true;
@@ -219,7 +225,9 @@ BEGIN
   	end;
   end;
   
-  Mainr.AccNumber = accnumber;
+
+	// Edit End ---------------------------------------------- Edit End
+	  Mainr.AccNumber = accnumber;
   TrHs = true;
   while (LoopMain(Mainr,1,TrHs)) begin
     if (Mainr.AccNumber!=accnumber or Mainr.TransDate>d1) then begin TrHs = false; end;// Edit ************************** Monday, 10 February 2014 18:13:39
@@ -299,7 +307,9 @@ LSKIPROW:;
       end;
     end;
   end;
-  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:47:32
+	  
   Accr.AccNumber = accnumber;
   if (ReadFirstMain(Accr,1,true)) then begin
 		if(curw>0)then begin
@@ -322,7 +332,9 @@ LSKIPROW:;
 			end; 
 		end;
   end;
-  RETURN;
+
+	// Edit End ---------------------------------------------- Edit End
+	  RETURN;
 END;
 
 updating procedure NLRate(record RcVc RepSpec)

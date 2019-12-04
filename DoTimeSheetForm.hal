@@ -13,7 +13,7 @@ BEGIN
   Integer i,rwcnt;
   row TSVc TSrw;
   string 255 tstr;
-  record UserVc USr; // 62
+  record UserVc USr; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:33:56
 
   BlockLoad(SysFormatRec);  
   GetLangNr("",LangNrr);
@@ -23,18 +23,18 @@ BEGIN
   OUTFORMFIELD("F_NUMMER",TSr.SerNr);
   OUTFORMFIELD("F_COMMENT",TSr.Comment);
   OUTFORMFIELD("F_TRANSDATE",TSr.RegDate);
-  USr.Code=TSr.SalesMan; // 62 s
+  USr.Code=TSr.SalesMan; // 62 s// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:34:03
   if ReadFirstMain(USr,1,true) then begin 
-    OUTFORMFIELD("F_SALESMANNAME",USr.Name); // "ПІБ_продавця" 6005
-  end; // 62 e
+    OUTFORMFIELD("F_SALESMANNAME",USr.Name); // "ПІБ_продавця" 6005// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:34:05
+  end; // 62 e// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:34:03
   rwcnt = MatRowCnt(TSr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(TSr,i,TSrw);
-    if i==0 then begin // 62s
-	GetUserName(TSrw.EMCode,tstr);
-	OUTFORMFIELD("F_EMPLOYEENAME",tstr);
-	tstr="";
-	end;// 62e
+    if i==0 then begin // 62s// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:34:08
+	GetUserName(TSrw.EMCode,tstr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:34:10
+	OUTFORMFIELD("F_EMPLOYEENAME",tstr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:34:10
+	tstr="";// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:34:11
+	end;// 62e// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:34:09
     OUTFORMFIELD("F_ARTNR",TSrw.ArtCode);
     OUTFORMFIELD("F_TRANSDATUM",TSrw.date);
     OUTFORMFIELD("F_BESKRIVNING",TSrw.Spec);

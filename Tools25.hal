@@ -1,3 +1,4 @@
+//без доработок. не переносить
 external function Boolean IsSessionOpen(string,string,Date,Time);
 external procedure SetActTypeValues(record ActVc);
 external procedure ActVcRecordDefServer(var record ActVc);

@@ -1,11 +1,12 @@
-external function val AbsoluteVal(val);
-external procedure ExtractObj(string,var Integer,var string);
-external function string 60 AddObjectToObjectList(string,string);
+//аккуратно проверить - возможно не кастомизировалась
+external function val AbsoluteVal(val);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:42:06
+external procedure ExtractObj(string,var Integer,var string);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:42:06
+external function string 60 AddObjectToObjectList(string,string);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:42:07
 external procedure B1ToB2Val(val,val,val,var val);
 external function roundmode DefaultRoundMode();
 external procedure GetVATdouble(string,var val,var val,Integer);
 external procedure GetVATRow(string,var row VATCodeBlock);
-external function Integer VATType(string);
+external function Integer VATType(string);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:42:12
 
 enum kVATCalcRule begin
   kVATCalcRuleFullAmount = 0,

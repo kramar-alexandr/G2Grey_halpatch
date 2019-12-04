@@ -52,7 +52,7 @@ BEGIN
   Integer vcrwcnt;
   roundmode roundlines,rndtotal,roundvat;
   val vatv,t,t1,quant;
-  Boolean testf; // 62
+  Boolean testf; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:14:01
   
   FEIVr.Sum1 = blankval;
   FEIVr.Sum2 = blankval;
@@ -63,7 +63,9 @@ BEGIN
   rwcnt = MatRowCnt(FEIVr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(FEIVr,i,FEIVrw);
-    testf=true; // 62s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:14:22
+	    testf=true; // 62s
     if FEIVrw.stp==1 then begin
 			if blank(FEIVrw.ArtCode) then begin
 			testf=false;
@@ -105,8 +107,10 @@ BEGIN
 						FEIVr.Sum1 = FEIVr.Sum1 + FEIVrw.Sum;
 					end;
 			end;
-    end;
-  end;// 62
+
+	// Edit End ---------------------------------------------- Edit End
+	    end;
+  end;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:14:27
   CalcVATBaseVAT(VATr,FEIVr.InclVAT,FEIVr.NoTAXonVAT,vcrwcnt,vatv,t1);
   FEIVr.TAX1Sum = t1;
   FEIVr.Sum3 = vatv;
@@ -127,16 +131,24 @@ BEGIN
   end;
   GetCurncyRoundoff(FEIVr.CurncyCode,FEIVr.PayDeal,"FIVVc",rndtotal,roundlines,roundvat);
   FEIVr.Sum3 = Round(FEIVr.Sum3,roundvat);
-// 62s !!!!!!!! выяснить какое округение правильное
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:14:34
+	// 62s !!!!!!!! выяснить какое округение правильное
   rndtotal=DefaultCurRoundOff;
   roundvat=DefaultCurRoundOff;
   roundlines=DefaultCurRoundOff;
-  
-  FEIVr.Sum1 = Round(FEIVr.Sum1,DefaultCurRoundOff);
+
+	// Edit End ---------------------------------------------- Edit End
+	  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:14:38
+	  FEIVr.Sum1 = Round(FEIVr.Sum1,DefaultCurRoundOff);
   FEIVr.TAX1Sum = Round(FEIVr.TAX1Sum,DefaultCurRoundOff);
   FEIVr.Sum3 = Round(FEIVr.Sum3,DefaultCurRoundOff);
   // 62e
-  switch (FEIVr.InclVAT) begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  switch (FEIVr.InclVAT) begin
       case 0:
         t = FEIVr.Sum1 + FEIVr.Sum3;
         t = FEIVr.Sum4 + t;            
@@ -153,7 +165,7 @@ BEGIN
   FEIVr.Sum0 = Round(FEIVr.Sum0,DefaultRoundMode);
   FEIVr.Sum1 = Round(FEIVr.Sum1,DefaultRoundMode);
   FEIVr.Sum2 = Round(FEIVr.Sum2,DefaultRoundMode);
-  FEIVr.Sum4 = Round(FEIVr.Sum4,DefaultCurRoundOff);// 62
+  FEIVr.Sum4 = Round(FEIVr.Sum4,DefaultCurRoundOff);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:14:45
   if (nonblank(FEIVr.CurncyCode)) then begin
     FEIVr.BaseSum4 = MulRateToBase1(FEIVr.CurncyCode,FEIVr.Sum4,FEIVr.FrRate,FEIVr.ToRateB1,FEIVr.ToRateB2,FEIVr.BaseRate1,FEIVr.BaseRate2,DefaultCurRoundOff);
   end;
@@ -348,7 +360,9 @@ BEGIN
   RETURN;
 END;
 
-//updating // 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:14:49
+	//updating // 62
 function Boolean FEIVDClassSumEFAfter(Integer wn, Integer rownr,Integer changed)
 BEGIN
   Boolean res;
@@ -365,7 +379,9 @@ BEGIN
   RETURN;
 END; // 62
 
-global
+
+	// Edit End ---------------------------------------------- Edit End
+	global
 function Boolean FEIVDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 BEGIN
   Boolean res;
@@ -379,7 +395,7 @@ BEGIN
     case "CustCode": res = FEIVDClassCustCodeEFAfter(wn,rownr,changed);
     case "PrepaymentNr": res = FEIVDClassPrepaymentNrEFAfter(wn,rownr,changed);
     case "vRebate": res = FEIVDClassvRebateEFAfter(wn,rownr,changed);
-    case "Sum": res = FEIVDClassSumEFAfter(wn,rownr,changed); // 62
+    case "Sum": res = FEIVDClassSumEFAfter(wn,rownr,changed); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:14:53
 /*
     case "BasePrice": res = FEIVDClassBasePriceEFAfter(wn,rownr,changed);
     case "PayDeal": res = FEIVDClassPayDealEFAfter(wn,rownr,changed);
@@ -416,8 +432,8 @@ BEGIN
         switch (fieldname) begin
           case "QuantFract": res = true;
           case "LangCode": res = true;
-          case "Spec": res = true; // 62
-          case "UnitCode": res = true; // 62
+          case "Spec": res = true; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:14:56
+          case "UnitCode": res = true; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:14:57
         end;
       end;
     end else begin
@@ -472,8 +488,8 @@ BEGIN
         if (FEIVr.IVNr==-1) then begin
           switch (fieldname) begin
             case "QuantFract": res = true;
-            case "Spec": res = true; // 62
-            case "UnitCode": res = true; // 62
+            case "Spec": res = true; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:15:00
+            case "UnitCode": res = true; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:15:00
           end;
         end;
         switch (fieldname) begin
@@ -482,10 +498,10 @@ BEGIN
           case "TransDate": res = true;
           case "PrepaymentNr": res = false;
           case "PMComment": res = true;
-          case "SalesMan": res = true; // 62
-          case "Spec": res = true; // 62
-          case "UnitCode": res = true; // 62
-          case "Sum": res = true; // 62
+          case "SalesMan": res = true; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:15:03
+          case "Spec": res = true; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:15:04
+          case "UnitCode": res = true; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:15:04
+          case "Sum": res = true; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:15:05
         end;
       end else begin
         switch (fieldname) begin
@@ -536,7 +552,9 @@ begin
       end;
     end;    
   end;
-  //if (FEIVr.IVNr>0) then begin res = false; end;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:15:09
+	  //if (FEIVr.IVNr>0) then begin res = false; end;
   //if (FEIVr.OrderNr>0) then begin res = false; end;
 // 62s
    MatRowGet(FEIVr,rownr,FEIVrw);
@@ -550,7 +568,9 @@ begin
     res = false; 
     end;
   end; // 62e
-LFEIVDClassDeleteRowTest:;  
+
+	// Edit End ---------------------------------------------- Edit End
+	LFEIVDClassDeleteRowTest:;  
   FEIVDClassDeleteRowTest = res;
   return;
 end;

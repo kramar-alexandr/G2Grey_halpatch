@@ -1,4 +1,4 @@
-external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
+external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:38:22
 external updating procedure ARPayAdd2(record IPVc,row IPVc,val,Boolean);
 external function roundmode SetRoundModeD(Integer);
 external function roundmode DefaultRoundMode();
@@ -1445,7 +1445,9 @@ BEGIN
 END;
 
 
-global
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:38:29
+	global
 function Boolean IVVc_CalculateRate(var record IVVc IVp)
 begin
   Boolean res;
@@ -1593,3 +1595,5 @@ BEGIN
   end;
   RETURN;
 END;
+	// Edit End ---------------------------------------------- Edit End
+	

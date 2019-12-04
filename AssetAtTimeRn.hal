@@ -4,9 +4,11 @@ external procedure HTInventoryNrs(string,string,var string);
 external procedure HTCategories(string,string,var string);
 external procedure HTDepartments(string,string,var string);
 external procedure OneAT2UnitDeprCalculation(Integer,Integer,Integer,Boolean,Date,Date,string,var val,var val,var val,var val,var string,val,val,Boolean);
-//external function Integer DaysInMonth(Integer,Integer);
+//external function Integer DaysInMonth(Integer,Integer);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:44:43
 external function Boolean CheckifAT2UnitSold(string,Date);
-// 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:44:47
+	// 62
 function Boolean CheckAssetCatMatchArray(string category,string AT2Class,string fcl,string tcl)
 BEGIN
   record AT2Vc ATCatr;
@@ -36,6 +38,8 @@ BEGIN
   RETURN;
 END;// 62
 
+	// Edit End ---------------------------------------------- Edit End
+	
 function val LastDpr(string InventoryNr,Date dat)
 begin
   val res;
@@ -117,7 +121,7 @@ begin
   val tpurch, tdepr,tnbv;
   string 255 tstr;
   val purchval;
-  string 5 fcl,tcl;// 62
+  string 5 fcl,tcl;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:44:50
   
   TrHs = true; 
   firstf = true; 
@@ -151,13 +155,17 @@ begin
           testf = false;
         end;
       end;
-      if (nonblank(RepSpec.f4)) then begin // 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:44:53
+	      if (nonblank(RepSpec.f4)) then begin // 62
 			fcl=FirstInRange(RepSpec.f4,5);// 62
 			tcl=LastInRange(RepSpec.f4,5);// 62
 			if (CheckAssetCatMatchArray(ATr.AT2Code,ATr.AT2Class,fcl,tcl)==false) then begin testf = false; end;// 62
       end;// 62
       
-      if (testf) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	      if (testf) then begin
         if (nonblank(RepSpec.TransStr)) then begin      
           if (CheckAssetRespPersonMatch(ATr.InventoryNr,ATr.RespPerson,RepSpec.TransStr,RepSpec.d1,RepSpec.d1)==false) then begin testf = false; end;
         end;        

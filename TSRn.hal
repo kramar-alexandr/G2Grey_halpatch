@@ -559,7 +559,9 @@ L30:;
       EndFormat;
     end;
   end;
-  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:39:08
+	  
   if ((subtotal<>0) or (subtotal2<>0) or (subtotal3<>0)) then begin
   	Black_Divider(160,400);
   	StartFormat(15);
@@ -569,7 +571,9 @@ L30:;
   	EndFormat;
   end;
   
-  EndJob;
+
+	// Edit End ---------------------------------------------- Edit End
+	  EndJob;
 LTSRn:;
   RETURN;
 END;

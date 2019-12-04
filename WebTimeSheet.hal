@@ -1,3 +1,5 @@
+//custom file
+
 remote procedure ExtractObj(string,var Integer,var string);
 remote function Boolean TSVc_PasteArtCode(var record TSVc,Integer,var string);
 remote procedure TSVc_PastePRCode(var record TSVc,Integer);

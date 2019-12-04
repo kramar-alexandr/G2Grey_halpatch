@@ -1,5 +1,5 @@
-external procedure GetARPrepaymentRate(LongInt,var val,var val,var val,var val,var val);
-external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
+external procedure GetARPrepaymentRate(LongInt,var val,var val,var val,var val,var val);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:08
+external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:08
 external function Boolean UseTaxTemplatesforTaxCalc();
 external procedure GetVATRowFromBlock(string,record VATCodeBlock,var row VATCodeBlock);
 external function Boolean NegativeAmountsOnIVTrans(Integer,val);
@@ -91,7 +91,7 @@ END;
 global
 function Integer AddIVPrePayRow(var record TRVc gTRp,record IVVC IVp,Integer rownr,string object,val ivfrrate,val ivtorate1,val ivtorate2,
                                 val ivbaserate1,val ivbaserate2,Boolean dc1,Boolean dc2,var string tstr,var val TotSum,
-                                record SMVc VATr,Integer vatcnt,record TRGenBlock TRGenRec,record AccBlock ARAccRec)
+                                record SMVc VATr,Integer vatcnt,record TRGenBlock TRGenRec,record AccBlock ARAccRec)// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:34
 BEGIN
   record CUVc CUr;
   record CCatVc CCatr;
@@ -108,32 +108,32 @@ BEGIN
   string 255 tstr2;
   val baseprep,diff,bookrs,coff;
   val pfr,pto1,pto2,pbr1,pbr2;
-  val bfrrate,btorate1,btorate2,bbaserate1,bbaserate2;
+  val bfrrate,btorate1,btorate2,bbaserate1,bbaserate2;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:18
   Integer gain;
   val nilv;
   Date td;
   Integer err;
   record VATCodeBlock VATCodeb;
   record CYBlock CYb;
-  record IVTBlock IVTb;
+  record IVTBlock IVTb;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:22
 
   BlockLoad(CYb);
   BlockLoad(VATCodeb);
-  BlockLoad(IVTb);
+  BlockLoad(IVTb);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:25
   nilv = -1;
   errstrno = 1085; // Transaction could not be generated 
   MatRowGet(IVp,rownr,IVrw);
-  revacc = IVrw.SalesAcc;
-  if (blank(revacc)) then begin
+  revacc = IVrw.SalesAcc;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:46
+  if (blank(revacc)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:47
 
-    CUr.Code = IVp.CustCode; 
-    if (ReadFirstMain(CUr,1,true)) then begin
-      CCatr.Code = CUr.CustCat;
-      if (ReadFirstMain(CCatr,1,true)) then begin
-        revacc = CCatr.OnAccAcc;
-      end;
-    end;
-  end;
+    CUr.Code = IVp.CustCode; // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:48
+    if (ReadFirstMain(CUr,1,true)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:48
+      CCatr.Code = CUr.CustCat;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:49
+      if (ReadFirstMain(CCatr,1,true)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:49
+        revacc = CCatr.OnAccAcc;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:50
+      end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:51
+    end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:50
+  end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:52
   if (blank(revacc)) then begin
     revacc = ARAccRec.OnAccAcc;
   end;  
@@ -147,13 +147,15 @@ BEGIN
     AddVATBase(VATr,vatcod,IVrw.Sum,blankval,vatcnt,IVp.InclVAT,IVp.NoTAXonVAT);
     objstr = object;
 //    GetFullCurncyRate(ARPayr.CurncyCode,ARPayr.PayDate,pfr,pto1,pto2,pbr1,pbr2);
-    GetARPrepaymentRate(IVrw.CUPNr,pfr,pto1,pto2,pbr1,pbr2);
+    GetARPrepaymentRate(IVrw.CUPNr,pfr,pto1,pto2,pbr1,pbr2);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:39:59
 
     if (CheckVATLaws) then begin
       FindIPCurncyRate(ARPayr.CUPNr,pfr,pto1,td);
     end; 
     baseprep = IVrw.BasePrice;//MulBaseRate(ARPayr.CurncyCode,&trev,&pfr,&pto1,&pto2,&pbr1,&pbr2,&baseprep,NIL,DefaultCurRoundOff);
-    switch (IVTb.IVFromORRate) begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:40:09
+	    switch (IVTb.IVFromORRate) begin
       case 2:
         rs = IVrw.BasePrice;
         if (rs==0) then begin
@@ -172,7 +174,9 @@ BEGIN
         bbaserate1 = ivbaserate1;
         bbaserate2 = ivbaserate2;
     end;
-    diff = rs - baseprep;
+
+	// Edit End ---------------------------------------------- Edit End
+	    diff = rs - baseprep;
     if (diff<0) then begin gain = -1; end;
     if (diff>0) then begin gain = 1; end;
     ConvertSalesAcc(revacc,IVp.ExportFlag);
@@ -185,7 +189,7 @@ BEGIN
          AddEuroCurncyNomARTrRow(gTRp,IVp.ARAcc,objstr,vatcod,tstr,rs,blankval,false,dc1,TotSum,
                                  IVp.CurncyCode,bfrrate,btorate1,btorate2,bbaserate1,bbaserate2,trev,nilv,
 
-                                 IVp.CustCode,IVp.SerNr,1,nilv,IVp.PayDate,-1,IVp.InvType==3,"","","");
+                                 IVp.CustCode,IVp.SerNr,1,nilv,IVp.PayDate,-1,IVp.InvType==3,"","","");// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:40:21
       end else begin
         AddEuroCurncyTrRow(gTRp,IVp.ARAcc,objstr,vatcod,tstr,rs,false,dc1,TotSum,IVp.CurncyCode,
                  bfrrate,btorate1,btorate2,bbaserate1,bbaserate2,trev,nilv,-1,IVp.InvType==3,taccnumber);
@@ -210,7 +214,7 @@ BEGIN
         end;
 
       end;
-      btvat = MulRateToBase1(IVp.CurncyCode,tvat,ivfrrate,ivtorate1,ivtorate2,ivbaserate1,ivbaserate2,DefaultCurRoundOff);
+      btvat = MulRateToBase1(IVp.CurncyCode,tvat,ivfrrate,ivtorate1,ivtorate2,ivbaserate1,ivbaserate2,DefaultCurRoundOff);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:40:31
       if ((IVp.InclVAT>0) and (ARAccRec.RevInclVAT!=0)) then begin
         if (btvat!=0) then begin
           errstrno = GetAccNamCurVAT(ARAccRec.VATBAcc,tstr,tstr2,60,IVp.CurncyCode);
@@ -220,7 +224,7 @@ BEGIN
           end;
           if (CheckTTRPerRow("IVVc",ARAccRec.VATBAcc,"",dc1,taccnumber,0)) then begin end;
           AddEuroCurncyTrRow(gTRp,ARAccRec.VATBAcc,"",AddVATCodeToVATAccRows(ARPayr.VATCode),tstr,btvat,false,dc1,TotSum,//vataccadd?
-                             IVp.CurncyCode,ivfrrate,ivtorate1,ivtorate2,ivbaserate1,ivbaserate2,tvat,nilv,-1,IVp.InvType==3,taccnumber);
+                             IVp.CurncyCode,ivfrrate,ivtorate1,ivtorate2,ivbaserate1,ivbaserate2,tvat,nilv,-1,IVp.InvType==3,taccnumber);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:41:10
         end;
       end;
     end else begin
@@ -240,21 +244,21 @@ BEGIN
       tstr = tstr & " "; // To get a different comment 
       if (CheckTTRPerRow("IVVc",IVp.ARAcc,objstr,dc1,taccnumber,0)) then begin end;
       AddEuroCurncyTrRow(gTRp,IVp.ARAcc,objstr,vatcod,tstr,rs,false,dc1,TotSum,IVp.CurncyCode,
-                         ivfrrate,ivtorate1,ivtorate2,ivbaserate1,ivbaserate2,trev,nilv,-1,IVp.InvType==3,taccnumber);
+                         ivfrrate,ivtorate1,ivtorate2,ivbaserate1,ivbaserate2,trev,nilv,-1,IVp.InvType==3,taccnumber);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:41:06
     end;
     if (gain==-1) then begin
       if (GetAccName(ARAccRec.RateGainAcc,tstr,60)==false) then begin
         errstrno = 1918;
         goto LAddIVPrePayRow;
       end;
-      AddEuroTrRow(gTRp,ARAccRec.RateGainAcc,"","",tstr,diff,ivbaserate1,ivbaserate2,false,dc2,TotSum,IVp.InvType==3,"","","");
+      AddEuroTrRow(gTRp,ARAccRec.RateGainAcc,"","",tstr,diff,ivbaserate1,ivbaserate2,false,dc2,TotSum,IVp.InvType==3,"","","");// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:41:00
     end;
     if (gain==1) then begin
       if (GetAccName(ARAccRec.RateLossAcc,tstr,60)==false) then begin
         errstrno = 1917;
         goto LAddIVPrePayRow;
       end;
-      AddEuroTrRow(gTRp,ARAccRec.RateLossAcc,"","",tstr,diff,ivbaserate1,ivbaserate2,false,dc2,TotSum,IVp.InvType==3,"","","");
+      AddEuroTrRow(gTRp,ARAccRec.RateLossAcc,"","",tstr,diff,ivbaserate1,ivbaserate2,false,dc2,TotSum,IVp.InvType==3,"","","");// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:40:56
     end;
     if (ARPayr.VATVal!=0) then begin
       vatobjstr = ""; 
@@ -279,7 +283,7 @@ BEGIN
         AddEuroCurncyTrRow(gTRp,ARAccRec.OnAccVATAcc,vatobjstr,AddVATCodeToVATAccRows(ARPayr.VATCode),tstr,bookrs,false,dc1,TotSum,IVp.CurncyCode,
                            pfr,pto1,pto2,pbr1,pbr2,rs,nilv,-1,IVp.InvType==3,taccnumber);
 
-        GetVATCodeSalesVatAcc(ARPayr.VATCode,vatacc);  
+        GetVATCodeSalesVatAcc(ARPayr.VATCode,vatacc);  // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:40:51
 			
         if (GetAccName(vatacc,tstr,60)==false) then begin 
           errstrno = 1903;
@@ -330,14 +334,14 @@ BEGIN
         goto LAddIVPrePayRow;
       end;
       if (CheckTTRPerRow("IVVc",ARAccRec.Tax1TmpAcc,"",dc1,taccnumber,0)) then begin end;
-      AddEuroTrRow(gTRp,ARAccRec.Tax1TmpAcc,"","",tstr,IVrw.TAX1Reb,ivbaserate1,ivbaserate2,false,dc1,TotSum,false,taccnumber,"","");         
+      AddEuroTrRow(gTRp,ARAccRec.Tax1TmpAcc,"","",tstr,IVrw.TAX1Reb,ivbaserate1,ivbaserate2,false,dc1,TotSum,false,taccnumber,"","");         // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:40:47
 
       if (GetAccName(tax1acc,tstr,60)==false) then begin 
         errstrno = 20078;
         goto LAddIVPrePayRow;
       end;
       if (CheckTTRPerRow("IVVc",tax1acc,"",dc2,taccnumber,0)) then begin end;
-      AddEuroTrRow(gTRp,tax1acc,"","",tstr,IVrw.TAX1Reb,ivbaserate1,ivbaserate2,false,dc2,TotSum,false,taccnumber,"","");         
+      AddEuroTrRow(gTRp,tax1acc,"","",tstr,IVrw.TAX1Reb,ivbaserate1,ivbaserate2,false,dc2,TotSum,false,taccnumber,"","");         // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:40:42
     end;
 
   end;

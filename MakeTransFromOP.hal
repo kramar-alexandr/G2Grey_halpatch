@@ -1,3 +1,4 @@
+//без кастомизаций
 external function Integer PMCheckType(string,var string,var string);
 external function roundmode SetRoundModeD(Integer);
 external function roundmode DefaultRoundMode();

@@ -328,8 +328,8 @@ BEGIN
   StartFormat(15);
   OutString(0,0,USetStr(2542),false);
   OutString(120,0,USetStr(2543),false);
-  OutString(180,0,USetStr(2544),false);
-  OutString(230,0,USetStr(4862),false);// SAV 2011_08_18
+  OutString(180,0,USetStr(2544),false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:05
+  OutString(230,0,USetStr(4862),false);// SAV 2011_08_18// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:05
   
   if (RepSpec.flags[0]==2) then begin
     OutString(260,0,USetStr(2545),false);
@@ -365,7 +365,7 @@ BEGIN
   Boolean printedcuf;
   record AgedBlock Ab;
   Integer oldstyle;
-  record IVVc IVr;
+  record IVVc IVr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:08
   
   BlockLoad(Ab);
   BeginCurncyTotals(curcnt);
@@ -401,16 +401,16 @@ BEGIN
       end;
       switch (aRwtype[i]) begin
         case 10:
-          OutString(180,"DblIPVc",aInvoiceNr[i],false);
+          OutString(180,"DblIPVc",aInvoiceNr[i],false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:11
         case 0:
-          OutStringID(180,"DblTrans2",CreateInvoiceNumber(aInvoiceNr[i]),false,aRecNr[i]);
+          OutStringID(180,"DblTrans2",CreateInvoiceNumber(aInvoiceNr[i]),false,aRecNr[i]);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:14
         otherwise  
-          OutString(180,"DblCustPS2",CreateInvoiceNumber(aInvoiceNr[i]),false);
+          OutString(180,"DblCustPS2",CreateInvoiceNumber(aInvoiceNr[i]),false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:18
       end;    
 		
-		IVr.SerNr = aInvoiceNr[i]; // SAV 2011_08_18
-		if readfirstmain(IVr,1,true) then begin end;
-		OutString(230,"dblPRVc",IVr.PRCode,false);
+		IVr.SerNr = aInvoiceNr[i]; // SAV 2011_08_18// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:19
+		if readfirstmain(IVr,1,true) then begin end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:20
+		OutString(230,"dblPRVc",IVr.PRCode,false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:20
 		
       if (RepSpec.flags[0]==2) then begin
         OutDate(260,0,aDueDate[i],false);
@@ -510,7 +510,7 @@ procedure OneARSFormOpen(record RcVc RepSpec,record CUVc CUp,Integer reportmode,
 BEGIN
   record ARVc ARr;
   record IVVc IVr;
-  Integer rwcnt,k;
+  Integer rwcnt,k;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:23
   Boolean TrHs;
   val ARSSum;
   val ARSIntSum;
@@ -528,7 +528,7 @@ BEGIN
   Boolean testf;
   val rval,rval2;
   val fr,to1,to2,br1,br2;
-  Boolean onaccf,prflag;
+  Boolean onaccf,prflag;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:26
   record SMVc CurTotalsr;
   val sumbooked,sumnow,sumcurncy,sumdiff;
   Integer remlev;
@@ -589,11 +589,15 @@ BEGIN
     if (testf) then begin    
       IVr.SerNr = ARr.InvoiceNr;
       if (ReadFirstMain(IVr,1,true)) then begin end;
-		 if (nonblank(RepSpec.f6)) and (IVr.PRCode<>RepSpec.f6) then begin // SAV 2011_08_18
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:46:29
+			 if (nonblank(RepSpec.f6)) and (IVr.PRCode<>RepSpec.f6) then begin // SAV 2011_08_18
 			goto L20OneARSFormOpen;
 		 end;
 		 k=k+1;
-      if (IVr.Invalid!=0) then begin goto L20OneARSFormOpen; end;
+
+	// Edit End ---------------------------------------------- Edit End
+	      if (IVr.Invalid!=0) then begin goto L20OneARSFormOpen; end;
       if ((IVr.DisputedFlag!=0) and (RepSpec.flags[11]!=0)) then begin
         goto L20OneARSFormOpen;
       end;
@@ -722,7 +726,7 @@ L20OneARSFormOpen:;
     if (acnt==0) then begin testf = false; end;
   end;
   if (onaccf==true) then begin testf = true; end;
-  if k==0 then begin testf = false; end;  // SAV 2011_08_18
+  if k==0 then begin testf = false; end;  // SAV 2011_08_18// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:39
   if (testf) then begin
     switch (reportmode) begin
       case 0: 
@@ -788,8 +792,8 @@ checked per Invoice , not per customer
       if (SetInSet(RepSpec.ObjStr,CUr.Objects)==false) then begin skip2 = true; end;
     end;
 */    
-	 if (CUr.blockedFlag==0) and (RepSpec.flags[16]==1) then begin skip2 = true; end; // SAV 2011_08_08
-	 if (CUr.blockedFlag==1) and (RepSpec.flags[16]==0) then begin skip2 = true; end;
+	 if (CUr.blockedFlag==0) and (RepSpec.flags[16]==1) then begin skip2 = true; end; // SAV 2011_08_08// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:45
+	 if (CUr.blockedFlag==1) and (RepSpec.flags[16]==0) then begin skip2 = true; end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:46:43
     if (nonblank(RepSpec.f2)) then begin
       if (nonblank(b)) then begin
         if (CUr.SalesMan>b) then begin skip2 = true; end;

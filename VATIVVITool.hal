@@ -17,7 +17,9 @@ external procedure NoDupObjs(string,var string);
 external procedure AutoObj(var string);
 external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,var val,var val);
 
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:31:12
+	
 global
 procedure GetVATCodeAccountsSpec(string vatcode,var string svatacc,var string pvatacc,
                              var string corsvatacc,var string corpvatacc,var string corsvatacc2)
@@ -46,7 +48,9 @@ BEGIN
   RETURN;
 END;
 
-procedure AddEuroCurncyNomARTrRowSpec(record TRVc TRp,string acc,string objs,string vatcod,string comm,val valv,Boolean accf,
+
+	// Edit End ---------------------------------------------- Edit End
+	procedure AddEuroCurncyNomARTrRowSpec(record TRVc TRp,string acc,string objs,string vatcod,string comm,val valv,Boolean accf,
              Boolean dcflag,var val totsump,string curncy,val frrate,val torate1,val torate2,val baserate1,val baserate2,
              val curval,val nomval,string CompCode,LongInt SerNr,Integer Typ,val qp,Date duep,LongInt insertrownr,Boolean negamf)
 BEGIN
@@ -344,7 +348,7 @@ BEGIN
   val TotSum,VATSum;
   val vatv,tax1val,vatbase,v;
   Integer i,rwcnt,vcrwcnt;
-  string 10 svatacc,pvatacc,corsvatacc,corpvatacc,corsvatacc2;
+  string 10 svatacc,pvatacc,corsvatacc,corpvatacc,corsvatacc2;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:31:16
   string 255 tstr,objstr;
     
   res = 1085;
@@ -415,11 +419,15 @@ roundoff problems with negative values
   for (i=0;i<vcrwcnt;i=i+1) begin
     MatRowGet(VATr,i,VATrw);
     if (VATrw.DebVal!=0) then begin
-      GetVATCodeAccountsSpec(VATrw.VATCode,svatacc,pvatacc,corsvatacc,corpvatacc,corsvatacc2);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:31:23
+	      GetVATCodeAccountsSpec(VATrw.VATCode,svatacc,pvatacc,corsvatacc,corpvatacc,corsvatacc2);
 		if VATIVp.IVNr==-1 then begin
 			corsvatacc = corsvatacc2;
 		end;
-      if ((nonblank(svatacc)) and (nonblank(corsvatacc))) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	      if ((nonblank(svatacc)) and (nonblank(corsvatacc))) then begin
         MulVATIV(VATrw.VATCode,VATrw.DebVal,vatv,tax1val,VATIVp.InclVAT,VATIVp.NoTAXonVAT);
         if (vatv!=0) then begin
           vatbase = VATrw.DebVal;

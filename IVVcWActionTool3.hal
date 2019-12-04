@@ -27,7 +27,7 @@ external procedure CalcSum(val,val,val,val,var val,Integer);
 external procedure FindUserMailboxName(string,var string,var string);
 external function Boolean FindCustomerRelation(string,string,var record CUVc);
 external procedure GetPayDealText(string,string,var string);
-external outer function val GetCoefficient(string, string,date);// 62
+external outer function val GetCoefficient(string, string,date);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:19
 
 function val FEIVQuantFract(LongInt curfeivnr,LongInt ordernr,LongInt ivsernr,Integer rownr)
 BEGIN
@@ -136,20 +136,24 @@ BEGIN
   val s,rowsum,t,rowquantfract;
   Boolean createfeivf;
   record TaxMatrixVc TMr;
-  record BaseCurBlock BaseCurr; // 62s
-  string 20 currency; 
-  val coef;
-  string 255 tstr;
-  val frrate,to1,to2,br1,br2;
+  record BaseCurBlock BaseCurr; // 62s// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:25
+  string 20 currency; // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:26
+  val coef;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:26
+  string 255 tstr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:27
+  val frrate,to1,to2,br1,br2;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:27
   
-  SetLangMode(LangUkrainian,"UKR",0);
+  SetLangMode(LangUkrainian,"UKR",0);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:28
 
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:03:32
+	
   BlockLoad(BaseCurr);
   currency=IVp.CurncyCode;
   coef=GetCoefficient(BaseCurr.BaseCur1,currency,IVp.TransDate);  
 // 62e
-  lFEIVr.IVNr = IVp.SerNr;
+
+	// Edit End ---------------------------------------------- Edit End
+	  lFEIVr.IVNr = IVp.SerNr;
   if (ReadFirstKey("IVNr",lFEIVr,1,true)) then begin
     goto LPasteInvInFEIV;
   end;
@@ -170,12 +174,16 @@ BEGIN
       FEIVp.OrderNr = orgIVr.OrderNr;
     end;
   end;
-  tstr="‡гґдно рахунку Ь ";// 62s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:03:37
+	  tstr="‡гґдно рахунку Ь ";// 62s
   tstr=tstr & FEIVp.IVNr;
   tstr=tstr & " вґд ";
   tstr=tstr & IVp.TransDate;
   FEIVp.PMComment=tstr;// 62e
-  FEIVp.PrepaymentNr = -1;
+
+	// Edit End ---------------------------------------------- Edit End
+	  FEIVp.PrepaymentNr = -1;
   FEIVp.CustCode = IVp.CustCode;
   FEIVp.Addr0 = IVp.Addr0;
   FEIVp.Addr1 = IVp.Addr1;
@@ -191,7 +199,7 @@ BEGIN
   FEIVp.OurContact = IVp.OurContact;
   FEIVp.Objects = IVp.Objects;
   FEIVp.SalesMan = IVp.SalesMan;
-  FEIVp.CurncyCode = BaseCurr.BaseCur1;// 62
+  FEIVp.CurncyCode = BaseCurr.BaseCur1;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:40
   FEIVp.LangCode = IVp.LangCode;
   FEIVp.InvComment = IVp.InvComment;
   FEIVp.Sorting = IVp.Sorting;
@@ -201,8 +209,8 @@ BEGIN
   FEIVp.FrRate = IVp.FrRate;
   FEIVp.ToRateB1 = IVp.ToRateB1;
   FEIVp.ToRateB2 = IVp.ToRateB2;
-  FEIVp.BaseRate1 = blankval;// 62
-  FEIVp.BaseRate2 = blankval;// 62
+  FEIVp.BaseRate1 = blankval;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:43
+  FEIVp.BaseRate2 = blankval;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:44
   FEIVp.VATNr = IVp.VATNr;  
   FEIVp.Phone = IVp.Phone;
   FEIVp.Fax = IVp.Fax;
@@ -219,7 +227,7 @@ BEGIN
   srw = oldsrw;
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(IVp,i,IVrw);
-	if nonblank(IVrw.ArtCode) then begin // 62
+	if nonblank(IVrw.ArtCode) then begin // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:47
     if (IVrw.stp==10) then begin
       ClearRow(FEIVp,FEIVrw,10);
       MatRowPut(FEIVp,srw,FEIVrw);
@@ -228,7 +236,7 @@ BEGIN
     end;    
     if (IVrw.stp==9) then begin
       ClearRow(FEIVp,FEIVrw,9);
-      FEIVrw.Sum = IVrw.Sum/coef; // 62
+      FEIVrw.Sum = IVrw.Sum/coef; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:50
       MatRowPut(FEIVp,srw,FEIVrw);
       srw = srw + 1;      
       goto LSKIPROW;
@@ -250,13 +258,13 @@ BEGIN
       FEIVrw.Quant = IVrw.Quant;
       FEIVrw.QuantFract = IVrw.Quant;
       FEIVrw.Spec = IVrw.Spec;
-        FEIVrw.Price = IVrw.Price/coef; // 62
+        FEIVrw.Price = IVrw.Price/coef; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:56
         FEIVrw.vRebate = IVrw.vRebate;
         FEIVrw.SalesAcc = IVrw.SalesAcc;
         FEIVrw.VATCode = IVrw.VATCode;
         FEIVrw.Objects = IVrw.Objects;
         FEIVrw.PriceFactor = IVrw.PriceFactor;
-        FEIVrw.Sum = IVrw.Sum/coef;  // 62
+        FEIVrw.Sum = IVrw.Sum/coef;  // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:03:57
       MatRowPut(FEIVp,srw,FEIVrw);
       srw = srw + 1;      
       goto LSKIPROW;
@@ -285,10 +293,10 @@ BEGIN
         FEIVrw.QuantFract = blankval;
       end;
       FEIVrw.Spec = IVrw.Spec;
-      if nonblank(FEIVrw.ArtCode) then begin // 62
-      GetFullCurncyRate(IVp.CurncyCode,IVp.TransDate,frrate,to1,to2,br1,br2);// 62
-      FEIVrw.Price = MulRateToBase1(IVp.CurncyCode,IVrw.Price,frrate,to1,to2,br1,br2,DefaultCurRoundOff); // 62      
-		//FEIVrw.Price = IVrw.Price; // 62
+      if nonblank(FEIVrw.ArtCode) then begin // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:04:00
+      GetFullCurncyRate(IVp.CurncyCode,IVp.TransDate,frrate,to1,to2,br1,br2);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:04:01
+      FEIVrw.Price = MulRateToBase1(IVp.CurncyCode,IVrw.Price,frrate,to1,to2,br1,br2,DefaultCurRoundOff); // 62      // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:04:04
+		//FEIVrw.Price = IVrw.Price; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:04:02
       FEIVrw.vRebate = IVrw.vRebate;
       FEIVrw.SalesAcc = IVrw.SalesAcc;
       FEIVrw.VATCode = IVrw.VATCode;
@@ -314,7 +322,7 @@ BEGIN
 //        FEIVrw.rowGP = 0;
         FEIVrw.BasePrice = 0;
       end;
-      end;// 62
+      end;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:04:09
 //      FEIVrw.Coefficient = INr.UnitCoefficient;
       FEIVrw.UnitCode = IVrw.UnitCode;
       FEIVrw.UnitFactQuant = IVrw.UnitFactQuant;
@@ -326,7 +334,9 @@ BEGIN
       srw = srw + 1;
     end;
 LSKIPROW:;      
-    end else begin // 62s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:04:15
+	    end else begin // 62s
       if nonblank(IVrw.Spec) and IVrw.stp==1 then begin
         ClearRow(FEIVp,FEIVrw,i);
         FEIVrw.stp = 1;
@@ -337,7 +347,9 @@ LSKIPROW:;
         srw = srw + 1;
       end;
     end; // 62e
-  end;
+
+	// Edit End ---------------------------------------------- Edit End
+	  end;
   FEIVp.Commision = IVp.Commision;
   FEIVSumup(FEIVp);
   if (createfeivf==false) then begin
@@ -449,7 +461,9 @@ BEGIN
       FEIVrw.QuantFract = 0;
     end;
     CalcSum(FEIVrw.QuantFract,FEIVrw.Price,FEIVrw.PriceFactor,FEIVrw.vRebate,t,GenOptRec.UseDiscount);
-// 62s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:04:22
+	// 62s
     if FEIVrw.stp==1 then begin
       if nonblank(FEIVrw.ArtCode) then begin
       FEIVrw.Sum = t;
@@ -460,7 +474,9 @@ BEGIN
       FEIVrw.Sum = t;
     end;
  // 62e  
-    MatRowPut(FEIVp,i,FEIVrw);
+
+	// Edit End ---------------------------------------------- Edit End
+	    MatRowPut(FEIVp,i,FEIVrw);
   end;
   RETURN;
 END;

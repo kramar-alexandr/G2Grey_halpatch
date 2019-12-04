@@ -1,4 +1,4 @@
-external function Boolean IVVc_CalculateRate(var record IVVc);
+external function Boolean IVVc_CalculateRate(var record IVVc);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:32:38
 external function Boolean PasteCust2InInv(var record IVVc,string,Boolean,var string,var string,var string,var string,var string);
 external procedure AddMultiBuyDiscountItems_IVVc(var record IVVc);
 external procedure FillupTaxMatrix(string,string,string,string,var record TaxMatrixVc);
@@ -32,8 +32,8 @@ external procedure PasteCreditSalesAccs(record IVVc);
 external procedure PastePDInInv(var record IVVc,string);
 external function Integer GetPayDealType(string,var LongInt);
 external function Boolean DateWarned(Date,string);
-//external function Boolean GetAccName(string,var string,Integer);
-//external procedure CalcSum(val,val,val,val,var val,Integer);
+//external function Boolean GetAccName(string,var string,Integer);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:32:42
+//external procedure CalcSum(val,val,val,val,var val,Integer);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:32:43
 external procedure Do_InvoiceRecepy(record IVVc,record INVc,Integer);
 external function Boolean GetItemNameStr(Integer,var string,string,string,string);
 external function Boolean SetUnitFactor(string,var val,val,val,val,var val,var val,var val,Boolean);
@@ -54,7 +54,9 @@ external function Boolean GetItemPriceDiscount3(string,val,var record INVc,strin
                                                 string,Boolean,var Boolean,string,var string,var val,string,string,var string);
 external function Boolean INVc_AllowSales(record INVc,var LongInt);
 
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:32:47
+	
 global
 function Boolean DiscountedPrice(var val newp,val rvp,roundmode roundoff,Integer UseDiscount)
 BEGIN
@@ -211,7 +213,9 @@ begin
 return;
 end;
 
-global
+
+	// Edit End ---------------------------------------------- Edit End
+	global
 procedure GetLCPrices(val points,string clevel,var string plcode, var string rebcode)
 begin 
   record LCMLevelSetBlock LCMLevelSetBl;
@@ -302,11 +306,17 @@ procedure IVGetRate(var record IVVc IVp)
 BEGIN
   val from,to1,to2,base1,base2;
   string 5 crncy;
-  record IVTBlock IVTb;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:32:50
+	  record IVTBlock IVTb;
   record ORVc ORp;
   record IVVc tmpIVr;
- 
-  if (IVp.OrderNr>0) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	 
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:32:53
+	  if (IVp.OrderNr>0) then begin
     BlockLoad(IVTb);
     ORp.SerNr = IVp.OrderNr;
     ReadFirstMain(ORp,1,true);
@@ -342,7 +352,9 @@ BEGIN
     IVp.BaseRate2 = base2;  
     IVp.BaseSum4 = MulRateToBase1(IVp.CurncyCode,IVp.Sum4,from,to1,to2,base1,base2,DefaultCurRoundOff);
   end;
-  RETURN;
+
+	// Edit End ---------------------------------------------- Edit End
+	  RETURN;
 END;
 
 global
@@ -611,7 +623,7 @@ done below
 //      curitemname = IVrw.Spec;
 //      if (GetItemNameStr(1,curitemname,IVr.LangCode,INr.Name,INr.Code)) then begin end;
     IVrw.Spec = curitemname;
-    // PackRowFieldMatrix(IVrw,"TaxMatrix",TMr); // 62 !!!!!!!!!!! не компилируется функция !! PackRowFieldMatrix
+    // PackRowFieldMatrix(IVrw,"TaxMatrix",TMr); // 62 !!!!!!!!!!! не компилируется функция !! PackRowFieldMatrix// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:33:00
     MatRowPut(IVr,rownr,IVrw); 
 
 //    if (nonblank(INr.InvRecepy)) then begin//moved to qty
@@ -733,7 +745,7 @@ END;
 procedure CopyHeaderIVToVATIV(record IVVc IVr,var record VATIVVc VATIVr)
 BEGIN
   Date blankd;
-  val fr,to1,to2,br1,br2;
+  val fr,to1,to2,br1,br2;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:33:04
 
   VATIVr.CustCode = IVr.CustCode;
   VATIVr.Addr0 = IVr.Addr0;
@@ -796,7 +808,9 @@ BEGIN
   VATIVr.ToRateB2 = IVr.ToRateB2;
   VATIVr.BaseRate1 = IVr.BaseRate1;
   VATIVr.BaseRate2 = IVr.BaseRate2;
-  // SAV Gray-5 2011_01_03
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:33:11
+	  // SAV Gray-5 2011_01_03
   GetFullCurncyRate(IVr.CurncyCode,IVr.TransDate,fr,to1,to2,br1,br2);
   VATIVr.FrRate = fr;
   VATIVr.ToRateB1 = to1; 
@@ -804,7 +818,9 @@ BEGIN
   VATIVr.BaseRate1 = br1;
   VATIVr.BaseRate2 = br2;
   //
-  VATIVr.InvoiceNr = IVr.InvoiceNr;
+
+	// Edit End ---------------------------------------------- Edit End
+	  VATIVr.InvoiceNr = IVr.InvoiceNr;
   VATIVr.Sorting = IVr.Sorting;
   VATIVr.InvType = IVr.InvType;
   RETURN;
@@ -950,32 +966,32 @@ begin
 end;
 
 global
-procedure PasteIVRowToVATIV(record IVVc IVr,var record VATIVVc VATIVr,var Integer rownr,var Integer vati)
+procedure PasteIVRowToVATIV(record IVVc IVr,var record VATIVVc VATIVr,var Integer rownr,var Integer vati)// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:33:16
 BEGIN
-  row IVVc IVrw,IVjrw;
+  row IVVc IVrw,IVjrw;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:33:23
   row VATIVVc VATIVrw;
-  Integer i,rwcnt,newrownr,j;
+  Integer i,rwcnt,newrownr,j;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:33:27
   val qty,t,prepayv,sum;
   record GeneralOptionBlock GOb;
   Boolean testf;
   record AccBlock ARb;
-  vector val ArtQty;
-  record ArPayHistVc Arr;
-  vector longint OrderNr;
+  vector val ArtQty;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:33:31
+  record ArPayHistVc Arr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:33:32
+  vector longint OrderNr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:33:32
   
   BlockLoad(ARb);  
   BlockLoad(GOb);
   rwcnt = MatRowCnt(IVr);
-  newrownr = rownr;
-  SpecLabel:;
-  if (newrownr<rwcnt) then begin
-    MatRowGet(IVr,newrownr,IVrw);
+  newrownr = rownr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:34:25
+  SpecLabel:;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:34:25
+  if (newrownr<rwcnt) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:34:26
+    MatRowGet(IVr,newrownr,IVrw);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:34:27
     testf = true;
     switch (IVrw.stp) begin     
       case 6: testf = false;
       case 5: qty = 1;
       otherwise  
-        sum = GetVATIVSum(IVr.SerNr,VATIVr.SerNr,newrownr);
+        sum = GetVATIVSum(IVr.SerNr,VATIVr.SerNr,newrownr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:34:30
         if (ARb.PreIPBookVAT!=0) then begin
           sum = sum + GetVATIVSum_IP(IVr,IVrw);
         end;
@@ -986,10 +1002,14 @@ BEGIN
         if (IVrw.Sum==0) then begin
 			testf = false;
         end;
-			if blank(IVrw.ArtCode) and nonblank(IVrw.Spec) and IVrw.stp==1 then begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:34:37
+				if blank(IVrw.ArtCode) and nonblank(IVrw.Spec) and IVrw.stp==1 then begin
 				testf = true;
 			end;
-    end;
+
+	// Edit End ---------------------------------------------- Edit End
+	    end;
     if (testf) then begin
       ClearRow(VATIVr,VATIVrw,IVrw.stp);
       VATIVrw.stp = IVrw.stp;
@@ -1002,7 +1022,7 @@ BEGIN
         case 5:
           VATIVrw.Sum = sum;
         otherwise
-          VATIVrw.Price = IVrw.Price; //sum/VATIVrw.Quant;
+          VATIVrw.Price = IVrw.Price; //sum/VATIVrw.Quant;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:34:41
           VATIVrw.vRebate = IVrw.vRebate;      
           if (VATIVrw.vRebate>0) then begin
             VATIVrw.Price = (VATIVrw.Price*100)/(100-VATIVrw.vRebate);
@@ -1020,19 +1040,25 @@ BEGIN
       VATIVrw.IVRow = rownr;
       MatRowPut(VATIVr,vati,VATIVrw);
       vati = vati + 1;
-		if (newrownr+1)<rwcnt then begin // проверка на строки наименования
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:34:48
+			if (newrownr+1)<rwcnt then begin // проверка на строки наименования
 			matrowget(IVr,newrownr+1,IVrw);
 			if blank(IVrw.ArtCode) and nonblank(IVrw.Spec) and IVrw.stp==1 then begin
 				newrownr=newrownr+1;
 				goto SpecLabel;
 			end;
 		end;
-    end;
+
+	// Edit End ---------------------------------------------- Edit End
+	    end;
   end else begin
     ClearRow(VATIVr,VATIVrw,1);
     MatRowPut(VATIVr,vati,VATIVrw);
   end;
-  rownr = newrownr;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:34:55
+	  rownr = newrownr;
 	for (j=0;j<MatRowCnt(IVr);j=j+1) begin
 		MatRowGet(IVr,j,IVjrw);
 		if (IVjrw.stp==kInvoiceRowTypePrepayment) then begin
@@ -1044,8 +1070,12 @@ BEGIN
 			OrderNr[ARr.CUPNr] = 1;
 		end;
 	end;
-  if (ARb.PostIVVATonVATCorr!=0) then begin
-	if (IVrw.stp==1) then begin // SAV 
+
+	// Edit End ---------------------------------------------- Edit End
+	  if (ARb.PostIVVATonVATCorr!=0) then begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:35:00
+		if (IVrw.stp==1) then begin // SAV 
 		for (i=0;i<MatRowCnt(VATIVr);i=i+1) begin
 			MatRowGet(VATIVr,i,VATIVrw);
 			VATIVrw.Quant = VATIVrw.Quant+ArtQty[VATIVrw.ArtCode];
@@ -1077,7 +1107,9 @@ BEGIN
       // end;
     // end;
 	end;// SAV
-  end;
+
+	// Edit End ---------------------------------------------- Edit End
+	  end;
   VATIVSumup(VATIVr);
   RETURN;
 END;
@@ -1162,7 +1194,9 @@ LCorrectTRVAT:;
   RETURN;
 END;
 
-global updating procedure CreateVATIVFromVI(var record VIVc VIr,var record VATIVVc VATIVr)
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:35:04
+	global updating procedure CreateVATIVFromVI(var record VIVc VIr,var record VATIVVc VATIVr)
 begin
 	record CUVc CUr;
 	record baseCurBlock BCb;	
@@ -1192,7 +1226,9 @@ return;
 end;
 
 
-global
+
+	// Edit End ---------------------------------------------- Edit End
+	global
 updating function Integer UpdateTRVATIV(record IVVc IVr,var record VATIVVc VATIVr,Integer mode)
 BEGIN
   record TRVc oldTRr;
@@ -1681,7 +1717,9 @@ LIVITDefaultRemote:;
   IVITDefaultRemote = lsubset;
   RETURN;
 END;
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:35:12
+	
 global
 function Boolean IVDClassOnOverStrike(Integer wn,Integer rownr)
 BEGIN
@@ -1712,3 +1750,5 @@ BEGIN
   IVDClassOnOverStrike = true;
   RETURN;
 END;
+	// Edit End ---------------------------------------------- Edit End
+	

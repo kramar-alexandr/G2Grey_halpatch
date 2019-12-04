@@ -1,3 +1,4 @@
+//БЕЗ ИЗМЕНЕНИЙ
 external procedure GetBaseCurncy(Integer,var string);
 external updating procedure MakeProjectInvoice2(record RcVc,record PRVc,record IVVc,record XSVc,Boolean,
                               Boolean,Boolean,Boolean,Boolean,

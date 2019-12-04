@@ -600,7 +600,7 @@ end;
 global
 procedure PrintPrepaymentsNrsIP(record RcVc RepSpec,string custcode,Boolean backdate)
 BEGIN
-  record ARPayHistVc ARPayHistr,ARPayHist2r;
+  record ARPayHistVc ARPayHistr,ARPayHist2r;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:47:25
   record ARPayVc ARPayr;
   Boolean found,testf;
   string 255 tstr;
@@ -611,9 +611,11 @@ BEGIN
   record CLOutVc CLOutr;
   row CLOutVc CLOutrw;
   Integer i,rwcnt;
-  LongInt prepno,difsays;
+  LongInt prepno,difsays;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:47:28
   val prepbal;
-  record AgedBlock AgedRec;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 17:59:58
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:47:35
+	  record AgedBlock AgedRec;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 17:59:58
   date PPDate,bdate,curdate;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:05:32
 
   curdate = currentdate;
@@ -624,7 +626,9 @@ BEGIN
   if ((RepSpec.ArtMode==2) or (RepSpec.ArtMode==5)) then begin
 		BlockLoad(AgedRec);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:01:04
   end;
-  if (backdate==false) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  if (backdate==false) then begin
     found = true;
     ARPayr.CustCode = custcode;
     while LoopKey("CustCode",ARPayr,1,found) begin
@@ -649,13 +653,19 @@ BEGIN
         if (testf) then begin
           StartFormat(15);
           tstr = ARPayr.CUPNr;
-          ARPayHist2r.CUPNr = ARPayr.CUPNr;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:47:39
+	          ARPayHist2r.CUPNr = ARPayr.CUPNr;
           PPDate = bdate;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:05:30
 					if ReadFirstKey("CUPNrTransDate",ARPayHist2r,1,true) then begin
 						PPDate = ARPayHist2r.TransDate;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:06:23
 					end;
-          OutStringID(140,"DblPrHisSL",tstr,false,custcode);
-       // Edit Start ---------------------------------------------- Edit Start
+
+	// Edit End ---------------------------------------------- Edit End
+	          OutStringID(140,"DblPrHisSL",tstr,false,custcode);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:47:45
+	       // Edit Start ---------------------------------------------- Edit Start
 	//Wednesday, 18 April 2018 18:13:17
 	   
           if ((RepSpec.ArtMode==2) or (RepSpec.ArtMode==5)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:03:11
@@ -751,7 +761,9 @@ BEGIN
 								OutVal(9,0,ARPayr.RVal,M4Val,true);
 							end;
 						end;
-          end else begin
+
+	// Edit End ---------------------------------------------- Edit End
+	          end else begin
 						if (RepSpec.flags[2]==0) then begin
 							OutVal(300,0,ARPayr.BookRVal,M4Val,true);
 						end else begin
@@ -867,15 +879,21 @@ BEGIN
         if (prepno<>ARPayHistr.CUPNr) then begin
         	
           if ((prepno<>-1) and (prepbal<>0)) then begin
-          	ARPayHist2r.CUPNr = prepno;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 19:28:13
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:47:55
+	          	ARPayHist2r.CUPNr = prepno;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 19:28:13
           	PPDate = bdate;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:05:30
 						if ReadFirstKey("CUPNrTransDate",ARPayHist2r,1,true) then begin
 							PPDate = ARPayHist2r.TransDate;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:06:23
 						end;
-            StartFormat(15);
+
+	// Edit End ---------------------------------------------- Edit End
+	            StartFormat(15);
             tstr = prepno;
             OutStringID(140,"DblPrHisSL",tstr,false,custcode);
-            if ((RepSpec.ArtMode==2) or (RepSpec.ArtMode==5)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:03:11
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:48:01
+	            if ((RepSpec.ArtMode==2) or (RepSpec.ArtMode==5)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:03:11
 							difsays = datediff(curdate,PPDate);
 							if(difsays<=AgedRec.Per1)then begin
 								OutVal(3,0,prepbal,M4Val,true);
@@ -943,7 +961,9 @@ BEGIN
 						end else begin
 							OutVal(300,0,prepbal,M4Val,true);
             end;
-            EndFormat;
+
+	// Edit End ---------------------------------------------- Edit End
+	            EndFormat;
             prepbal = 0;
           end;
         end;
@@ -964,15 +984,21 @@ BEGIN
       end;
     end;
     if ((prepno<>-1) and (prepbal<>0)) then begin
-    	ARPayHist2r.CUPNr = prepno;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 19:28:13
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:48:05
+	    	ARPayHist2r.CUPNr = prepno;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 19:28:13
 			PPDate = bdate;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:05:30
 			if ReadFirstKey("CUPNrTransDate",ARPayHist2r,1,true) then begin
 				PPDate = ARPayHist2r.TransDate;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:06:23
 			end;
-      StartFormat(15);
+
+	// Edit End ---------------------------------------------- Edit End
+	      StartFormat(15);
       tstr = prepno;
       OutStringID(140,"DblPrHisSL",tstr,false,custcode);
-      if ((RepSpec.ArtMode==2) or (RepSpec.ArtMode==5)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:03:11
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:48:10
+	      if ((RepSpec.ArtMode==2) or (RepSpec.ArtMode==5)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 18 April 2018 18:03:11
 				difsays = datediff(curdate,PPDate);
 				if(difsays<=AgedRec.Per1)then begin
 					OutVal(3,0,prepbal,M4Val,true);
@@ -1040,7 +1066,9 @@ BEGIN
 			end else begin
 				OutVal(300,0,prepbal,M4Val,true);
 			end;
-      EndFormat;
+
+	// Edit End ---------------------------------------------- Edit End
+	      EndFormat;
     end;
   end;
   RETURN;

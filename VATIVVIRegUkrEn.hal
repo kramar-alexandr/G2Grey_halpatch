@@ -1,3 +1,4 @@
+//переносить как есть
 external procedure VATIVRegUkrNew(record RcVc,Boolean,var val,var val,var vector val,var vector val);// Edit ************************** Thursday, 21 November 2013 13:41:46
 external procedure VATVIRegUkrNew(record RcVc,Boolean,var val,var val,var vector val,var vector val);// Edit ************************** Thursday, 21 November 2013 13:41:47
 external function LongInt DateDiff(Date,Date);

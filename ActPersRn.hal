@@ -53,7 +53,7 @@ BEGIN
       StartFormat(15);
       OutDateID(0,"DblActVc",Actp.TransDate,false,Actp.SerNr);
       OutString(70,0,Actp.ActType,false);
-      OutString(130,"DblPRVc",Actp.PRCode,false);//===  вывод другого дриллдауна 62Переход
+      OutString(130,"DblPRVc",Actp.PRCode,false);//===  вывод другого дриллдауна 62Переход// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:52:26
       if (RepSpec.flags[6]!=0) then begin
         OutString(190,0,Left(Actp.CUName,18),false);
       end else begin      
@@ -189,8 +189,8 @@ BEGIN
           Gray_Divider(0,200);
           StartFormat(15);
           OutString(0,0,USetStr(6682),false);
-          OutString(70,0,USetStr(31000),false);//62Переход
-          OutString(130,0,USetStr(3550),false);//62Переход
+          OutString(70,0,USetStr(31000),false);//62Переход// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:52:30
+          OutString(130,0,USetStr(3550),false);//62Переход// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:52:30
           OutString(190,0,USetStr(6688),false);
           OutString(305,0,USetStr(6826),true);
           OutString(310,0,"P",false);

@@ -169,7 +169,9 @@ LVerifySalesmen:;
   return; 
 end;
 
-global function boolean ChechDocType(string doctype)// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 11 June 2018 10:05:54
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:37:47
+	global function boolean ChechDocType(string doctype)// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 11 June 2018 10:05:54
 begin
 	boolean res;
 	record DocumentTypeVc DTr;
@@ -181,7 +183,9 @@ begin
 return;
 end;
 
-global
+
+	// Edit End ---------------------------------------------- Edit End
+	global
 updating function LongInt IVVcRecordCheck(record IVVc IVp,record IVVc IV2p,LongInt stat,LongInt long4)
 BEGIN
   LongInt res;

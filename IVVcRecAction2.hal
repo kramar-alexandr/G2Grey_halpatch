@@ -1,3 +1,4 @@
+//no changes
 external updating procedure DeletePointsHist(LongInt,string);
 external updating procedure AddPointsHist(LongInt,string,integer);
 external procedure TaxMatrixConvertB1ToB2(record TaxMatrixVc,var val,var val,var val,var val);
@@ -554,7 +555,7 @@ BEGIN
         t = t/ivrp.PriceFactor;
       end;
       s = MulRateToBase1(IVp.CurncyCode,ivrp.Sum,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff);
-      //UnpackRowFieldMatrix(ivrp,"TaxMatrix",TMr);
+      //UnpackRowFieldMatrix(ivrp,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:37:03
       FindSalesExVat(TMr,ivrp.VATCode,s,IVp.InclVAT,IVp.NoTAXonVAT,rowsum);
       ivrp.rowGP = rowsum - t;          /* GP    */
     end;

@@ -1,6 +1,6 @@
-external procedure GetPayDealText(string,string,var string);
-external function Boolean FindCustomerRelation(string,string,var record CUVc);
-external procedure FindUserMailboxName(string,var string,var string);
+external procedure GetPayDealText(string,string,var string);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:04:55
+external function Boolean FindCustomerRelation(string,string,var record CUVc);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:04:56
+external procedure FindUserMailboxName(string,var string,var string);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:04:56
 external procedure FillupTaxMatrix(string,string,string,string,var record TaxMatrixVc);
 external function val CalculateTotalVATFromTaxMatrix(record TaxMatrixVc,Integer);
 external procedure RowCalculateTaxMatrix_PUVc(var record PUVc,Integer,row PUVc,Integer);
@@ -779,10 +779,10 @@ calculated above and CalcSum2 does not take into account Discount Calculation
       end;
       res = 0;
       PUrw.TaxTemplateCode = POrw.TaxTemplateCode;
-      //UnpackRowFieldMatrix(POrw,"TaxMatrix",TMr);
-      //PackRowFieldMatrix(PUrw,"TaxMatrix",TMr);
+      //UnpackRowFieldMatrix(POrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:05:00
+      //PackRowFieldMatrix(PUrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:05:01
       MatRowPut(PUp,nrwcnt,PUrw);
-      //RowCalculateTaxMatrix_PUVc(PUp,nrwcnt,PUrw,0);
+      //RowCalculateTaxMatrix_PUVc(PUp,nrwcnt,PUrw,0);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:05:04
       MatRowPut(PUp,nrwcnt,PUrw);     
       if (PUFromPO_PasteQuant(PUp,POp.SerNr,nrwcnt,200,POp)==0) then begin end;
       nrwcnt = MatRowCnt(PUp);
@@ -1249,9 +1249,9 @@ BEGIN
           //this is according to Stephen's mail, the only question is about item's cost account if TransferItems==2 below
         end;
         if (TransferItems==2) then begin
-			VIrw.AccNumber = VEr.AccCost;
-         if (GetAccName(VIrw.AccNumber,tstr,60)) then begin end;
-			VIrw.Comment = tstr;
+			VIrw.AccNumber = VEr.AccCost;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:05:15
+         if (GetAccName(VIrw.AccNumber,tstr,60)) then begin end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:05:16
+			VIrw.Comment = tstr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:05:17
          if (nonblank(POrw.CostAcc)) then begin
             VIrw.AccNumber = POrw.CostAcc;
             if (GetAccName(VIrw.AccNumber,tstr,60)) then begin end;
@@ -1352,10 +1352,10 @@ done in the end, round off
       end else begin
         if (TransferItems==2) then begin
           VIrw.TaxTemplateCode = POrw.TaxTemplateCode;
-          //UnpackRowFieldMatrix(POrw,"TaxMatrix",TMr);
-          //PackRowFieldMatrix(VIrw,"TaxMatrix",TMr);
+          //UnpackRowFieldMatrix(POrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:05:33
+          //PackRowFieldMatrix(VIrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:05:34
           MatRowPut(VIp,line,VIrw);
-          //RowCalculateTaxMatrix_VIVc(VIp,line,VIrw,0);
+          //RowCalculateTaxMatrix_VIVc(VIp,line,VIrw,0);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:05:35
           MatRowPut(VIp,line,VIrw);
         end;
       end;
@@ -1435,7 +1435,7 @@ L44PastePOInVI:;
   VICalcEReb(VIp);
   VICalcVals(VIp);
   if (CYb.UseTaxTemplatesforTaxCalc!=0) then begin
-    //UnpackFieldMatrix(VIp,"TaxMatrix",TMr);
+    //UnpackFieldMatrix(VIp,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:06:08
     VIp.PayVal = VIp.PayVal + CalculateTotalVATFromTaxMatrix(TMr,POp.InclVAT);
   end;
   VISumup(VIp,p);
@@ -1792,7 +1792,9 @@ LPastePOInDropSH:;
   PastePOInDropSH = res; 
   return;
 end;
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:06:27
+	
 
 
 global
@@ -1954,3 +1956,5 @@ LCreateMailFromPOD:;
   CreateMailFromPOD = res;
   RETURN;
 END;
+	// Edit End ---------------------------------------------- Edit End
+	

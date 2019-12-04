@@ -1,3 +1,4 @@
+//no changes
 external function Boolean CheckIfIVOpen(Date,record IVVc,string,var val,Boolean,Boolean);
 external procedure CUPerCustHeader(record RcVc,Integer,record CUVc,val,Integer,Integer,Integer);
 external function roundmode DefaultRoundMode();

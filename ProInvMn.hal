@@ -31,7 +31,7 @@ external procedure GetFullCurncyRate (var string,Date,var val,var val,var val,va
 external updating procedure UpdatePRFromIV(record IVVc,Boolean,record IVVc,Boolean);
 external updating function Integer PRDownPayInvoice(record RcVc,var record IVVc,var record PRVc);
 external updating procedure UpdatePRRetRow(record PRVc,LongInt,val,Boolean);
-external procedure GetUserObject(string,var string); // 62
+external procedure GetUserObject(string,var string); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:04:16
 
 global
 procedure RecalcProjectInvoice(record IVVc IVp,string prcurncy)
@@ -131,7 +131,7 @@ BEGIN
   IVp.FrPrice = blankval;
   IVp.FrGP = blankval;
   IVp.FrGPPercent = blankval;
-  //IVp.Objects = PRp.Objects; // 62
+  //IVp.Objects = PRp.Objects; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:04:19
   IVp.CurncyCode = PRp.CurncyCode;
   if (blank(PRp.CurncyCode)) then begin
     IVp.CurncyCode = BaseCurRec.BaseCur1;  
@@ -139,7 +139,9 @@ BEGIN
   IVVc_PasteCurncyCode(IVp,IVp.CurncyCode,-1,true,true);  
   if (nonblank(PRp.PrSalesMan)) then begin
     IVp.SalesMan = PRp.PrSalesMan;
-    tstr=""; // 62s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:04:22
+	    tstr=""; // 62s
     GetUserObject(PRp.PrSalesMan,tstr);
     if nonblank(tstr) then begin
       if nonblank(IVp.Objects) then begin
@@ -148,7 +150,9 @@ BEGIN
         IVp.Objects =tstr;
       end;
     end;// 62e
-  end;
+
+	// Edit End ---------------------------------------------- Edit End
+	  end;
   IVp.Region = CUr.Region;
   IVp.NoTax1 = CUr.NoTax1;
   IVp.NoTax2 = CUr.NoTax2;
@@ -801,7 +805,7 @@ BEGIN
         end;
       end;
       if (RepSpec.flags[10]==1) then begin
-        if (PRr.Terminated!=0 and PRr.Terminated!=3) then begin
+        if (PRr.Terminated!=0 and PRr.Terminated!=3) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:04:26
           testf = false;
         end;
       end;

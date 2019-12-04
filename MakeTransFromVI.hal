@@ -36,7 +36,9 @@ external function Boolean TransInFiscal(Date);
 external procedure SetupVATBase(var record SMVc,var Integer);
 external function string 20 FindItemPriceVarianceAcc(string,string,Integer);
 
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:53:37
+	
 global
 function string 20 GetCorPurchVATAcc(string vatcode, var val rvatval)
 begin
@@ -63,7 +65,9 @@ begin
 end;
 
 
-function Boolean CheckTAccFieldMapped(string group,string vc,Integer type)
+
+	// Edit End ---------------------------------------------- Edit End
+	function Boolean CheckTAccFieldMapped(string group,string vc,Integer type)
 BEGIN
   Boolean res;
   record TTRMapVc TTRMapr;
@@ -537,7 +541,7 @@ BEGIN
   Boolean simneeded;
   val nilv;
   val t,t1,tax1val;
-  string 10 pvatacc,svatacc,taccnumber,prelacc; // 62
+  string 10 pvatacc,svatacc,taccnumber,prelacc; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:53:44
   string 60 vatobjstr;
   record CostAccBlock CostAccRec;
   Boolean accf;
@@ -545,7 +549,7 @@ BEGIN
   record PRAccBlock PRAb;
   val PayVal;
   string 255 vatcode;
-  record OperTypeVc OpTr;
+  record OperTypeVc OpTr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:53:48
     
   nilv = blankval;
   totsum = BlankVal;
@@ -600,14 +604,18 @@ BEGIN
   end;  
   if (true) then begin
     if (prelb) then begin
-      if nonblank(VIp.PrelAPAcc) then begin // 62s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:53:55
+	      if nonblank(VIp.PrelAPAcc) then begin // 62s
         prelacc=VIp.PrelAPAcc;
       end else begin
           prelacc=APAccRec.PrelAPAcc;
           end;
           
       if (GetAccName(prelacc,tstr,60)==false) then  begin // 62e
-        errstrno = 1913;      
+
+	// Edit End ---------------------------------------------- Edit End
+	        errstrno = 1913;      
         goto LMakeTransFromVI;
       end;
     end;
@@ -692,12 +700,12 @@ BEGIN
   PayVal = VIp.PayVal;
   if (prelb) then begin
     rs = MulRateToBase1(VIp.CurncyCode,PayVal,frrate,torate1,torate2,baserate1,baserate2,DefaultCurRoundOff);
-    if (GetAccName(prelacc,tstr,60)==false) then begin // 62
+    if (GetAccName(prelacc,tstr,60)==false) then begin // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:54:02
       errstrno = 1913;
       goto LMakeTransFromVI;
     end;  
-    if (CheckTTRPerRow("VIVc",prelacc,otxt,dc2,taccnumber,0)) then begin end; // 62
-    AddEuroCurncyTrRow(gTRp,prelacc,otxt,"",tstr,rs,false,dc2,totsum, // 62
+    if (CheckTTRPerRow("VIVc",prelacc,otxt,dc2,taccnumber,0)) then begin end; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:54:06
+    AddEuroCurncyTrRow(gTRp,prelacc,otxt,"",tstr,rs,false,dc2,totsum, // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:54:07
                        VIp.CurncyCode,frrate,torate1,torate2,baserate1,baserate2,PayVal,nilv,-1,VIp.InvType==3,taccnumber);
 end else begin
   switch (VIp.InvType) begin
@@ -1091,7 +1099,9 @@ LkInvoiceRowTypeNormal_MakeTrans:;
 
     end;
   end;
-  //=== zzzzzzzzz
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:54:23
+	  //=== zzzzzzzzz
 	OpTr.Type = VIp.OperType;
 	if ReadFirstMain(OpTr,1,true) then begin
 		if (OpTr.Rule==1) then begin
@@ -1124,7 +1134,9 @@ LkInvoiceRowTypeNormal_MakeTrans:;
 		end;
 	end;
     //===
-  rwcnt = MatRowCnt(VIp);
+
+	// Edit End ---------------------------------------------- Edit End
+	  rwcnt = MatRowCnt(VIp);
   for (i=0; i<rwcnt; i=i+1) begin
     MatRowGet(VIp,i,VIrw);
     if (VIrw.stp==1) then begin

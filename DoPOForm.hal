@@ -63,7 +63,7 @@ BEGIN
   record INVc INr;
   record PDVc PDr;
   record PIVc PIr;
-  record PRVc PRr; // 62
+  record PRVc PRr; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:35:32
   Integer i,rwcnt,rownr;
   string 255 tstr;
   row POVc POrw;
@@ -215,13 +215,17 @@ BEGIN
     if (ReadFirstItem(POrw.ArtCode,INr,true,false)) then begin
     end;
     OUTFORMFIELD("F_COMMODITYCODE",INr.EUCodex);
-    PRr.Code=POrw.PRCode; // 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:35:37
+	    PRr.Code=POrw.PRCode; // 62
     if ReadFirstMain(PRr,1,true) then begin // 62
 		OUTFORMFIELD("F_PROJECT",PRr.Code); // 62
 		OUTFORMFIELD("F_PROJECTNAME",PRr.Name); // 62
 		OUTFORMFIELD("F_ORGCUSTNR",PRr.MotherCode); // 62
     end; // 62
-    OUTFORMFIELD("F_ALTERNATIVECODE",INr.AlternativeCode);
+
+	// Edit End ---------------------------------------------- Edit End
+	    OUTFORMFIELD("F_ALTERNATIVECODE",INr.AlternativeCode);
     PrintValue("F_ROWWEIGHT",INr.Weight*POrw.Quant,M4Qty,LangNrr,SysFormatRec,false);
     if (FIELDINFORM("F_ARTNRBC39")) then begin
       ItemBC39(POrw.ArtCode,tstr);

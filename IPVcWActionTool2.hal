@@ -9,7 +9,7 @@ external function val AllFEIVPrepaymentAmount(LongInt,LongInt);
 external procedure FEIVSumup(record FEIVVc);
 external procedure FindSalesExVat(record TaxMatrixVc,string,val,Integer,Integer,var val);
 external procedure CalcSum(val,val,val,val,var val,Integer);
-external outer function val GetCoefficient(string,string,date); // 62
+external outer function val GetCoefficient(string,string,date); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:31
 
 function val RowQuantFractSum(LongInt ordernr,LongInt feivnr,Integer rownr)
 BEGIN
@@ -86,25 +86,25 @@ BEGIN
   Integer i,rwcnt,srw,oldsrw;
   Boolean testf,infound;
   record GeneralOptionBlock GenOptRec;
-  val s,rowsum,t,totsum,rowquantfact,notdelivered,ipnovat,orrwsum,coef; // 62
-  record BaseCurBlock BaseCurr; // 62
-  string 255 tstr; // 62
+  val s,rowsum,t,totsum,rowquantfact,notdelivered,ipnovat,orrwsum,coef; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:34
+  record BaseCurBlock BaseCurr; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:34
+  string 255 tstr; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:35
   record TaxMatrixVc TMr;
   
-  SetLangMode(LangUkrainian,"UKR",0);// 62
+  SetLangMode(LangUkrainian,"UKR",0);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:39
   
   res = 1;
-  BlockLoad(BaseCurr);// 62
+  BlockLoad(BaseCurr);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:47
   BlockLoad(GenOptRec);
   FEIVp.TransDate = td;
   FEIVp.IVTransDate = td;
   FEIVp.OrderNr = ORp.SerNr;
   FEIVp.PrepaymentNr = IPrw.CUPNr;
-  tstr="‡гґдно рахунку Ь ";// 62s
-  tstr=tstr & FEIVp.OrderNr;
-  tstr=tstr & " вґд ";
-  tstr=tstr & ORp.OrdDate;
-  FEIVp.PMComment=tstr;// 62e
+  tstr="‡гґдно рахунку Ь ";// 62s// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:50
+  tstr=tstr & FEIVp.OrderNr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:51
+  tstr=tstr & " вґд ";// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:51
+  tstr=tstr & ORp.OrdDate;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:52
+  FEIVp.PMComment=tstr;// 62e// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:52
   if (nonblank(ORp.InvoiceToCode)) then begin
     CUr.Code = ORp.InvoiceToCode;
     if (ReadFirstMain(CUr,1,true)) then begin
@@ -141,7 +141,7 @@ L20PasteORInFEIV:;
   FEIVp.OurContact = ORp.OurContact;
   FEIVp.Objects = ORp.Objects;
   FEIVp.SalesMan = ORp.SalesMan;
-  FEIVp.CurncyCode = BaseCurr.BaseCur1;// 62
+  FEIVp.CurncyCode = BaseCurr.BaseCur1;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:03:56
   FEIVp.LangCode = ORp.LangCode;
   FEIVp.InvComment = ORp.Comment;
   FEIVp.Sorting = ORp.Sorting;
@@ -183,7 +183,7 @@ L20PasteORInFEIV:;
     end;
     testf = true;   
     notdelivered = ORrw.Quant;// - ORrw.Shipd2;
-    coef=GetCoefficient(ORp.CurncyCode,BaseCurr.BaseCur1,td);// 62
+    coef=GetCoefficient(ORp.CurncyCode,BaseCurr.BaseCur1,td);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:04:02
     if (testf) then begin
       notdelivered = notdelivered - DeliveredBeforeDate(td,ORp.SerNr,i);
       ClearRow(FEIVp,FEIVrw,1);
@@ -192,7 +192,7 @@ L20PasteORInFEIV:;
       FEIVrw.ArtCode = ORrw.ArtCode;
       FEIVrw.Quant = ORrw.Quant;
       FEIVrw.Spec = ORrw.Spec;
-      FEIVrw.Price = ORrw.Price*coef;// 62
+      FEIVrw.Price = ORrw.Price*coef;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:04:05
       FEIVrw.vRebate = ORrw.vRebate;
       FEIVrw.SalesAcc = ORrw.SalesAcc;
       FEIVrw.VATCode = ORrw.VATCode;
@@ -215,9 +215,9 @@ L20PasteORInFEIV:;
       if (FEIVrw.QuantFract>FEIVrw.Quant) then begin
         FEIVrw.QuantFract = FEIVrw.Quant;
       end;
-      //t = FEIVrw.Price;  // 62
-      //CalcPrice(FEIVrw.BasePrice,FEIVrw.PriceFactor,FEIVrw.vRebate,t,GenOptRec.UseDiscount);// 62
-      //FEIVrw.Price = t; // 62
+      //t = FEIVrw.Price;  // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:04:17
+      //CalcPrice(FEIVrw.BasePrice,FEIVrw.PriceFactor,FEIVrw.vRebate,t,GenOptRec.UseDiscount);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:04:19
+      //FEIVrw.Price = t; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:04:18
       CalcSum(FEIVrw.QuantFract,FEIVrw.Price,FEIVrw.PriceFactor,FEIVrw.vRebate,t,GenOptRec.UseDiscount);
       FEIVrw.Sum = Round(t,DefaultRoundMode);
       if ((FEIVrw.Sum==0) and (blank(FEIVrw.QuantFract)) and (blank(FEIVrw.Price))) then begin
@@ -244,7 +244,9 @@ L20PasteORInFEIV:;
         MatRowPut(FEIVp,srw,FEIVrw);
         res = 0;
         srw = srw + 1;
-      end else begin // 62s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:04:24
+	      end else begin // 62s
         if blank(ORrw.ArtCode) then begin
           if nonblank(ORrw.Spec) and ORrw.stp==1 then begin
             ClearRow(FEIVp,FEIVrw,i);
@@ -256,8 +258,10 @@ L20PasteORInFEIV:;
             srw = srw + 1;
           end;
         end;
-      end;      
-    end;// 62e
+
+	// Edit End ---------------------------------------------- Edit End
+	      end;      
+    end;// 62e// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:04:29
 LSKIPROW:;      
   end;
   FEIVp.IPNr = IPNr;
@@ -533,7 +537,7 @@ LGetVATIVSum:;
   return;
 end;
 
-procedure PasteORRowToVATIV(record ORVc ORr,var record VATIVVc VATIVr,var Integer ordrow,record IPVc IPr,row IPVc selectedIPrw,Integer iprownr,vector val orsumpervat)
+procedure PasteORRowToVATIV(record ORVc ORr,var record VATIVVc VATIVr,var Integer ordrow,record IPVc IPr,row IPVc selectedIPrw,Integer iprownr,vector val orsumpervat)// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:04:38
 begin
   row ORVc ORrw;
   row VATIVVc VATIVrw;
@@ -545,10 +549,12 @@ begin
 
   BlockLoad(GOb);
   rwcnt = MatRowCnt(ORr);
-  SpecLabel:;
+  SpecLabel:;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:04:50
   if (ordrow<rwcnt) then begin
     MatRowGet(ORr,ordrow,ORrw);
-	 // SAV вставка строки только с наименованием товара
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:04:56
+		 // SAV вставка строки только с наименованием товара
 	 if nonblank(Orrw.Spec) and blank(ORrw.ArtCode) and (ORrw.stp==1) then begin
 		ClearRow(VATIVr,VATIVrw,ORrw.stp);
 		VATIVrw.Spec = ORrw.Spec;
@@ -557,7 +563,9 @@ begin
 		goto SpecLabel;
 	 end;
 	 
-    if nonblank((selectedIPrw.VATCode)) and (selectedIPrw.VATCode!=ORrw.VATCode) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	    if nonblank((selectedIPrw.VATCode)) and (selectedIPrw.VATCode!=ORrw.VATCode) then begin
       goto LPasteORRowToVATIV;
     end;
     rwcnt = MatRowCnt(IPr);
@@ -582,10 +590,12 @@ begin
       end;      
     end;
     testf = true;
-    //coef = selectedIPrw.InvVal/ORr.Sum4;
+    //coef = selectedIPrw.InvVal/ORr.Sum4;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:05:01
     switch (ORrw.stp) begin     
       case 1:
-			// SAV для неполных предоплат -корректировка создания ПН извозврата средств
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:05:11
+				// SAV для неполных предоплат -корректировка создания ПН извозврата средств
 				qty = orqty;
 	         sumvatcorr = GetVATORSum(ORr.SerNr,VATIVr.SerNr,ordrow,false,frprice);
 	         sum = (ORr.Sum4-ORr.FrPrice);
@@ -613,12 +623,18 @@ begin
             // testf = false;
           // end;
         // end;
-      otherwise    
+
+	// Edit End ---------------------------------------------- Edit End
+	      otherwise    
         testf = false;
     end;
-	 	qty = orqty*selectedIPrw.InvVal/ORr.Sum4; // SAV
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 14:05:16
+		 	qty = orqty*selectedIPrw.InvVal/ORr.Sum4; // SAV
 		if qty<0 then begin qty = -qty; end; // SAV
-    if (testf) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	    if (testf) then begin
       ClearRow(VATIVr,VATIVrw,ORrw.stp);
       VATIVrw.stp = ORrw.stp;
       VATIVrw.ArtCode = ORrw.ArtCode;

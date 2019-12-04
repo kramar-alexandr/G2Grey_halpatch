@@ -150,25 +150,31 @@ function val AT2ListRnFunc(record RcVc RepSpec,string frinv,string toinv,string 
 begin
   val res;
   record AT2UnitVc ATUnitr;
-  Boolean TrHs,testf,TrHr1; // 62
+  Boolean TrHs,testf,TrHr1; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:42:51
   val curval,t2;  
   Date blankd,curdate,wrofd;
   val qty,wq,sq,wrofdprsum;
   record ConsolidationBlock consr;
   string 255 tstr;
   // 62
-  record AT2Vc AT2r;
+  record AT2Vc AT2r;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:42:55
 
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:43:09
+	
   if nonblank(RepSpec.f4) then begin
   AT2r.AT2Group=RepSpec.f4;
   end;
   TrHr1=true;
-  res = 0;
-  while LoopKey("AT2Group",AT2r,1,TrHr1) begin
-    if nonblank(RepSpec.f4) then begin
-      if (AT2r.AT2Group<>RepSpec.f4) then begin
-        TrHr1 = false; 
+
+	// Edit End ---------------------------------------------- Edit End
+	  res = 0;
+  // Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:43:55
+	while LoopKey("AT2Group",AT2r,1,TrHr1) begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:43:16
+    if nonblank(RepSpec.f4) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:43:16
+      if (AT2r.AT2Group<>RepSpec.f4) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:43:17
+        TrHr1 = false; // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:43:17
       end;
     end;
     if TrHr1 then begin
@@ -350,6 +356,8 @@ begin
       end;
     end;// 62
   end;// 62
+	// Edit End ---------------------------------------------- Edit End
+	
 
 
 

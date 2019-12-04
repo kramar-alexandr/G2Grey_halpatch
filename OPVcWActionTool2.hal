@@ -225,14 +225,14 @@ L33PastePOInFEVI:;
     end else begin
       tmpsuminclvat = tmpsum;
     end;    
-    //if (tmpsuminclvat>(bval - sum)) then begin // 62
+    //if (tmpsuminclvat>(bval - sum)) then begin // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:25
       tmpsum = bval - sum;
       if (POp.InclVAT==0) then begin
         tmpsum = tmpsum - MulVAT(POrw.VATCode,tmpsum,1,0);
       end else begin
         tmpsum = tmpsum - MulVAT(POrw.VATCode,tmpsum,1,0) - sumvat;
       end;
-    //end; //62
+    //end; //62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:30
     if (tmpsum<=0) then begin
       goto L44PastePOInFEVI;
     end;
@@ -543,24 +543,26 @@ BEGIN
   row OPVc OPrw;
   record POVc POr;
   record FEVIVc lFEVIr;
-  record CUVc CUr; // 62s
-  record AccVc Accr;
-  record BaseCurBlock BCBr;
-  record BaseERVc BaseERr;
-  record ERVc ERr;
-  record VATCodeBlock VBr;
-  row VATCodeBlock VBrw;
-  row FEVIVc FEVIpw;
-  val sum,coef,coef1;
+  record CUVc CUr; // 62s// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:39
+  record AccVc Accr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:39
+  record BaseCurBlock BCBr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:40
+  record BaseERVc BaseERr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:40
+  record ERVc ERr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:41
+  record VATCodeBlock VBr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:41
+  row VATCodeBlock VBrw;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:41
+  row FEVIVc FEVIpw;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:42
+  val sum,coef,coef1;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:43
   Boolean testf;
-  integer i,rows;
+  integer i,rows;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:48
  
-  SetLangMode(LangUkrainian,"UKR",0);
-  BlockLoad(BCBr);
-  BlockLoad(VBr);
+  SetLangMode(LangUkrainian,"UKR",0);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:49
+  BlockLoad(BCBr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:49
+  BlockLoad(VBr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:41:50
   res = 0;
   MatRowGet(OPr,rownr,OPrw);
-  CUr.Code=OPrw.VECode;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:41:54
+	  CUr.Code=OPrw.VECode;
   if ReadFirstMain(CUr,1,true) then begin
    if blank(CUr.AccCost) then begin
    res=-1;
@@ -578,10 +580,12 @@ BEGIN
   MessageBox(0,"Визначте код НДС")
   goto LFailed;
   end;
-  RecordNew(FEVIp);
+
+	// Edit End ---------------------------------------------- Edit End
+	  RecordNew(FEVIp);
   
   
- /* 
+ /* // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:42:02
   if (OPrw.OrderNr>0) then begin
     lFEVIr.PrepaymentNr = OPrw.PrepayNr;
     lFEVIr.OPNr = OPr.SerNr;
@@ -613,8 +617,10 @@ BEGIN
   //not allowed at all
 //    PasteOPRowInFEVI(FEVIp,OPrw,OPr.TransDate,OPr.SerNr);
   end;
-  */
-
+  */// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:42:04
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:42:38
+	
   FEVIp.VECode=OPrw.VECode;
 
   if nonblank(CUr.Code) then begin
@@ -693,6 +699,8 @@ BEGIN
   FEVIpw.Sum=FEVIp.Sum1;
   MatRowInsert(FEVIp,0,FEVIPw);  
 LFailed:; //62e
+	// Edit End ---------------------------------------------- Edit End
+	
   PasteOPInFEVI = res;
   return;
 end;
@@ -969,14 +977,16 @@ begin
   row MailTextVc MTrw;
   Integer IgnoreRecordDetails;
   string 255 docname,fname;
-  record UserVc USr;
-  string 1 TAB;
+  record UserVc USr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:42:47
+  string 1 TAB;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:42:48
   
   res = 0;
-    TAB = chr(9);
-	SetLangMode(LangUkrainian,"UKR",0);// 62
+  TAB = chr(9);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:42:55
+	SetLangMode(LangUkrainian,"UKR",0);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:42:56
   if (ReadFirstMain(OPr,0,true)) then begin end;  
-  // FindUserMailboxName(CurrentUser,mailboxnr,tstr);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:43:02
+	  // FindUserMailboxName(CurrentUser,mailboxnr,tstr);
   // if (blank(tstr)) then begin
     // res = 2289;
     // warning = CurrentUser;
@@ -985,13 +995,17 @@ begin
   //MArw.AddrCode = tstr;
   
   MArw.AddrCode = "hansa@g2.com";//SAV 6016
-  MArw.RowTyp = 1;
+
+	// Edit End ---------------------------------------------- Edit End
+	  MArw.RowTyp = 1;
   MatRowPut(Mailr,0,MArw);
   
   CUr.Code = custcode;
   if (ReadFirstMain(CUr,1,true)) then begin end;
   MArw.RowTyp = 0;
-  // MArw.AddrCode = CUr.eMail;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:43:14
+	  // MArw.AddrCode = CUr.eMail;
   // if (blank(MArw.AddrCode)) then begin
     // res = 2289;
     // warning = CUr.Code;
@@ -1004,8 +1018,10 @@ begin
 	USr.Code = "FD";
 	if (ReadFirstMain(USr,1,true)) then begin end;
 	tstr = USr.emailAddr;
-  end;
-  MArw.AddrCode = tstr;//SAV 6016
+
+	// Edit End ---------------------------------------------- Edit End
+	  end;
+  MArw.AddrCode = tstr;//SAV 6016// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:43:19
   MatRowPut(Mailr,1,MArw);
   MailTextRow("OPVc",OPr.LangCode,MTrw,IgnoreRecordDetails);
   Mailr.Header = MTrw.Header;
@@ -1031,7 +1047,9 @@ begin
   end;
 //=========
 
-  rwcnt = MatRowCnt(OPr);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:43:28
+	  rwcnt = MatRowCnt(OPr);
   tstr = "Акт-накл" & TAB & TAB & "Постачальник" &  TAB & TAB & "Коментар" & TAB & TAB & "Валюта" & TAB & TAB & "Сума";
   LineTextPut(Mailr,LineTextCnt(Mailr),tstr);// SAV 6016
   for (i=0;i<rwcnt;i=i+1) begin
@@ -1064,7 +1082,9 @@ begin
     AddCRToText(Mailr);
   end;
 //=========
-  Mailr.TransDate = CurrentDate;
+
+	// Edit End ---------------------------------------------- Edit End
+	  Mailr.TransDate = CurrentDate;
   Mailr.SerNr = NextSerNr("MailVc",Mailr.TransDate,-1,false,"");
   if (RecordStore(Mailr,false)) then begin 
     CreateRecordLink(Mailr,CurrentCompany,OPr,CurrentCompany);  

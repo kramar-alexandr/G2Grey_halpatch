@@ -58,7 +58,9 @@ begin
   return;
 end;
 
-procedure SetPOAcceptanceFlag1(var record POVc POr,record POVc prevPOr,LongInt stat)
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:16:13
+	procedure SetPOAcceptanceFlag1(var record POVc POr,record POVc prevPOr,LongInt stat)
 begin
   val bc1v;
   Boolean testf;
@@ -94,7 +96,9 @@ begin
   return;
 end;
 
-global
+
+	// Edit End ---------------------------------------------- Edit End
+	global
 function LongInt POVcRecordInIndex(record POVc POr,string indexname)
 BEGIN
   LongInt res;
@@ -517,7 +521,7 @@ BEGIN
 
   AutRecNonStockItem(POr);
   SetPOFlags(POr,false);
-  SetPOAcceptanceFlag1(POr,PO2r,stat);
+  SetPOAcceptanceFlag1(POr,PO2r,stat);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:16:18
   UpdatePOOut(PO2r,false,false);
   UpdatePOOut(POr,true,false);
   UpdatePRPO(PO2r,false);

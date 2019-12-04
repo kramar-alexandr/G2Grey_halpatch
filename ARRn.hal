@@ -220,8 +220,8 @@ L22:;
         end;    
       end;
     end;
-	 if (CUr.blockedFlag==0) and (RepSpec.flags[4]==1) then begin testf = false; end;
-	 if (CUr.blockedFlag==1) and (RepSpec.flags[4]==0) then begin testf = false; end;
+	 if (CUr.blockedFlag==0) and (RepSpec.flags[4]==1) then begin testf = false; end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:48:47
+	 if (CUr.blockedFlag==1) and (RepSpec.flags[4]==0) then begin testf = false; end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:48:48
   if (CUs==false) then begin goto L88; end;
   if (testf==false) then begin goto L22; end;
   CustOut = false;

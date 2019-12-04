@@ -1,3 +1,4 @@
+//переносить как есть
 external function string 255 GetModuleName(string);// Edit ************************** Friday, 1 September 2017 11:26:37
 external function string 255 GetDocumentName(string);// Edit ************************** Friday, 1 September 2017 11:26:38
 external function string 255 GetExportName(string);// Edit ************************** Friday, 1 September 2017 11:26:39
@@ -16,19 +17,19 @@ begin
   Boolean oneuseratleast;
 
   StartFormat(15)
-  OutString(0,0,"User and Access per Company",false);
+  OutString(0,0,"User and Access per Company",false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:35:25
   EndFormat;
   Black_Divider(0,1);
   StartFormat(15)
-  OutString(0,0,"Company",false);
-  OutString(2,0,"Company Name",false);
-  OutString(3,0,"Short Code",false);
+  OutString(0,0,"Company",false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:35:29
+  OutString(2,0,"Company Name",false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:35:30
+  OutString(3,0,"Short Code",false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:35:31
   EndFormat;
   StartFormat(15);
-  OutString(4,0,"Person",false);
-  OutString(5,0,"Name",false);
-  OutString(6,0,"Access Gr.",false);
-  OutString(1,0,"Date Created",true);
+  OutString(4,0,"Person",false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:35:34
+  OutString(5,0,"Name",false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:35:35
+  OutString(6,0,"Access Gr.",false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:35:35
+  OutString(1,0,"Date Created",true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:35:36
   EndFormat;
   Gray_Divider(0,1);
   rwcnt = MatRowCnt(CompaniesRec);

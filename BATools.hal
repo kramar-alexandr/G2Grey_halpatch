@@ -436,8 +436,8 @@ begin
   record UserVc Userr;// Edit ************************** Tuesday, 2 October 2012 13:58:51
   string 255 curstr,instr;// Edit ************************** Tuesday, 2 October 2012 13:58:50
   record PRVc PRr;// Edit ************************** Friday, 5 October 2012 14:18:18
-  integer k,j;
-  string 50 tstr;
+  integer k,j;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:40:12
+  string 50 tstr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:40:14
       
       
   BlockLoad(MSb);      
@@ -445,17 +445,19 @@ begin
     goto LSendMailFromSystem;
   end;
   RecordNew(Mailr);
-  k=0; 
+  k=0; // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:40:17
   
   if (nonblank(sender)) then begin
     pos = 0;
     ExtractObj(sender,pos,user);
     while (nonblank(user)) begin
       FindUserMailboxName(user,mailboxnr,mailboxname);
-      if (nonblank(mailboxname) or nonblank(user)) then begin
+      if (nonblank(mailboxname) or nonblank(user)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:40:21
         ClearRow(Mailr,marw,1);
         marw.RowTyp = kMailRowTypeFrom;
-        Userr.Code = sender;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:40:28
+	        Userr.Code = sender;
         tstr = "";
         if(readfirstmain(Userr,1,true) and nonblank(Userr.emailAddr))then begin
           if(nonblank(mailboxname))then begin
@@ -465,15 +467,21 @@ begin
           end;
         end;
         marw.AddrCode = mailboxname & tstr;
-        marw.Mailbox = StringToLongInt(mailboxnr);
-        if(blank(marw.AddrCode))then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	        marw.Mailbox = StringToLongInt(mailboxnr);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:40:32
+	        if(blank(marw.AddrCode))then begin
           ClearRow(Mailr,marw,1);
           marw.RowTyp = kMailRowTypeFrom;
           marw.AddrCode = MSb.FromSystem;
         end;
         MatRowPut(Mailr,k,marw);
         k=k+1;
-      end;
+
+	// Edit End ---------------------------------------------- Edit End
+	      end;
       ExtractObj(sender,pos,user);
     end;
   end else begin
@@ -481,10 +489,12 @@ begin
     marw.RowTyp = kMailRowTypeFrom;
     marw.AddrCode = MSb.FromSystem;
     MatRowPut(Mailr,0,marw);
-    k=1;
+    k=1;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:40:36
     Confr.AddrCode = recipient;
     if (ReadFirstKey("AddrCode",Confr,1,true)==false) then begin
-      //goto LSendMailFromSystem;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:40:42
+	      //goto LSendMailFromSystem;
     end;
   end;
   
@@ -500,7 +510,9 @@ begin
     if(nonblank(marw.AddrCode))then begin
       MatRowPut(Mailr,k,marw);
       k=k+1;
-    end;
+
+	// Edit End ---------------------------------------------- Edit End
+	    end;
   end;
   
   

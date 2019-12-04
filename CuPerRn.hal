@@ -1,3 +1,4 @@
+//no changes
 external procedure CUPer_PrintTransaction(record RcVc,record CUVc,
                              record IPrsVc,var val,var val,var val,var val,var val,Integer,Integer);
 external procedure CUPer_PrintReceipt(record RcVc,record IPVc,record CUVc,record BaseCurBlock,

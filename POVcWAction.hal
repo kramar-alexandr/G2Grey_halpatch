@@ -338,14 +338,16 @@ BEGIN
   record POSettingBlock POSb;
   record VIVc VIr;
   Integer r;
-  boolean okvitestf;
+  boolean okvitestf;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:07:16
 
   wn = CurWindow;
   if (WindowState(wn)==0) then begin//Rs_normal
     if (UserCanAction("POToVI",true)) then begin
       BlockLoad(POSb);
       GetWindowRecord(wn,POr);
-      
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:14:27
+	      
       okvitestf = true;
   
       if(POr.OKFlag==0)then begin
@@ -357,13 +359,21 @@ BEGIN
         ReportDefaults(RepSpec,"VIFromPOVClass");
         RepSpec.repname = "";
         RepSpec.FirstVer = POr.SerNr;
-        RepSpec.flags[0] = 1;
-        if (POSb.OpenCreateVIFromPO!=0) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	        RepSpec.flags[0] = 1;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:15:15
+	        if (POSb.OpenCreateVIFromPO!=0) then begin
           nwn = OpenWindow("VIFromPOVClass",1,0,"","",RepSpec);
           PutWindowRecord(nwn,RepSpec);
           SelectWindow(nwn);
-        end else begin
-          RepSpec.flags[0] = 1;
+
+	// Edit End ---------------------------------------------- Edit End
+	        end else begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:15:23
+	          RepSpec.flags[0] = 1;
           RepSpec.flags[1] = 1;
           RepSpec.flags[2] = 1;
           RepSpec.flags[3] = 1;
@@ -389,7 +399,9 @@ BEGIN
         end;
       end else begin
         MessageBox(1274,StringFromStringSet(3,"UnOkPOToVI"));
-      end;
+
+	// Edit End ---------------------------------------------- Edit End
+	      end;
     end else begin
       MessageBox(1274,StringFromStringSet(3,"POToVI"));
     end;
@@ -452,7 +464,7 @@ BEGIN
       MatRowGet(POr,rownr,POrw);
       if (POrw.stp==1) then begin
         s = MulRateToBase1(POr.CurncyCode,POrw.Sum,POr.FrRate,POr.ToRateB1,POr.ToRateB2,POr.BaseRate1,POr.BaseRate2,DefaultCurRoundOff);
-        //UnpackRowFieldMatrix(POrw,"TaxMatrix",TMr);
+        //UnpackRowFieldMatrix(POrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:15:29
         FindSalesExVat(TMr,POrw.VATCode,s,POr.InclVAT,0,rowsum);
         CalcProc(rowsum,t,tproc);
         unitprdisc = POrw.Sum/POrw.Quant;
@@ -1360,7 +1372,9 @@ begin
   PODClassSpecPasteName = psname;
   return;
 end;
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:15:41
+	
 
 
 global
@@ -1450,3 +1464,6 @@ begin
 LQTSendforAcceptanceQTDsm:;  
   return;
 end;
+
+	// Edit End ---------------------------------------------- Edit End
+	

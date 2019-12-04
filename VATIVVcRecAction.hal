@@ -275,7 +275,9 @@ BEGIN
       end;
     end;  
   end;  
-  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:34:01
+	  
   if(nonblank(VATIVp.DebRow))then begin
   	Debr.Code = VATIVp.DebRow;
   	if (ReadFirstMain(Debr,1,true)==false) then begin
@@ -285,7 +287,9 @@ BEGIN
     end;    
   end;
   
-  if (unokf) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  if (unokf) then begin
     err = IsUnOKAllowed_VATIVVc(VATIVp);
     if (err!=0) then begin
       RecordCheckError(err,"",-1,"TransDate");      
@@ -336,7 +340,9 @@ BEGIN
     res = -1;
     goto L99VATIVVcRecordCheck;
   end;
-  // if (VATIVp.IVNr<=0) then begin // Отключена по требованию Грея в рамках приложения №5
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:34:05
+	  // if (VATIVp.IVNr<=0) then begin // Отключена по требованию Грея в рамках приложения №5
     // if (VATIVp.IPNr<=0) then begin
       // RecordCheckError(1131,"",-1,"IVNr");      
       // res = -1;
@@ -350,7 +356,9 @@ BEGIN
       // goto L99VATIVVcRecordCheck;
     // end;
   // end;
-  if (VATIVp.IVNr>0) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  if (VATIVp.IVNr>0) then begin
     IVr.SerNr = VATIVp.IVNr;
     if (ReadFirstMain(IVr,1,true)==false) then begin
       RecordCheckError(1131,"",-1,"IVNr");      

@@ -473,8 +473,8 @@ BEGIN
       if (testf) then begin
         VEr.Code = POr.VECode;
         if ReadFirstMain(VEr,1,true) then begin
-				if (VEr.blockedFlag==0) and (RepSpec.flags[11]==1) then begin testf = false; end; // SAV 2011_08_08
-				if (VEr.blockedFlag==1) and (RepSpec.flags[11]==0) then begin testf = false; end;
+				if (VEr.blockedFlag==0) and (RepSpec.flags[11]==1) then begin testf = false; end; // SAV 2011_08_08// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:39:13
+				if (VEr.blockedFlag==1) and (RepSpec.flags[11]==0) then begin testf = false; end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:39:11
           if (nonblank(RepSpec.f4)) then begin
             if (SetInSet2(RepSpec.f4,VEr.Classification)==false) then begin
               testf = false;

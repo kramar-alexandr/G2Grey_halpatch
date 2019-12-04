@@ -20,7 +20,7 @@ begin
   OutLongInt(0,"DblPOVc",POp.SerNr,false);
   OutDate(130,0,POp.TransDate,false);
   OutString(220,0,POp.PayDeal,false);
-  OutString(300,"dblPRVc",POp.PRCode,false);// SAV 2011_08_18
+  OutString(300,"dblPRVc",POp.PRCode,false);// SAV 2011_08_18// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:02:21
   EndFormat;
   StartFormat(15);
   OutString(50,0,POp.VECode,false);
@@ -137,8 +137,8 @@ begin
     StartFormat(15);
     OutString(0,0,USetStr(4942),false);
     OutString(60,0,USetStr(4943),false);
-	 OutString(100,0,USetStr(4862),false);// SAV 2011_08_18
-    OutString(180,0,USetStr(4944),false);
+	 OutString(100,0,USetStr(4862),false);// SAV 2011_08_18// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:02:27
+    OutString(180,0,USetStr(4944),false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:02:27
     OutString(1,0,USetStr(4947),true);
     EndFormat;
   end;
@@ -146,7 +146,7 @@ begin
     StartFormat(15);
     OutString(0,0,USetStr(4942),false);
     OutString(130,0,USetStr(4943),false);
-	 OutString(300,0,USetStr(4862),false);// SAV 2011_08_18
+	 OutString(300,0,USetStr(4862),false);// SAV 2011_08_18// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:02:31
     EndFormat;
   end;
   POr.SerNr = afr;
@@ -165,10 +165,14 @@ begin
       if (nonblank(RepSpec.f2) and (RepSpec.f2<>POr.VECode)) then begin
          testf = false;
       end;
-		if (nonblank(RepSpec.f6) and (RepSpec.f6<>POr.PRCode)) then begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:02:36
+			if (nonblank(RepSpec.f6) and (RepSpec.f6<>POr.PRCode)) then begin
          testf = false;
       end;
-      if (nonblank(RepSpec.FirstAcc) and (RepSpec.FirstAcc<>POr.POClass)) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	      if (nonblank(RepSpec.FirstAcc) and (RepSpec.FirstAcc<>POr.POClass)) then begin
          testf = false;
       end;
       if ((nonblank(RepSpec.f3)) and (RepSpec.f3<>POr.Location)) then begin 
@@ -191,12 +195,16 @@ begin
           end;
         end;  
       end; 
-		if (VEr.blockedFlag==0) and (RepSpec.flags[16]==1) then begin testf = false; end; // SAV 2011_08_08
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:02:41
+			if (VEr.blockedFlag==0) and (RepSpec.flags[16]==1) then begin testf = false; end; // SAV 2011_08_08
 		if (VEr.blockedFlag==1) and (RepSpec.flags[16]==0) then begin testf = false; end;
 		if (POr.Closed==0) and (RepSpec.flags[17]==1) then begin testf = false; end; // SAV 2011_08_08
 		if (POr.Closed==1) and (RepSpec.flags[17]==0) then begin testf = false; end;
 		if (POr.OKFlag==0) and (RepSpec.flags[18]==0) then begin testf = false; end; // SAV 2011_09_07
-      if (testf) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	      if (testf) then begin
         if ((RepSpec.ArtMode==0) or (RepSpec.ArtMode==1)) then begin
           iv = POr.Sum4;
         end;
@@ -213,8 +221,8 @@ begin
           StartFormat(15);
           OutLongInt(0,"DblPOVc",POr.SerNr,false);
           OutDate(60,0,POr.TransDate,false);
-			 OutString(100,"dblPRVc",POr.PRCode,false);
-          OutString(180,0,POr.Addr0,false);
+			 OutString(100,"dblPRVc",POr.PRCode,false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:02:52
+          OutString(180,0,POr.Addr0,false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:02:53
           OutVal(440,0,iv,M4Val,true);
           OutString(445,0,POr.CurncyCode,false);
           EndFormat;
@@ -231,7 +239,9 @@ begin
   EndJob;
   return;
 end;
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:03:05
+	
 
 global
 procedure NewPurOrdJRn(record RcVc RepSpec) //  Gray-X SAV 2011_12_16 - дата простановки OKFlag
@@ -420,3 +430,5 @@ begin
   EndJob;
   return;
 end;
+	// Edit End ---------------------------------------------- Edit End
+	

@@ -154,7 +154,9 @@ BEGIN
       goto LTSVcRecordCheck;
     end;
   end;
-  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:39:45
+	  
   if(stat==updatemode)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 12 November 2019 14:27:47
 		rwcnt = MatRowCnt(TSr);
 		for (i=0;i<rwcnt;i=i+1) begin
@@ -178,7 +180,9 @@ BEGIN
   	
   end;
   
-  rwcnt = MatRowCnt(TSr);
+
+	// Edit End ---------------------------------------------- Edit End
+	  rwcnt = MatRowCnt(TSr);
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(TSr,i,TSrw);
     if ((TSrw.stp==1) and (TSrw.ovst==0)) then begin
@@ -221,12 +225,16 @@ BEGIN
           goto LTSVcRecordCheck;
         end;
       end;
-      /*if (IsPRPhaseLocked(TSrw.PRCode,TSr.RegDate,errstr)) then begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:40:01
+	      /*if (IsPRPhaseLocked(TSrw.PRCode,TSr.RegDate,errstr)) then begin
         RecordCheckError(20408," " & errstr,i,"PRCode");      
         res = -1;
         goto LTSVcRecordCheck;
       end;*/
-      if (UserCanAction("DisallowPostPRActualsfornonPRMan",false)) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	      if (UserCanAction("DisallowPostPRActualsfornonPRMan",false)) then begin
         if (CheckProjectMember(PRr)==false) then begin 
           RecordCheckError(1274,StringFromStringSet(3,"DisallowPostPRActualsfornonPRMan"),i,"PRCode");        
           res = -1;

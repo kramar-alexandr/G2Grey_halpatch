@@ -228,9 +228,13 @@ BEGIN
   record CUVc CUr;
   record INVc INr;
   record ORVc ORr;
-  record IVVc IVr; // 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:36:20
+	  record IVVc IVr; // 62
   record CYBlock CYr; // 62
-  string 255 tstr;
+
+	// Edit End ---------------------------------------------- Edit End
+	  string 255 tstr;
   row FEIVVc FEIVrw;
   Integer i,rwcnt,rownr,valtyp;
   val vatprc,vatval,vatexclprc,vatinclprc,rowtax,t,t2,v;
@@ -239,19 +243,23 @@ BEGIN
 
   BlockLoad(RoundRec);
   BlockLoad(SysFormatRec);
-  BlockLoad(CYr); // 62
+  BlockLoad(CYr); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:36:24
   GetLangNr(FEIVr.LangCode,LangNrr);
   Docr.Code = formcode;
   if (ReadFirstMain(Docr,1,true)) then begin
   end;
   CommonDocumentFields(RepSpec);    
   NumberofDocumentPages(formcode,MatRowCnt(FEIVr));
-  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:36:27
+	  
   IVr.SerNr=  FEIVr.IVNr; // 62
    if (ReadFirstMain(IVr,1,true)) then begin end;// 62
   OUTFORMFIELD("F_SHIPTERM",IVr.ShipDeal);   // 62      
   
-//CUVc
+
+	// Edit End ---------------------------------------------- Edit End
+	//CUVc
   CUr.Code = FEIVr.CustCode;
   
   
@@ -274,7 +282,9 @@ BEGIN
   OUTFORMFIELD("F_REGNUMBER2",CUr.RegNr2);  
   OUTFORMFIELD("F_CUSTCOMMENT",CUr.Comment);
   OUTFORMFIELD("F_DEPARTMENT",CUr.Department);
-  //OUTFORMFIELD("F_FAKTURATILL",CUr.Name); // 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:36:32
+	  //OUTFORMFIELD("F_FAKTURATILL",CUr.Name); // 62
   //OUTFORMFIELD("F_FAKTURATILL",CUr.InvAddr0); // 62
   tstr=CUr.InvAddr0 & " " & CUr.InvAddr1;  // 62
   OUTFORMFIELD("F_FAKTURATILL",tstr); // 62
@@ -283,7 +293,9 @@ BEGIN
   //OUTFORMFIELD("F_FAKTURATILL",CUr.InvAddr4); // 62
   tstr=CUr.InvAddr1 & " " & CUr.InvAddr2; // 62
   OUTFORMFIELD("F_CUSTADDRESSX",tstr); // 62
-  if (blank(FEIVr.Phone)) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  if (blank(FEIVr.Phone)) then begin
     OUTFORMFIELD("F_KUNDTEL",CUr.Phone);      
   end else begin
     OUTFORMFIELD("F_KUNDTEL",FEIVr.Phone);      
@@ -320,9 +332,13 @@ BEGIN
   OUTFORMFIELD("F_ADRESSATT",FEIVr.InvAddr3);  
   OUTFORMFIELD("F_ADRESSATT",FEIVr.InvAddr4);
   OUTFORMFIELD("F_INVCOMMENT",FEIVr.InvComment);  
-  LongDateToStr(FEIVr.IVTransDate,SetDateOrder(FEIVr.LangCode),tstr); // 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:36:39
+	  LongDateToStr(FEIVr.IVTransDate,SetDateOrder(FEIVr.LangCode),tstr); // 62
   OUTFORMFIELD("F_INVDATE",tstr); // 62
-  LongDateToStr(FEIVr.IVInvDate,SetDateOrder(FEIVr.LangCode),tstr);
+
+	// Edit End ---------------------------------------------- Edit End
+	  LongDateToStr(FEIVr.IVInvDate,SetDateOrder(FEIVr.LangCode),tstr);
   OUTFORMFIELD("F_FAKTURADATUM",tstr);
   LongDateToStr(FEIVr.TransDate,SetDateOrder(FEIVr.LangCode),tstr);
   OUTFORMFIELD("F_TRANSDATE",tstr);
@@ -362,8 +378,8 @@ BEGIN
   OUTFORMFIELD("F_RATE",tstr);
   GetFullCurncyRateText(false,tstr,FEIVr.FrRate,FEIVr.ToRateB1,FEIVr.ToRateB2,FEIVr.BaseRate1,FEIVr.BaseRate2);
   OUTFORMFIELD("F_BASERATE",tstr);
-  tstr=CYr.Addr0 & " " & CYr.Addr1; // 62
-  OUTFORMFIELD("F_ADDR1",tstr); // 62
+  tstr=CYr.Addr0 & " " & CYr.Addr1; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:36:50
+  OUTFORMFIELD("F_ADDR1",tstr); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:36:50
   rwcnt = MatRowCnt(FEIVr); 
   for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(FEIVr,i,FEIVrw);
@@ -372,7 +388,7 @@ BEGIN
     end;
     InvVat(1,FEIVr.InclVAT,FEIVr.NoTAXonVAT,FEIVr.ExportFlag,FEIVrw.VATCode,FEIVrw.Sum,vatprc,vatval,vatexclprc,vatinclprc,rowtax);
     GetObjectText(FEIVrw.Objects,tstr);
-    OUTFORMFIELD("F_SUMMAFORSENAT",FEIVrw.Sum);     // 62   
+    OUTFORMFIELD("F_SUMMAFORSENAT",FEIVrw.Sum);     // 62   // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:36:54
     OUTFORMFIELD("F_ROWOBJEKTTEXT",tstr);
     OUTFORMFIELD("F_ROWOBJECT",FEIVrw.Objects);
     OUTFORMFIELD("F_ALTERNATIVECODE",INr.AlternativeCode);
@@ -542,7 +558,9 @@ BEGIN
     end;
     PrintValue("F_BASE2SUMMA",t,valtyp,LangNrr,SysFormatRec,false);
   end;
-  // 62 s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:36:58
+	  // 62 s
   if (FIELDINFORM("F_AMOUNT")) then begin
     t = FEIVr.Sum1+FEIVr.Sum3;
     valtyp = M4Val;
@@ -562,7 +580,9 @@ BEGIN
     PrintValue("F_TAX1",t,valtyp,LangNrr,SysFormatRec,false);
   end;  
   // 62 e
-  if (FIELDINFORM("F_BASE2MOMS")) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  if (FIELDINFORM("F_BASE2MOMS")) then begin
     t = MulRateToBase2(FEIVr.CurncyCode,FEIVr.Sum3,FEIVr.FrRate,FEIVr.ToRateB1,FEIVr.ToRateB2,FEIVr.BaseRate1,FEIVr.BaseRate2,DefaultCurRoundOff);
     valtyp = M4Val;
     GetFieldArgument(Docr,F_BASE2MOMS,tstr);

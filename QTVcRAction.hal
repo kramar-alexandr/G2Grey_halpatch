@@ -62,7 +62,9 @@ begin
   end;
   return;
 end;
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:01:05
+	
 procedure SetQTAcceptanceFlag1(var record QTVc QTr,record QTVc prevQTr,LongInt stat)
 begin
   val bc1v;
@@ -92,6 +94,8 @@ begin
   return;
 end;
 
+	// Edit End ---------------------------------------------- Edit End
+	
 function Boolean QTCheckForSalesmanPrice(record QTVc QTr, Integer i, string pricelist, var string errstr)
 begin 
   record INVc INr;
@@ -224,7 +228,7 @@ BEGIN
   LongInt res;
 
   RecalculateWeightQTVc(QTr,false);  
-  SetQTAcceptanceFlag1(QTr,QT2r,stat);
+  SetQTAcceptanceFlag1(QTr,QT2r,stat);//???// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:00:57
   QTVcRecordUpdate = res; 
   RETURN;
 END;

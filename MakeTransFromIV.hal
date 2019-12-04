@@ -1,3 +1,4 @@
+//можно не переносить
 external function val CalculateTotalVATFromTaxMatrix(record TaxMatrixVc,Integer);
 external function Integer PostTaxMatrix_IVVc(var record TRVc,record AccBlock,record VATCodeBlock,record IVVc,string,val,val,val,val,val,Boolean,Boolean,var val);
 external function Boolean UseTaxTemplatesforTaxCalc();
@@ -646,15 +647,15 @@ retention change
         MatRowGet(IVp,i,IVrw);
         if (IVrw.stp==kInvoiceRowTypeNormal) or (IVrw.stp==kInvoiceRowTypeCorrection) then begin
           if (UseTaxTemplatesforTaxCalc) then begin
-            //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
-           // tvat = CalculateTotalVATFromTaxMatrix(TMr,IVp.InclVAT);
+            //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:58:44
+           // tvat = CalculateTotalVATFromTaxMatrix(TMr,IVp.InclVAT);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:58:45
           end else begin
             MulVATIV(IVrw.VATCode,IVrw.Quant*IVrw.BasePrice,tvat,t1,IVp.InclVAT,IVp.NoTAXonVAT);            
           end;
           t = IVrw.Quant*IVrw.BasePrice - tvat - t1;
           if (UseTaxTemplatesforTaxCalc) then begin
-            //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
-            //tvat = CalculateTotalVATFromTaxMatrix(TMr,IVp.InclVAT);
+            //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:58:48
+            //tvat = CalculateTotalVATFromTaxMatrix(TMr,IVp.InclVAT);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:58:48
           end else begin
             MulVATIV(IVrw.VATCode,IVrw.Sum,tvat,t1,IVp.InclVAT,IVp.NoTAXonVAT);            
           end;
@@ -685,8 +686,8 @@ retention change
         MatRowGet(IVp,i,IVrw);
         if (IVrw.stp==kInvoiceRowTypeNormal) or (IVrw.stp==kInvoiceRowTypeCorrection) then begin
           if (UseTaxTemplatesforTaxCalc) then begin
-            //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
-            //tvat = CalculateTotalVATFromTaxMatrix(TMr,IVp.InclVAT);
+            //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:58:51
+            //tvat = CalculateTotalVATFromTaxMatrix(TMr,IVp.InclVAT);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:58:52
           end else begin
             MulVATIV(IVrw.VATCode,IVrw.Quant*IVrw.Price,tvat,t1,IVp.InclVAT,IVp.NoTAXonVAT);            
           end;
@@ -700,8 +701,8 @@ retention change
           end;
           
           if (UseTaxTemplatesforTaxCalc) then begin
-            //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
-            //tvat = CalculateTotalVATFromTaxMatrix(TMr,IVp.InclVAT);
+            //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:58:54
+            //tvat = CalculateTotalVATFromTaxMatrix(TMr,IVp.InclVAT);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:58:55
           end else begin
             MulVATIV(IVrw.VATCode,IVrw.Sum,tvat,t1,IVp.InclVAT,IVp.NoTAXonVAT);            
           end;
@@ -927,7 +928,7 @@ retention change
                 SalesVATAcc = VATCoderw.SalesVATAcc;
             end;
             if (ARb.PostIVVATonVATCorr!=0) then begin
-					SalesVATAcc = VATCoderw.CorSalesVATAcc;
+					SalesVATAcc = VATCoderw.CorSalesVATAcc;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:59:23
 					//SalesVATAcc = VATCoderw.CorSalesVATAcc2; // zzzz
 				   
             end;

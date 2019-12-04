@@ -359,13 +359,17 @@ LVIDClassInvoiceNrEFAfter3:;
         if (ValidSuppInvNo_Argentina(VIr.InvoiceNr)==false) then begin
           MessageBox(20858,"");
         end;
- /*   VI2r.InvoiceNr = VIr.InvoiceNr; // 62s
+ // Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:24:16
+	/*   VI2r.InvoiceNr = VIr.InvoiceNr; // 62s// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:24:11
         VI2r.VECode = VIr.VECode;    
         if (ReadFirstKey("InvoiceNr",VI2r,2,true)) then begin
           if (VI2r.InvType!=kInvoiceTypeCredit) then begin
             MessageBox(1547,"");
           end;
     end; */ // 62e
+	// Edit End ---------------------------------------------- Edit End
+	
     end;
 LVIDClassInvoiceNrEFAfter:;
     PutWindowRecord(wn,VIr);

@@ -144,8 +144,8 @@ begin
      if (TrHs==false) then begin
        testf = false;
      end;  
-	  	if (VEr.blockedFlag==0) and (RepSpec.flags[11]==1) then begin testf = false; end; // SAV 2011_08_08
-		if (VEr.blockedFlag==1) and (RepSpec.flags[11]==0) then begin testf = false; end;
+	  	if (VEr.blockedFlag==0) and (RepSpec.flags[11]==1) then begin testf = false; end; // SAV 2011_08_08// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:45:08
+		if (VEr.blockedFlag==1) and (RepSpec.flags[11]==0) then begin testf = false; end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:45:05
      if (testf) then begin
        vecnt = vecnt + 1;
        if (RepSpec.flags[0]==0) then begin

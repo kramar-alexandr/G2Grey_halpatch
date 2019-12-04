@@ -602,7 +602,7 @@ BEGIN
                 tv = tv/IVrw.PriceFactor;
               end;
               s = MulRateToBase1(IVp.CurncyCode,IVrw.Sum,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff);// sales
-              //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
+              //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:56:43
               FindSalesExVat(TMr,IVrw.VATCode,s,IVp.InclVAT,IVp.NoTAXonVAT,rowsum);
               IVrw.rowGP = rowsum - tv;          // GP    
             end else begin
@@ -621,8 +621,8 @@ BEGIN
             orsum = orsum + IVrw.Sum;
 
             IVrw.TaxTemplateCode = ORrw.TaxTemplateCode;
-            //UnpackRowFieldMatrix(ORrw,"TaxMatrix",TMr);
-            //PackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
+            //UnpackRowFieldMatrix(ORrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:56:46
+            //PackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:56:47
             RowCalculateTaxMatrix_IVVc(IVp,ivcnt,IVrw);
             MatRowPut(IVp,ivcnt,IVrw);
             if (IVDchrsum(IVp,ivcnt)) then begin end;
@@ -762,7 +762,7 @@ BEGIN
                 if (v>t) then begin
                   v = t;
                   if (subvatf) then begin
-                    //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
+                    //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:56:50
                     FindSalesExVat(TMr,IVrw.VATCode,v,1,0,v);
                   end;
                 end;                
@@ -1034,7 +1034,7 @@ BEGIN
   array record SHVc aDropSHr;
   record TaxMatrixVc TMr;
   record TRGenBlock TRGb;
-  record IVTBlock IVTb;
+  record IVTBlock IVTb;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:56:53
   
   lastrwcnt = MatRowCnt(IVp);
   orsum = blankval;
@@ -1121,7 +1121,9 @@ L20PasteOrdInInv:;
   IVp.InclVAT = ORp.InclVAT;
   IVp.NoTAXonVAT = ORp.NoTAXonVAT;
   IVp.TotalwoTAX = ORp.TotalwoTAX;
-  BlockLoad(IVTb);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:57:00
+	  BlockLoad(IVTb);
   switch (IVTb.IVFromORRate) begin
     case 0:
       IVp.FrRate = ORp.FrRate;
@@ -1134,7 +1136,9 @@ L20PasteOrdInInv:;
     case 2:
       GetFullCurncyRate(IVp.CurncyCode,IVp.InvDate,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2);
   end;
-  IVp.CustVATCode = ORp.CustVATCode;      
+
+	// Edit End ---------------------------------------------- Edit End
+	  IVp.CustVATCode = ORp.CustVATCode;      
   IVp.FrPrice = ORp.FrPrice;
   if ((ARAccRec.UpdBaseRate!=0) or (ARAccRec.UpdForeginRate!=0)) then begin
     curcode = IVp.CurncyCode;
@@ -1341,7 +1345,7 @@ L20PasteOrdInInv:;
           t = t/IVrw.PriceFactor;
         end;
         s = MulRateToBase1(IVp.CurncyCode,IVrw.Sum,IVp.FrRate,IVp.ToRateB1,IVp.ToRateB2,IVp.BaseRate1,IVp.BaseRate2,DefaultCurRoundOff);// sales
-        //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
+        //UnpackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:57:04
         FindSalesExVat(TMr,IVrw.VATCode,s,IVp.InclVAT,IVp.NoTAXonVAT,rowsum);
         IVrw.rowGP = rowsum - t;        // GP    
       end else begin
@@ -1372,8 +1376,8 @@ L20PasteOrdInInv:;
       end;
       IVrw.FIFO = IVrw.FIFORowVal/IVrw.Quant;
       IVrw.TaxTemplateCode = ORrw.TaxTemplateCode;
-      //UnpackRowFieldMatrix(ORrw,"TaxMatrix",TMr);
-      //PackRowFieldMatrix(IVrw,"TaxMatrix",TMr);
+      //UnpackRowFieldMatrix(ORrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:57:07
+      //PackRowFieldMatrix(IVrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:57:08
       RowCalculateTaxMatrix_IVVc(IVp,srw,IVrw);
       MatRowPut(IVp,srw,IVrw);
       srw = srw + 1;

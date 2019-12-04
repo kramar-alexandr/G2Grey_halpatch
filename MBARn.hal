@@ -1,3 +1,4 @@
+// проверить. Попробоать оставить как есть
 external procedure GetAccountDescription2(string,string,var string);
 external procedure FindFiscalYear(Date,var Date,var Date);
 external function Integer GetVATLaw();
@@ -11,7 +12,9 @@ external procedure ListPerTrans(record RcVc);
 external procedure GetAccDCBalance(string,string,Date,record ObjBalVc,Integer,Integer,Integer,string,var val,var val,Integer);
 external procedure AnalyticalGroup(record RcVc);
 external procedure ClearAcums();
-// 62s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:48:14
+	// 62s
 function string 3 GetLast3Symb(string obj)
 BEGIN
 string 3 res;
@@ -24,7 +27,9 @@ GetLast3Symb=res;
   RETURN;
 END;
 // 62e
-procedure GetMonthText(Date td,var string res)
+
+	// Edit End ---------------------------------------------- Edit End
+	procedure GetMonthText(Date td,var string res)
 BEGIN
   res = USetStr(2780+GetMonth(td));
   RETURN;
@@ -46,7 +51,7 @@ BEGIN
   record ObjBalVc ObjBalr;
   Boolean objfnd,testf;
   Integer keys;
-  val t,dv,cv,sdv,scv,edv,ecv,fdv,fcv,bval; // 62
+  val t,dv,cv,sdv,scv,edv,ecv,fdv,fcv,bval; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:48:19
   Date fwddate;
   record AccVc Accr;
   integer ovst;// Edit ************************** Monday, 24 December 2012 13:48:50
@@ -86,7 +91,7 @@ BEGIN
       end;          
       if (testf) then begin
         t = blankval;
-        GetAccDCBalance(ObjBalr.AccNumber,ObjBalr.Object,AddDay(RepSpec.sStartDate,-1),ObjBalr,RepSpec.SimVerf,RepSpec.basecurncy,0,RepSpec.CurncyCode,sdv,scv,RepSpec.flags[6]); // 62
+        GetAccDCBalance(ObjBalr.AccNumber,ObjBalr.Object,AddDay(RepSpec.sStartDate,-1),ObjBalr,RepSpec.SimVerf,RepSpec.basecurncy,0,RepSpec.CurncyCode,sdv,scv,RepSpec.flags[6]); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:48:29
         GetAccDCBalance(ObjBalr.AccNumber,ObjBalr.Object,RepSpec.sEndDate,ObjBalr,RepSpec.SimVerf,RepSpec.basecurncy,0,RepSpec.CurncyCode,edv,ecv,RepSpec.flags[6]);
         dv = edv - sdv;
         cv = ecv - scv;
@@ -105,7 +110,9 @@ BEGIN
         if ((dv!=0) or (cv!=0) or (fdv!=0) or (fcv!=0)) then begin
           Objr.Code = ObjBalr.Object;
           if (ReadFirstMain(Objr,1,true)) then begin end;
-            if (GetLast3Symb(ObjBalr.Object)!="::S") then begin // 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:48:44
+	            if (GetLast3Symb(ObjBalr.Object)!="::S") then begin // 62
             		if(bval!=0 or dv!=0 or cv!=0 or (fdv-fcv)!=0 or (edv-ecv)!=0)then begin// Edit ************************** Monday, 24 December 2012 12:19:18
 									ovst = Objr.TerminateFlag;
 									/*StartFormat(15);
@@ -147,7 +154,9 @@ BEGIN
 								EndFormat;
               end;// Edit ************************** Monday, 24 December 2012 12:19:20
             end;
-        end;
+
+	// Edit End ---------------------------------------------- Edit End
+	        end;
       end;
     end;
   end; // 62
@@ -155,12 +164,12 @@ BEGIN
 END;
 
 procedure MBALine(record RcVc RepSpec,string accnr,string comment,var val sbdp,var val sbcp,var val pdp,var val pcp,
-                  var val adp,var val acp,var val asdp,var val ascp,Integer lmod,string dblstr,var val stde,var val stcr,val lade,val lacr) // 62
+                  var val adp,var val acp,var val asdp,var val ascp,Integer lmod,string dblstr,var val stde,var val stcr,val lade,val lacr) // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:06
 BEGIN
-  val sbal,bval; // 62
+  val sbal,bval; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:10
   Integer screen;
   
-  bval=0; // 62
+  bval=0; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:14
   screen = 6;
   sbal = sbdp + sbcp;
   if (lmod==1) then begin
@@ -168,31 +177,37 @@ BEGIN
     OutString(0,dblstr,accnr,false);
     OutString(2,0,comment,false);
     if ((RepSpec.Media==screen) and (RepSpec.flags[9]==1)) then begin
-      if stde+stcr>=0 then begin
-      OutVal(190,0,stde+stcr,M4DVal,true);
-      OutVal(8,0,bval,M4Val,true);
+      if stde+stcr>=0 then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:27
+      OutVal(190,0,stde+stcr,M4DVal,true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:26
+      OutVal(8,0,bval,M4Val,true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:27
       end else begin
-      OutVal(190,0,bval,M4Val,true);
-      OutVal(8,0,stcr+stde,M4CVal,true);
-          end;
-      if pdp==blankval then begin
-      pdp=0;
-      end;
-      if pcp==blankval then begin
-      pcp=0;
+      OutVal(190,0,bval,M4Val,true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:34
+      OutVal(8,0,stcr+stde,M4CVal,true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:35
+          end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:35
+      if pdp==blankval then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:36
+      pdp=0;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:36
+      end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:36
+      if pcp==blankval then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:37
+      pcp=0;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:49:37
       end;
       OutVal(3,0,pdp,M4Val,true);
       //trace(pcp,"cr1");
       OutVal(5,0,pcp,M4NegVal,true);
-      if lade+lacr>=0 then begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:49:47
+	      if lade+lacr>=0 then begin
 	  OutVal(7,0,lade+lacr,M4DVal,true); 
 	  OutVal(1,0,bval,M4Val,true); 
 	  end else begin
 	  OutVal(7,0,bval,M4DVal,true); 
 	  OutVal(1,0,lacr+lade,M4CVal,true); 
           end;
-    end else begin
-      
+
+	// Edit End ---------------------------------------------- Edit End
+	    end else begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:49:52
+	      
       if stde+stcr>=0 then begin
       OutVal(450 - (47*6),0,stde+stcr,M4DVal,true);
       OutVal(8,0,bval,M4Val,true);
@@ -206,10 +221,12 @@ BEGIN
       if pcp==blankval then begin
       pcp=0;
       end;
-      OutVal(3,0,pdp,M4Val,true);
+
+	// Edit End ---------------------------------------------- Edit End
+	      OutVal(3,0,pdp,M4Val,true);
       //trace(pcp,"cr2");
       OutVal(4,0,pcp,M4NegVal,true);
-  /*    if nonblank(adp) then begin
+  /*    if nonblank(adp) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:01
       OutVal(5,0,adp,M4Val,true);
       end else begin
         OutString(5,0," ",true);
@@ -218,20 +235,20 @@ BEGIN
       OutVal(6,0,acp,M4NegVal,true);
       end else begin
         OutString(6,0," ",true);
-        end;*/
-      if lade+lacr>=0 then begin
-      OutVal(7,0,lade+lacr,M4DVal,true);
-      OutVal(1,0,bval,M4Val,true);
-      end else begin
-      OutVal(7,0,bval,M4Val,true);
-      OutVal(1,0,lacr+lade,M4CVal,true);
-        end;
+        end;*/// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:02
+      if lade+lacr>=0 then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:12
+      OutVal(7,0,lade+lacr,M4DVal,true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:13
+      OutVal(1,0,bval,M4Val,true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:12
+      end else begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:11
+      OutVal(7,0,bval,M4Val,true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:11
+      OutVal(1,0,lacr+lade,M4CVal,true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:10
+        end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:10
       if (nonblank(comment)) then begin
-        AddToAccumulator(0,stde);      
+        AddToAccumulator(0,stde);   // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:18   
         AddToAccumulator(1,pdp);      
         AddToAccumulator(2,-pcp);
 
-        AddToAccumulator(3,stde);      
+        AddToAccumulator(3,stde);    // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:23  
         AddToAccumulator(4,pdp);      
         AddToAccumulator(5,-pcp);  
       end;
@@ -276,27 +293,27 @@ BEGIN
   record BaseCurBlock BC;  
   BlockLoad(BC);
   
-  SetLangMode(LangUkrainian,"UKR",0);
+  SetLangMode(LangUkrainian,"UKR",0);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:30
   
-  screen = 6;
+  screen = 6;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:31
   if (RepSpec.flags[10]==0) then begin    
     StartFormat(15);
     OutString(0,0,USetStr(3462),false);
-    OutString(2,0,USetStr(3471),false);
-    if ((RepSpec.Media==screen) and (RepSpec.flags[9]==1)) then begin
+    OutString(2,0,USetStr(3471),false);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:36
+    if ((RepSpec.Media==screen) and (RepSpec.flags[9]==1)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:37
       OutString(220,0,USetStr(3468),true);
       OutString(3,0,USetStr(3463),true);
       OutString(5,0,USetStr(3464),true);
     end else begin
-      OutString(450 - (47*6),0,"Дебет на початок",true);
-      OutString(8,0,"Кредит на початок",true);
+      OutString(450 - (47*6),0,"Дебет на початок",true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:43
+      OutString(8,0,"Кредит на початок",true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:43
       OutString(3,0,USetStr(3463),true);
       OutString(4,0,USetStr(3464),true);
-    /*  OutString(5,0,USetStr(3465),true);
-      OutString(6,0,USetStr(3466),true);*/
+    /*  OutString(5,0,USetStr(3465),true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:47
+      OutString(6,0,USetStr(3466),true);*/// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:47
     end;
-    OutString(7,0,"Дебет на кінець",true);
-    OutString(1,0,"Кредит на кінець",true);
+    OutString(7,0,"Дебет на кінець",true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:51
+    OutString(1,0,"Кредит на кінець",true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:52
     EndFormat;
   end else begin
     if ((RepSpec.Media==6) and (RepSpec.flags[9]==1)) then begin
@@ -331,14 +348,16 @@ BEGIN
       OutString(8,0,USetStr(3473),true);
       OutString(3,0,USetStr(3472),true);
       OutString(4,0,USetStr(3473),true);
-    /*  OutString(5,0,USetStr(3472),true);
-      OutString(6,0,USetStr(3473),true);*/
+    /*  OutString(5,0,USetStr(3472),true);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:55
+      OutString(6,0,USetStr(3473),true);*/// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:50:56
       OutString(7,0,USetStr(3472),true);
       OutString(1,0,USetStr(3473),true);
       EndFormat;
     end;
   end;  
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:51:09
+	
   tstr = USetStr(2513);
   if (repspec.basecurncy==0) then begin
     tstr=tstr & BC.BaseCur1;
@@ -351,6 +370,8 @@ BEGIN
   OutString(0,0,tstr,false);
   EndFormat;
 
+	// Edit End ---------------------------------------------- Edit End
+	
   Gray_Divider(0,1);
   RETURN;
 END;
@@ -476,10 +497,10 @@ BEGIN
   record SMVc SMr;
   row SMVc SMrw;
   LongInt mbarws;
-  val as,fws,dv,cv,stde,stcr,lade,lacr;
-  val sfwd,sfwc,spd,spc,sad,sac,sedb,secb,sstde,sstcr,slade,slacr;
-  val tfwd,tfwc,tpd,tpc,tad,tac,tedb,tecb,tstde,tstcr,tlade,tlacr;
-  val ufwd,ufwc,upd,upc,uad,uac,uedb,uecb,ustde,ustcr,ulade,ulacr;
+  val as,fws,dv,cv,stde,stcr,lade,lacr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:51:16
+  val sfwd,sfwc,spd,spc,sad,sac,sedb,secb,sstde,sstcr,slade,slacr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:51:17
+  val tfwd,tfwc,tpd,tpc,tad,tac,tedb,tecb,tstde,tstcr,tlade,tlacr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:51:18
+  val ufwd,ufwc,upd,upc,uad,uac,uedb,uecb,ustde,ustcr,ulade,ulacr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:51:18
   Boolean first;
   string 1 lastgroup;
   string 10 lastsub,newsub;
@@ -630,14 +651,14 @@ L22:;
     newsub = Left(SMrw.AccNumber,RepSpec.FirstVer);   
     if (first==false) then begin
       if (newsub<>lastsub) then begin
-        if (subaccCnt>1) then begin
+        if (subaccCnt>1) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:51:42
           if (RepSpec.flags[8]<>0) then begin
             if (RepSpec.flags[1]==0) then begin
               if (lmod==1) then begin
                 Gray_Divider(2,1);
               end;  
             end;
-            MBALine(RepSpec,USetStr(3478),lastsub,ufwd,ufwc,upd,upc,uad,uac,uedb,uecb,lmod,"DblNL",ustde,ustcr,ustde+upd,ustcr+upc);
+            MBALine(RepSpec,USetStr(3478),lastsub,ufwd,ufwc,upd,upc,uad,uac,uedb,uecb,lmod,"DblNL",ustde,ustcr,ustde+upd,ustcr+upc);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:51:51
             if (RepSpec.flags[1]==0) then begin
               if (lmod==1) then begin
                 StartFormat(10);
@@ -654,11 +675,15 @@ L22:;
         uac = 0;
         uedb = 0;
         uecb = 0;
-        ustde = 0;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:51:57
+	        ustde = 0;
         ustcr = 0;
         ulade = 0;
         ulacr = 0;
-        subaccCnt = 0;
+
+	// Edit End ---------------------------------------------- Edit End
+	        subaccCnt = 0;
       end;
       if (CharacterMatch(lastgroup,Accr.AccNumber,1)==false) then begin
         if ((RepSpec.flags[10]==0) or (RepSpec.flags[0]==1))  then begin        
@@ -672,7 +697,7 @@ L22:;
           tstr = tstr & lastgroup;
           tstr = tstr & "'";
           if (tpd!=0) or (tpc!=0) or (tad!=0) or (tac!=0) or (tfwd!=0) or (tfwc!=0) then begin
-            MBALine(RepSpec,tstr,blankstr,tfwd,tfwc,tpd,tpc,tad,tac,tedb,tecb,lmod,"",tstde,tstcr,tstde+tpd,tstcr+tpc);
+            MBALine(RepSpec,tstr,blankstr,tfwd,tfwc,tpd,tpc,tad,tac,tedb,tecb,lmod,"",tstde,tstcr,tstde+tpd,tstcr+tpc);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:52:02
           end;
         end;  
         if (RepSpec.flags[1]==0) then begin
@@ -689,11 +714,15 @@ L22:;
         tac = 0;
         tedb = 0;
         tecb = 0;
-        tstde = 0;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:52:06
+	        tstde = 0;
         tstcr = 0;
         tlade = 0;
         tlacr = 0;
-      end;
+
+	// Edit End ---------------------------------------------- Edit End
+	      end;
     end;
     first = false;
     subaccCnt = subaccCnt +1 ;
@@ -709,52 +738,64 @@ L22:;
     sac = sac + SMrw.CurCredVal;//AccCred
     AddDebCred(as,sedb,secb);
     AddDebCred(fws,sfwd,sfwc);
-    sstde = sstde + SMrw.DebVal;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:52:11
+	    sstde = sstde + SMrw.DebVal;
     sstcr = sstcr + SMrw.CredVal;
     slade = slade + SMrw.CurDebVal;
     slacr = slade + SMrw.CurCredVal;
 
+	// Edit End ---------------------------------------------- Edit End
+	
     tpd = tpd + SMrw.DebVal2;//PerDeb
     tpc = tpc + SMrw.CredVal2;//PerCred
     tad = tad + SMrw.CurDebVal;//AccDeb
     tac = tac + SMrw.CurCredVal;//AccCred
     AddDebCred(as,tedb,tecb);
     AddDebCred(fws,tfwd,tfwc);
-    tstde = tstde + SMrw.DebVal;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:52:15
+	    tstde = tstde + SMrw.DebVal;
     tstcr = tstcr + SMrw.CredVal;
     tlade = tlade + SMrw.CurDebVal;
     tlacr = tlade + SMrw.CurCredVal;
    
-    upd = upd + SMrw.DebVal2;//PerDeb
+
+	// Edit End ---------------------------------------------- Edit End
+	    upd = upd + SMrw.DebVal2;//PerDeb
     upc = upc + SMrw.CredVal2;//PerCred
     uad = uad + SMrw.CurDebVal;//AccDeb
     uac = uac + SMrw.CurCredVal;//AccCred
     AddDebCred(as,uedb,uecb);
-    AddDebCred(fws,ufwd,ufwc);  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:52:19
+	    AddDebCred(fws,ufwd,ufwc);  
     ustde = ustde + SMrw.DebVal;
     ustcr = ustcr + SMrw.CredVal;
     ulade = ulade + SMrw.CurDebVal;
     ulacr = ulade + SMrw.CurCredVal;
 
-    if (RepSpec.flags[1]==0) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	    if (RepSpec.flags[1]==0) then begin
       GetAccountDescription2(Accr.AccNumber,RepSpec.Language,accname);        
       if (RepSpec.flags[14]!=0) then begin
         accname = Left(accname,15);
       end;      
       if (SMrw.DebVal2!=0) or (SMrw.CredVal2!=0) or (SMrw.CurDebVal!=0) or (SMrw.CurCredVal!=0) or (fws!=0) then begin
-       MBALine(RepSpec,SMrw.AccNumber,accname,fws,fws,SMrw.DebVal2,SMrw.CredVal2,SMrw.CurDebVal,SMrw.CurCredVal,as,as,lmod,"DblNL",SMrw.DebVal,SMrw.CredVal,SMrw.CurDebVal+SMrw.DebVal,SMrw.CurCredVal+SMrw.CredVal);
+       MBALine(RepSpec,SMrw.AccNumber,accname,fws,fws,SMrw.DebVal2,SMrw.CredVal2,SMrw.CurDebVal,SMrw.CurCredVal,as,as,lmod,"DblNL",SMrw.DebVal,SMrw.CredVal,SMrw.CurDebVal+SMrw.DebVal,SMrw.CurCredVal+SMrw.CredVal);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:52:26
       end;
     end; 
 L44:;
   end;
-  if (subaccCnt>1) then begin
+  if (subaccCnt>1) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:52:32
     if (RepSpec.flags[8]<>0) then begin
       if (RepSpec.flags[1]==0) then begin
         if (lmod==1) then begin
           Gray_Divider(2,1);
         end;  
       end; 
-      MBALine(RepSpec,blankstr,blankstr,ufwd,ufwc,upd,upc,uad,uac,uedb,uecb,lmod,"DblNL",ustde,ustcr,upd+ustde,upc+ustcr);
+      MBALine(RepSpec,blankstr,blankstr,ufwd,ufwc,upd,upc,uad,uac,uedb,uecb,lmod,"DblNL",ustde,ustcr,upd+ustde,upc+ustcr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:52:36
       if (RepSpec.flags[1]==0) then begin
         if (lmod==1) then begin
           StartFormat(10);
@@ -773,7 +814,7 @@ L44:;
     tstr = tstr & gstr;
     tstr = tstr & lastgroup;    
     tstr = tstr & "'";    
-    MBALine(RepSpec,tstr,blankstr,tfwd,tfwc,tpd,tpc,tad,tac,tedb,tecb,lmod,"",tstde,tstcr,tstde+tpd,tstcr+tpc);
+    MBALine(RepSpec,tstr,blankstr,tfwd,tfwc,tpd,tpc,tad,tac,tedb,tecb,lmod,"",tstde,tstcr,tstde+tpd,tstcr+tpc);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:52:42
   end;  
   if (RepSpec.flags[1]==0) then begin
     if (lmod==1) then begin
@@ -785,7 +826,7 @@ L44:;
   if (lmod==1) then begin
     Gray_Divider(0,1);
   end;  
-  MBALine(RepSpec,blankstr,blankstr,sfwd,sfwc,spd,spc,sad,sac,sedb,secb,lmod,"DblNL",sstde,sstcr,sstde+spd,sstcr+spc);
+  MBALine(RepSpec,blankstr,blankstr,sfwd,sfwc,spd,spc,sad,sac,sedb,secb,lmod,"DblNL",sstde,sstcr,sstde+spd,sstcr+spc);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:52:45
   end; /* ArtMode */
   if (RepSpec.flags[4]<>0) then begin 
     if (lmod==1) then begin

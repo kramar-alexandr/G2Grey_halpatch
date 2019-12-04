@@ -1,6 +1,6 @@
-external outer function Integer TestAcceptanceStatus(Integer);
-external procedure GetPRName(string,var string);
-external procedure TBBUSumup(var record TBBUVc);
+external outer function Integer TestAcceptanceStatus(Integer);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:58:02
+external procedure GetPRName(string,var string);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:58:03
+external procedure TBBUSumup(var record TBBUVc);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:58:03
 external procedure FillupTaxMatrix(string,string,string,string,var record TaxMatrixVc);
 external procedure RemoveOldProjectObjects(string,var string);
 external function Boolean HasSalesmanChanged(string,string);
@@ -395,7 +395,7 @@ BEGIN
       QTGetCalcItemPrice(INr,QTr,rownr,temp);
       MatRowGet(QTr,rownr,QTrw);
     end;
-    //PackRowFieldMatrix(QTrw,"TaxMatrix",TMr);
+    //PackRowFieldMatrix(QTrw,"TaxMatrix",TMr);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:57:56
     MatRowPut(QTr,rownr,QTrw);
     chrsum = true;
     QTMultiLineText(QTr,INr,QTr.LangCode,rownr);
@@ -435,12 +435,14 @@ BEGIN
   record QTMailBlock QTMailr;
   Integer line;
   string 255 docname,fname;
-  record UserVc USr;
-  SetLangMode(LangUkrainian,"UKR",0);// 62
+  record UserVc USr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:57:52
+  SetLangMode(LangUkrainian,"UKR",0);// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:57:52
   res = 0;
   if (ReadFirstMain(QTr,0,true)) then begin end;  
   TAB = chr(9);
-  // FindUserMailboxName(CurrentUser,mailboxnr,tstr);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:58:14
+	  // FindUserMailboxName(CurrentUser,mailboxnr,tstr);
   // if (blank(tstr)) then begin
     // res = 22010;
     // warning = CurrentUser;
@@ -449,14 +451,18 @@ BEGIN
   //MArw.AddrCode = tstr;
   
   MArw.AddrCode = "hansa@g2.com";//SAV 6016
-  MArw.RowTyp = 1;
+
+	// Edit End ---------------------------------------------- Edit End
+	  MArw.RowTyp = 1;
   
   MatRowPut(Mailr,0,MArw);
   BlockLoad(QTMailr);
   CUr.Code = QTr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin end;
   MArw.RowTyp = 0;
-  // MArw.AddrCode = CUr.eMail;
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:58:28
+	  // MArw.AddrCode = CUr.eMail;
   // if (nonblank(QTr.CustContact)) then begin
     // if (FindCustomerRelation(CUr.Code,QTr.CustContact,ContactCUr)) then begin
       // if (nonblank(ContactCUr.eMail)) then begin
@@ -476,11 +482,15 @@ BEGIN
 	USr.Code = "FD";
 	if (ReadFirstMain(USr,1,true)) then begin end;
 	tstr = USr.emailAddr;
-  end;
-  MArw.AddrCode = tstr;//SAV 6016
-  MArw.RowTyp = 0;
+
+	// Edit End ---------------------------------------------- Edit End
+	  end;
+  MArw.AddrCode = tstr;//SAV 6016// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:58:34
+  MArw.RowTyp = 0;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:58:35
   MatRowPut(Mailr,1,MArw);
-  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:58:38
+	  
   MArw.AddrCode = "";
   CUr.Code = QTr.CustCode;
   if (ReadFirstMain(CUr,1,true)) then begin end;
@@ -498,7 +508,9 @@ BEGIN
    end;
   
   
-  Mailr.Header = QTMailr.Header & " " & USetStr(1199);
+
+	// Edit End ---------------------------------------------- Edit End
+	  Mailr.Header = QTMailr.Header & " " & USetStr(1199);
   Mailr.Header = Mailr.Header & QTr.SerNr;
   LTxtr.Code = QTMailr.FirstTxt;
   if (ReadFirstMain(LTxtr,1,true)) then begin
@@ -515,12 +527,16 @@ BEGIN
   LineTextPut(Mailr,line,tstr);
   line = line + 1;
   rwcnt = MatRowCnt(QTr);
-  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:58:43
+	  
   tstr = "Товар" & TAB & TAB & "К-сть" &  TAB & TAB & "Наймен." & TAB & TAB & "Ціна" & TAB & TAB & "Сума";
   LineTextPut(Mailr,line,tstr);
   
    line = line + 1;
-  for (i=0;i<rwcnt;i=i+1) begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(QTr,i,QTrw);
     switch (QTrw.stp) begin
       case 10:
@@ -737,7 +753,7 @@ END;
 
 
 global 
-updating procedure CreateTBBUFromQTDsm()
+updating procedure CreateTBBUFromQTDsm()// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:59:08
 BEGIN
   Integer wn,nwn,err;
   record QTVc QTr;
@@ -772,6 +788,8 @@ BEGIN
   end;      
   RETURN;
 END;
+
+
 global 
 procedure QTDUpdatePrices(var record QTVc QTr,Boolean readf)
 

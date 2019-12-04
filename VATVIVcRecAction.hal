@@ -231,8 +231,8 @@ BEGIN
   Integer err;
   Boolean gentrans;
   string 255 tstr;
-  record OperTypeVc OpTr;
-  record VICredRowsVc Credr;
+  record OperTypeVc OpTr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:26:08
+  record VICredRowsVc Credr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:26:09
   
   res = 0;
   insertmode = 1;//Rs_insert
@@ -255,13 +255,17 @@ BEGIN
   end;  
   if (VATVIp.Invalid==0) then begin
   if ((VATVI2p.OKFlag==1) and (stat==updatemode)) then begin
-  	if(VATVIp.OKFlag==0)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 16 April 2019 17:18:04
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:26:14
+	  	if(VATVIp.OKFlag==0)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 16 April 2019 17:18:04
 			if (AllowOKingOKedVATVI(VATVIp,VATVI2p)) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 16 April 2019 15:47:10
 				goto LVATVIVcRecordCheck;
 			end;
 			res = -1;
 			goto LVATVIVcRecordCheck;
-    end;
+
+	// Edit End ---------------------------------------------- Edit End
+	    end;
   end;  
   end;  
   transf = false;
@@ -348,7 +352,9 @@ BEGIN
     end;
   end;
   if (gentrans==false) then begin transf = false; end;
-    // SAV Gray-5 2011_01_03 
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:27:03
+	    // SAV Gray-5 2011_01_03 
   OpTr.Type = VATVIp.OperType;
   if ReadFirstMain(OpTr,1,true) then begin
 		if (OpTr.Rule==1) then begin
@@ -356,7 +362,9 @@ BEGIN
 		end;
   end;
   //
-  if (transf) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  if (transf) then begin
     err = 0;
     if (VATVIp.TransDate>=VIr.TransDate) then begin
       err = MakeTransFromVATVI(gTRp,VATVIp,false);

@@ -166,7 +166,7 @@ BEGIN
     end;  
     OPrw.VEName = VEr.Name;// Edit ************************** Monday, 6 November 2017 13:36:08  
     if(nonblank(VEr.Comment0))then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 30 January 2018 17:23:12
-    	t1 = VEr.Comment0;
+    	t1 = VEr.Comment0;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 11:40:25
     end;
   end;
   OPrw.BankAcc = t2;
@@ -406,10 +406,14 @@ BEGIN
   if (ReadFirstMain(VEr,1,true)) then begin  
     OPrw.VECode = VEr.Code;
     OPrw.Comment = VEr.Name;
-    if(nonblank(VEr.Comment0))then begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:40:28
+	    if(nonblank(VEr.Comment0))then begin
     	OPrw.Comment = VEr.Comment0;
     end;
-    OPrw.PInvVal = tot;
+
+	// Edit End ---------------------------------------------- Edit End
+	    OPrw.PInvVal = tot;
     OPrw.PInvCurncy = VEr.VECurncyCode;
     OPrw.BankVal = tot;
     OPrw.BankCurncy = VEr.VECurncyCode;
@@ -636,12 +640,16 @@ BEGIN
   if (ReadFirstMain(POr,1,true)) then begin
     oprp.VECode = POr.VECode;
     oprp.Comment = POr.Addr0;
-    
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 11:40:32
+	    
     if(nonblank(POr.Comment))then begin// Edit ************************** Friday, 3 November 2017 14:09:17
     	oprp.Comment = POr.Comment;
     end;
     
-    VEr.Code = POr.VECode;
+
+	// Edit End ---------------------------------------------- Edit End
+	    VEr.Code = POr.VECode;
     objstr = POr.Objects;
     if (ReadFirstMain(VEr,1,true)) then begin
       oprp.BankAcc = VEr.BankAccount;

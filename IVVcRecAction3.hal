@@ -1,3 +1,4 @@
+//no changes
 external procedure FindStockValueAtPosition(string,string,string,var record PISVc);
 external function Boolean ShouldInvoiceRowUpdateStock(record IVVc,row IVVc);
 external function Boolean AllowedToTakeFromThisLoc(record LocationVc);

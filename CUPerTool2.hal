@@ -1,3 +1,4 @@
+//no changes
 external function Boolean IsPrepaymentOpen(Date,LongInt,var val);
 external function Boolean CheckIfIVOpen(Date,record IVVc,string,var val,Boolean,Boolean);
 external procedure InitCurncyTotals(var array string,var array val,Integer);

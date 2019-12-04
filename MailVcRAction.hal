@@ -7,7 +7,7 @@ external procedure SetMailForward(record MailVc);
 external procedure FindCurMailboxName(var string);
 external procedure GetMailFormattingSettings(record MailVc,var record ConfVc);
 external function string 255 CleanupUTF8String(string);
-external function Boolean RecordAction_raEMailQue(var record MailVc,Boolean);
+external function Boolean RecordAction_raEMailQue(var record MailVc,Boolean);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:02:24
 
 global
 procedure ResolveMailboxNumber(var row MailVc mailrw)
@@ -714,11 +714,15 @@ begin
   record ActVc Actr;
   //EMAil
   
-  //TestAndDeleteMail(Mailp);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 12:02:35
+	  //TestAndDeleteMail(Mailp);
   if (Mailp.SendFlag!=0) then begin
     RecordAction_raEMailQue(Mailp,false);
   end;
-  if (AutoSyncing==false or ServerMode) then begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  if (AutoSyncing==false or ServerMode) then begin
     if (Mailp.SendFlag!=0) then begin
       res = MakeActFromSubSys_MailVc(Mailp,Actr,false);
     end;

@@ -1,13 +1,4 @@
-remote procedure FEVIVc_PasteAccNumber(var record FEVIVc,Integer);remote procedure FEVIVc_PasteVECode(var record FEVIVc,var string,string);remote outer procedure SumUpFEVIVcM(record FEVIVc,var val,var val,var val); // 62function Boolean FEVIDClassVECodeEFAfter(Integer wn,Integer changedf)begin  record FEVIVc FEVIr;  row FEVIVc FEVIrw;  Integer rwcnt;  string 255 vewarn;  if (changedf!=0) then begin      GetWindowRecord(wn,FEVIr);    DeselectWindow(wn,false);    FEVIVc_PasteVECode(FEVIr,vewarn,"");    if (nonblank(vewarn)) then begin          MessageBox(0,vewarn);    end;    PutWindowRecord(wn,FEVIr);  end;  FEVIDClassVECodeEFAfter = true;  return;end;function Boolean FEVIDClassAccNumberEFAfter(Integer wn,Integer fn,Integer rownr,Integer changedf)begin  record FEVIVc FEVIr;  if (changedf!=0) then begin     GetWindowRecord(wn,FEVIr);    DeselectWindow(wn,false);    FEVIVc_PasteAccNumber(FEVIr,rownr);    PutWindowRecord(wn,FEVIr);  end;  FEVIDClassAccNumberEFAfter = true;  return;end;// 62sfunction Boolean FEVIDClassSumEFAfter(Integer wn,Integer changedf)begin  record FEVIVc FEVIr;  if (changedf!=0) then begin      GetWindowRecord(wn,FEVIr);    DeselectWindow(wn,false);    SumUpFEVIVcM(FEVIr,FEVIr.Sum1,FEVIr.VATVal,FEVIr.TAXAdv);
-    FEVIr.Sum2=FEVIr.Sum1+FEVIr.VATVal;
-    FEVIr.PayVal=FEVIr.Sum2+FEVIr.TAXAdv;
-    PutWindowRecord(wn,FEVIr);
-  end;
-  FEVIDClassSumEFAfter = true;
-  return;
-end;
-// 62e
-
+//возможно без обновленияremote procedure FEVIVc_PasteAccNumber(var record FEVIVc,Integer);remote procedure FEVIVc_PasteVECode(var record FEVIVc,var string,string);remote outer procedure SumUpFEVIVcM(record FEVIVc,var val,var val,var val); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:07:19function Boolean FEVIDClassVECodeEFAfter(Integer wn,Integer changedf)begin  record FEVIVc FEVIr;  row FEVIVc FEVIrw;  Integer rwcnt;  string 255 vewarn;  if (changedf!=0) then begin      GetWindowRecord(wn,FEVIr);    DeselectWindow(wn,false);    FEVIVc_PasteVECode(FEVIr,vewarn,"");    if (nonblank(vewarn)) then begin          MessageBox(0,vewarn);    end;    PutWindowRecord(wn,FEVIr);  end;  FEVIDClassVECodeEFAfter = true;  return;end;function Boolean FEVIDClassAccNumberEFAfter(Integer wn,Integer fn,Integer rownr,Integer changedf)begin  record FEVIVc FEVIr;  if (changedf!=0) then begin     GetWindowRecord(wn,FEVIr);    DeselectWindow(wn,false);    FEVIVc_PasteAccNumber(FEVIr,rownr);    PutWindowRecord(wn,FEVIr);  end;  FEVIDClassAccNumberEFAfter = true;  return;end;// Edit Start ---------------------------------------------- Edit Start	//Wednesday, 4 December 2019 14:07:33	// 62sfunction Boolean FEVIDClassSumEFAfter(Integer wn,Integer changedf)begin  record FEVIVc FEVIr;  if (changedf!=0) then begin      GetWindowRecord(wn,FEVIr);    DeselectWindow(wn,false);    SumUpFEVIVcM(FEVIr,FEVIr.Sum1,FEVIr.VATVal,FEVIr.TAXAdv);    FEVIr.Sum2=FEVIr.Sum1+FEVIr.VATVal;    FEVIr.PayVal=FEVIr.Sum2+FEVIr.TAXAdv;    PutWindowRecord(wn,FEVIr);  end;  FEVIDClassSumEFAfter = true;  return;end;// 62e	// Edit End ---------------------------------------------- Edit End	// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:09:36
 global
 updating function Boolean FEVIDClassAfterEditField(Integer wn,string fieldname,Integer fn, Integer rownr,Integer changed)
 BEGIN
@@ -175,4 +166,4 @@ begin
 LFEVIDClassDeleteRowTest:;  
   FEVIDClassDeleteRowTest = res;
   return;
-end;
+end;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 14:09:39

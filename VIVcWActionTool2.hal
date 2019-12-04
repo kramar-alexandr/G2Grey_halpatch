@@ -17,15 +17,15 @@ external procedure VICalcEReb(record VIVc);
 external procedure VIGetRate(var record VIVc);
 external function Boolean DateWarned(Date,string);
 external procedure CalcSum(val,val,val,val,var val,Integer);
-external outer function val GetCoefficient(string, string,date); // 62
+external outer function val GetCoefficient(string, string,date); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:20:53
 
 procedure CopyHeaderVIToFEVI(record VIVc VIr,var record FEVIVc FEVIr)
 BEGIN
   record VIVc orgVIr;
   Date blankd;
-  record BaseCurBlock BaseCurr; // 62
+  record BaseCurBlock BaseCurr; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:20:57
 
-  BlockLoad(BaseCurr); // 62
+  BlockLoad(BaseCurr); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:20:57
   if (VIr.InvType==3) then begin
     orgVIr.SerNr = VIr.CredInv;
     if (ReadFirstMain(orgVIr,1,true)) then begin
@@ -58,10 +58,10 @@ BEGIN
   FEVIr.VATVal = VIr.VATVal;
   FEVIr.CalcVATVal = VIr.CalcVATVal;
   FEVIr.HoldSum = VIr.HoldSum;
-  FEVIr.CurncyCode = BaseCurr.BaseCur1; // 62
-  FEVIr.FrRate = blankval;// 62
-  FEVIr.ToRateB1 = blankval;// 62
-  FEVIr.ToRateB2 = blankval;// 62
+  FEVIr.CurncyCode = BaseCurr.BaseCur1; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:01
+  FEVIr.FrRate = blankval;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:02
+  FEVIr.ToRateB1 = blankval;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:03
+  FEVIr.ToRateB2 = blankval;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:03
   FEVIr.BaseRate1 = VIr.BaseRate1;
   FEVIr.BaseRate2 = VIr.BaseRate2;
   FEVIr.InvType = VIr.InvType;
@@ -158,12 +158,12 @@ BEGIN
   row FEVIVc FEVIrw;
   Integer rwcnt;
   val sum,t;
-  Boolean createfeivf; // 62
-  record BaseCurBlock BaseCurr;// 62
-  string 20 currency; // 62
-  val coef;// 62
+  Boolean createfeivf; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:06
+  record BaseCurBlock BaseCurr;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:07
+  string 20 currency; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:08
+  val coef;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:08
 
-  BlockLoad(BaseCurr); // 62
+  BlockLoad(BaseCurr); // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:11
   rwcnt = MatRowCnt(VIr);
   if (rownr<rwcnt) then begin
     MatRowGet(VIr,rownr,VIrw);
@@ -177,16 +177,16 @@ BEGIN
       sum = FEVISum(VIr.SerNr,FEVIr.SerNr,rownr);
     end;
     sum = VIrw.Sum - sum;
-    currency=VIr.CurncyCode;// 62
-    coef=GetCoefficient(BaseCurr.BaseCur1,currency,VIr.TransDate);  // 62    
-	 if (sum<=0) then begin goto LPasteVIRowToFEVI; end;  
+    currency=VIr.CurncyCode;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:15
+    coef=GetCoefficient(BaseCurr.BaseCur1,currency,VIr.TransDate);  // 62   // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:16 
+	 if (sum<=0) then begin goto LPasteVIRowToFEVI; end;  // Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:16
     ClearRow(FEVIr,FEVIrw,VIrw.stp);
     FEVIrw.stp = VIrw.stp;
     FEVIrw.ovst = VIrw.ovst;
     FEVIrw.AccNumber = VIrw.AccNumber;
     FEVIrw.Objects = VIrw.Objects;
     FEVIrw.Comment = VIrw.Comment;
-    FEVIrw.Sum = sum/coef;// 62
+    FEVIrw.Sum = sum/coef;// 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:21:19
     FEVIrw.PrepayAmount = VIrw.PrepayAmount;
     FEVIrw.VATVal = VIrw.VATVal;
     FEVIrw.qty = VIrw.qty;

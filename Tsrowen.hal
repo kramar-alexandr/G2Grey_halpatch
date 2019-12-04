@@ -1,10 +1,13 @@
+//проверить, переносить как есть
 procedure OutTSRows(record TSVc TSp, Integer fl1)
 begin
   Integer i,rwcnt;
   row TSVc TSrw;
-  record PRVc PRr,oldPRr;
+  record PRVc PRr,oldPRr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:36:53
   Boolean testf;
-  record UserVc USr;// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 13:39:57
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:36:59
+	  record UserVc USr;// Edit ************************** BPI Ukraine - KramarAlexandr - Friday, 30 March 2018 13:39:57
   string 255 username,department,role,prclname,brand,mothercode;
   string 255 subpr,subprname;
 	record INVc INr;
@@ -17,7 +20,9 @@ begin
 	blockload(PRClassb);
 	prcnt = matrowcnt(PRClassb);
 	
-  rwcnt = MatRowCnt(TSp);
+
+	// Edit End ---------------------------------------------- Edit End
+	  rwcnt = MatRowCnt(TSp);
   for (i = 0 ; i<rwcnt ;i=i+1) begin
     MatRowGet(TSp,i,Tsrw);
     testf = true;
@@ -27,7 +32,9 @@ begin
     if (testf) then begin
       PRr.Code = TSrw.PRCode;
       if ReadFirstMain(PRr,1,true) then begin
-        
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:37:10
+	        
         For(j=0;j<prcnt;j=j+1) begin
 	  			matrowget(PRClassb,j,PRClassrw);
 	  			if(PRr.PRClass==PRClassrw.Code)then begin
@@ -108,11 +115,15 @@ lprfound:;
         OutString(0,0,PRr.Text0,false);       
         
         /*ExportLongInt(TSp.SerNr);
-        ExportDate(TSp.RegDate);
-        OutString(0,0,TSrw.PRCode);
+
+	// Edit End ---------------------------------------------- Edit End
+	        ExportDate(TSp.RegDate);
+        OutString(0,0,TSrw.PRCode);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:37:22
         
         ExportVal(TSrw.Qty,M4Qty);
-        OutString(0,0,PRr.CustCode);
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:37:28
+	        OutString(0,0,PRr.CustCode);
         OutString(0,0,TSrw.ArtCode);
         OutString(0,0,TSrw.Spec);
         OutString(0,0,PRr.PRClassification);
@@ -132,7 +143,9 @@ lprfound:;
         OutString(0,0,TSrw.TimeClass);Description
         OutString(0,0,TSrw.Objects);JN*/
         //************
-        NewLine;
+
+	// Edit End ---------------------------------------------- Edit End
+	        NewLine;
       end;
     end;
   end;
@@ -150,7 +163,9 @@ begin
   tonr = LastInRange(RepSpec.f1,20);
   MR.SerNr = frnr;
   TrHs = true;
-  
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:37:33
+	  
   
   exportstring("#");
   exportstring("Date");
@@ -172,7 +187,9 @@ begin
 	exportstring("Cosmos ID");
 	
   NewLine;
-  while (TrHs == LoopMain(MR,1,TrHs)) begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  while (TrHs == LoopMain(MR,1,TrHs)) begin
     testf = true;
     if (TrHs) then begin
       if (tonr<>-1) then begin
@@ -196,7 +213,9 @@ begin
   return;
 end;
 
-
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:37:38
+	
 global
 procedure TSRowRn(record RcVc RepSpec)
 begin
@@ -242,3 +261,6 @@ begin
   return;
 end;
 
+
+	// Edit End ---------------------------------------------- Edit End
+	

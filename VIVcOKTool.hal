@@ -1,3 +1,4 @@
+//no customization
 external procedure TBIVGetRate(var record TBIVVc);
 external procedure Base1ToOther(var string,val,val,val,val,val,val,var val,roundmode);
 external function val DivRateToBase1(string,val,val,val,val,val,val,roundmode);

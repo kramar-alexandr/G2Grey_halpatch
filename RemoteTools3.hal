@@ -28,7 +28,7 @@ external procedure Bud2AccObjCalc(var record Bud2Vc);
 external procedure Bud2Sumup(var record Bud2Vc);
 external updating procedure AssignStockResFromPO(record POVc);
 external function Boolean ActVc_ShouldAttachPdfToEMail(record ActVc);
-external procedure ExtractObj(string,var Integer,var string);
+external procedure ExtractObj(string,var Integer,var string);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:55:23
 
 
 global
@@ -1074,7 +1074,7 @@ BEGIN
   string 255 docname,fname;
   record UserVc Userr;// Edit ************************** Tuesday, 2 October 2012 13:58:51
   string 255 curstr,instr;// Edit ************************** Tuesday, 2 October 2012 13:58:50
-  record PRVc PRr;
+  record PRVc PRr;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:55:37
   
   if (IsRecordLocked(Actr)==false) then begin
 

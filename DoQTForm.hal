@@ -175,17 +175,21 @@ BEGIN
   val vatprc,vatval,vatexclprc,vatinclprc;
   record GeneralOptionBlock GenOptRec;
   record MainStockBlock MSb;
-  record UserVc USr; // 62
+  record UserVc USr; // 62// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 15:34:45
 
   BlockLoad(GenOptRec);
   BlockLoad(MSb);
-  // 62 s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:34:54
+	  // 62 s
   USr.Code=QTr.Authority;
   if ReadFirstMain(USr,1,true) then begin
     OUTFORMFIELD("F_SALESMANNAME",USr.Name); // "ПІБ_продавця" 6006
   end; 
   // 62 e
-  for (i=0;i<rwcnt;i=i+1) begin
+
+	// Edit End ---------------------------------------------- Edit End
+	  for (i=0;i<rwcnt;i=i+1) begin
     MatRowGet(QTr,i,QTrw);
     SetRowStyle(Docr,"QTVc",QTrw.stp,QTrw.ArtCode,QTrw.Sum);
     switch (QTrw.stp) begin
@@ -401,9 +405,13 @@ BEGIN
   Boolean printf,langf;
   Integer intdocnr;
   string 30 formcode,langcode;
-  record QuoteClassBlock QTClass; // 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:34:57
+	  record QuoteClassBlock QTClass; // 62
   row QuoteClassBlock QTClassr; // 62
-    
+
+	// Edit End ---------------------------------------------- Edit End
+	    
   BlockLoad(SysFormatRec);  
   BlockLoad(IIRec);
   FDr.repname = RepSpec.repname;
@@ -537,7 +545,9 @@ LBREAK:;
             GetUserName(QTr.SalesMan,tstr);
             OUTFORMFIELD("F_SALJARNAMN",tstr);
           end;  
-			 // 62 s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:35:00
+				 // 62 s
           if (FIELDINFORM("F_DESCRIPTION")) then begin
             PRr.Code=QTr.PRCode;
             if ReadFirstMain(PRr,1,true) then begin
@@ -551,7 +561,9 @@ LBREAK:;
             OUTFORMFIELD("F_RESPONSIBLEPERSONNAME",tstr);
           end;  
           // 62 e
-          PrintPersonsCustomerDetails(QTr.SalesMan);
+
+	// Edit End ---------------------------------------------- Edit End
+	          PrintPersonsCustomerDetails(QTr.SalesMan);
           PrintBranchData(QTr.BranchID);
           OUTFORMFIELD("F_ADRESSATT",QTr.Addr0);
           OUTFORMFIELD("F_ADRESSATT",QTr.CustContact);
@@ -619,7 +631,9 @@ LBREAK:;
             QTPrintNote(QTr,tstr);
           end;
           PrintQuotationRows(RepSpec,Docr,QTr,LangNrr,SysFormatRec,rwcnt2);
-			 // 62 s
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:35:03
+				 // 62 s
           if (FIELDINFORM("F_CLASS")) then begin
             BlockLoad(QTClass);
             i=0;
@@ -638,7 +652,9 @@ LBREAK:;
           end;
           // 62 e
       //    OUTFORMFIELD("F_CLASS",QTr.QuoteClass);   // 62        
-          OUTFORMFIELD("F_TAXSUM",QTr.TAX1Sum);          
+
+	// Edit End ---------------------------------------------- Edit End
+	          OUTFORMFIELD("F_TAXSUM",QTr.TAX1Sum);          
           OUTFORMFIELD("F_SUBTOTALWITHVAT",QTr.Sum3+QTr.Sum1);          
           QTSetFax(CUr,QTr);
           if (FIELDINFORM("F_PROJECTTEXT")) then begin
@@ -686,9 +702,13 @@ LBREAK:;
               end;
             end;
           end;
-			 tstr=QTr.FrRate & " : " & QTr.ToRateB1; // 62
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 15:35:06
+				 tstr=QTr.FrRate & " : " & QTr.ToRateB1; // 62
 			 OUTFORMFIELD("F_RATE",tstr); // 62
-          tstr = GetJwl_CustomerName(QTr.CustCode);
+
+	// Edit End ---------------------------------------------- Edit End
+	          tstr = GetJwl_CustomerName(QTr.CustCode);
           OUTFORMFIELD("F_KUNDNAMNJWL",tstr);
           OutFormImage(QTr);
           CloseForm;

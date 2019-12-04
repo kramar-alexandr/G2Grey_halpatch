@@ -1,3 +1,4 @@
+//нет кастомизацийы
 external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
 external procedure Base1ToOther(var string,val,val,val,val,val,val,var val,roundmode);
 external function Integer TypeOfCurncy(var string,var Integer);

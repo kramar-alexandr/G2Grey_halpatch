@@ -1,4 +1,4 @@
-remote updating procedure RecordActionVATIV_Print(var record VATIVVc,string,string,Boolean);
+remote updating procedure RecordActionVATIV_Print(var record VATIVVc,string,string,Boolean);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:32:37
 external function Boolean VATIVDchrsum(var record VATIVVc,Integer);
 external function roundmode DefaultRoundMode();
 external procedure RoundRowSum(string,string,string,var val);
@@ -9,7 +9,7 @@ external procedure GetCurncyRoundoff(string,string,string,var roundmode,var roun
 external procedure MulVATIV(string,val,var val,var val,Integer,Integer);
 external procedure AddVATBase(var record SMVc,string,val,val,Integer,Integer,Integer);
 external procedure SetupVATBase(var record SMVc,var Integer);
-remote procedure PasteIVRowToVATIV(record IVVc,var record VATIVVc,Integer,var Integer,Integer,var val);
+remote procedure PasteIVRowToVATIV(record IVVc,var record VATIVVc,Integer,var Integer,Integer,var val);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:32:45
 remote procedure PasteIVToVATIV(record IVVc,var record VATIVVc);
 external procedure CalcSum(val,val,val,val,var val,Integer);
 
@@ -66,10 +66,14 @@ BEGIN
         end;
     end;
   end;
-	if(VATIVr.NoTAXonVAT<0)then begin
+// Edit Start ---------------------------------------------- Edit Start
+	//Wednesday, 4 December 2019 10:32:53
+		if(VATIVr.NoTAXonVAT<0)then begin
 		VATIVr.NoTAXonVAT = 0;// Edit ************************** Monday, 16 September 2013 14:05:08
 	end;
-  CalcVATBaseVAT(VATr,VATIVr.InclVAT,VATIVr.NoTAXonVAT,vcrwcnt,vatv,t1);
+
+	// Edit End ---------------------------------------------- Edit End
+	  CalcVATBaseVAT(VATr,VATIVr.InclVAT,VATIVr.NoTAXonVAT,vcrwcnt,vatv,t1);
 
   VATIVr.TAX1Sum = t1;
   VATIVr.Sum3 = vatv;
@@ -123,7 +127,7 @@ BEGIN
   row VATIVVc VATIVrw;
   Boolean chsum;
   Integer vati;
-  val sum1;
+  val sum1;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:33:00
 
   if (changed!=0) then begin
     GetWindowRecord(wn,VATIVr);
@@ -132,7 +136,7 @@ BEGIN
       IVr.SerNr = VATIVr.IVNr;
       if (ReadFirstMain(IVr,1,true)) then begin
         vati = rownr;
-        PasteIVRowToVATIV(IVr,VATIVr,VATIVrw.IVRow,vati,kVATTypeNoVAT,sum1);
+        PasteIVRowToVATIV(IVr,VATIVr,VATIVrw.IVRow,vati,kVATTypeNoVAT,sum1);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:33:04
         chsum = true;
       end;      
     end;
@@ -393,8 +397,8 @@ BEGIN
     case "TransDate": res = VATIVDClassTransDateEFActive(wn,changed);
     case "SerNr": res = VATIVDClassEFActive(wn,);
     case "VATIVType": res = VATIVDClassEFActive(wn,);
-    case "Reason": res = VATIVDClassEFActive(wn,);
-    case "CorrectionReason": res = VATIVDClassEFActive(wn,);
+    case "Reason": res = VATIVDClassEFActive(wn,);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:33:09
+    case "CorrectionReason": res = VATIVDClassEFActive(wn,);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:33:09
     otherwise 
       switch (wnst) begin
         case Rs_update:
@@ -507,7 +511,7 @@ begin
     switch (VATIVr.InvType) begin
       case 0: docname = "VATCIVForm";
       case kInvoiceTypeCredit: docname = "VATCIVForm";
-      //case kInvoiceTypeCreditSpecialSales: docname = "VATCIVForm";
+      //case kInvoiceTypeCreditSpecialSales: docname = "VATCIVForm";// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 10:33:20
     end;
     if ((WindowState(wn)==Rs_normal) and (previewf==false)) then begin
       RecordActionVATIV_Print(VATIVr,"",docname,true);

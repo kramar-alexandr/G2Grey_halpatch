@@ -1,3 +1,4 @@
+//нет кастомизаций
 external function Boolean AcceptanceRulesExists(Integer,string);
 external function string 255 GetSupplierOnAccountAC(string);
 external procedure WarnFutureDate(Boolean,Date);

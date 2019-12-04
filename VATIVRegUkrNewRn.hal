@@ -1,3 +1,4 @@
+//переносить как есть
 external function val MulRateToBase1(var string,val,val,val,val,val,val,roundmode);
 external procedure NewLineExport();
 external procedure GetVATRowFromBlock(string,record VATCodeBlock,var row VATCodeBlock);

@@ -534,7 +534,7 @@ BEGIN
   MatRowGet(IPp,iprow,IPrwp);
   testf = true;
   if (IPrwp.CUPNr>0) then begin 
-    if (ARAccb.PreIPBookVAT==1) then begin
+    if (ARAccb.PreIPBookVAT==1) then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:00:05
       testf = false; 
     end;
   end else begin

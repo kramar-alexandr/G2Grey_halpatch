@@ -1,4 +1,4 @@
-external function Boolean IVVc_CalculateRate(var record IVVc);
+external function Boolean IVVc_CalculateRate(var record IVVc);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:04:57
 external function roundmode GetVATRoundMode(record RoundBlock);
 external function roundmode SetRoundModeD(Integer);
 external function Boolean CostPriceForGP(string,string,string,string,var val);
@@ -237,7 +237,7 @@ BEGIN
     case kInvoiceRowTypePrepayment:
       PasteARPayInIV(IVp,IVrw,rownr);
       MatRowPut(IVp,rownr,IVrw);
-		IVVc_CalculateRate(IVp);
+		IVVc_CalculateRate(IVp);// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 4 December 2019 12:05:01
       IVSumup(IVp,true);
   end;  
   RETURN;
