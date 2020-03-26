@@ -825,12 +825,14 @@ begin
       case 1:
         if (selectedOPrw.PInvVal>0) then begin
           qty = POrw.Quant;
-          sum = GetVATPOSum(POr.SerNr,VATVIr.SerNr,porownr,false);
-          sum = selectedOPrw.PInvVal - selectedOPrw.VATVal - sum;
+          //sum = GetVATPOSum(POr.SerNr,VATVIr.SerNr,porownr,false);
+          //sum = selectedOPrw.PInvVal - selectedOPrw.VATVal - sum;
           if (sum<=0) then begin
-            testf = false;
+            //testf = false;
           end;
-          sum = sum + selectedOPrw.VATVal;
+          //sum = sum + selectedOPrw.VATVal;
+          sum = selectedOPrw.PInvVal;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 11 March 2020 14:57:54
+          //messagebox(0,sum);
         end else begin
           qty = POrw.Quant;
           sum = GetVATVISum(OPr.SerNr);
@@ -852,6 +854,7 @@ begin
       POrw.Price = (POrw.Price*sum)/POr.Sum4;
       CalcSum(VATVIrw.qty,POrw.Price,POrw.PriceFactor,POrw.vRebate,t,0);
       VATVIrw.Sum = t;
+      VATVIrw.vRebate = 100;// Edit ************************** BPI Ukraine - KramarAlexandr - Wednesday, 11 March 2020 15:01:05
       VATVIrw.Price = t;// Edit ************************** Tuesday, 24 September 2013 13:57:15
       VATVIrw.Item = POrw.ArtCode;
       VATVIrw.Comment = POrw.Spec;
